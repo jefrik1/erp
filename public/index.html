@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ERP Material & Property v3.0</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{font-family:Inter,system-ui,sans-serif}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:99px}
+.card{border:1px solid #E2E8F0;border-radius:16px;background:#fff}
+.btn{height:40px;padding:0 16px;border-radius:10px;font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:8px;justify-content:center;transition:.15s}
+.btn-primary{background:#1E40AF;color:#fff}.btn-primary:hover{background:#1E3A8A}
+.btn-ghost{border:1px solid #E2E8F0;background:#fff}.btn-ghost:hover{background:#F8FAFC}
+.badge{font-size:11px;font-weight:700;letter-spacing:.04em;padding:4px 8px;border-radius:999px}
+</style>
+</head>
+<body class="bg-[#F8FAFC] text-slate-800">
+<!-- LOGIN -->
+<div id="loginView" class="min-h-screen grid place-items-center p-6">
+  <div class="w-full max-w-[420px] card p-8">
+    <div class="flex items-center gap-3 mb-2">
+      <div class="w-10 h-10 rounded-xl bg-[#1E40AF] grid place-items-center text-white font-extrabold">E</div>
+      <div><div class="font-extrabold leading-none">ERP Material & Property</div><div class="text-xs text-slate-500">v3.0 — Konsolidasi Trading + Developer</div></div>
+    </div>
+    <p class="text-sm text-slate-500 mb-6">Login dengan <b>admin / admin123</b>. Docker Postgres di <code>localhost:5432</code>.</p>
+    <div class="space-y-3">
+      <input id="lu" value="admin" placeholder="Username" class="w-full h-10 px-3 rounded-xl border border-slate-200 outline-none focus:border-[#1E40AF]"/>
+      <input id="lp" value="admin123" type="password" placeholder="Password" class="w-full h-10 px-3 rounded-xl border border-slate-200 outline-none focus:border-[#1E40AF]"/>
+      <button onclick="doLogin()" class="btn btn-primary w-full">Masuk</button>
+      <div id="loginErr" class="text-sm text-red-600 hidden"></div>
+      <div class="text-xs text-slate-400">JWT 8 jam · RBAC · Audit trail immutable · Retention 10 tahun</div>
+    </div>
+    <div class="mt-6 grid grid-cols-3 gap-2 text-center">
+      <div class="card p-3"><div class="text-lg font-extrabold text-[#1E40AF]">4</div><div class="text-[11px] text-slate-500">Lapisan Modul</div></div>
+      <div class="card p-3"><div class="text-lg font-extrabold text-[#1E40AF]">70+</div><div class="text-[11px] text-slate-500">Tabel ERD</div></div>
+      <div class="card p-3"><div class="text-lg font-extrabold text-[#1E40AF]">13 bln</div><div class="text-[11px] text-slate-500">Roadmap</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appView" class="hidden min-h-screen flex">
+  <!-- sidebar -->
+  <aside id="sidebar" class="w-[280px] shrink-0 bg-white border-r border-slate-200 flex flex-col sticky top-0 h-screen overflow-hidden">
+    <div class="h-[64px] flex items-center gap-3 px-5 border-b border-slate-200 shrink-0">
+      <div class="w-9 h-9 rounded-xl bg-[#1E40AF] grid place-items-center text-white font-black">E</div>
+      <div class="leading-tight"><div class="font-extrabold text-sm">ERP v3.0</div><div class="text-[11px] text-slate-500">Material · Property · Finance</div></div>
+      <button onclick="toggleSidebar()" class="ml-auto lg:hidden btn-ghost w-8 h-8 grid place-items-center rounded-lg">≡</button>
+    </div>
+    <div class="p-3 overflow-auto flex-1 space-y-5">
+      <div>
+        <div class="text-[11px] font-bold tracking-widest text-slate-400 px-2 mb-2">GROUP DASHBOARD</div>
+        <button data-nav="dashboard" class="nav w-full text-left px-3 py-2 rounded-xl bg-[#1E40AF] text-white font-semibold text-sm">◎ Dashboard & Analytics</button>
+      </div>
+      <div>
+        <div class="text-[11px] font-bold tracking-widest text-slate-400 px-2 mb-2">FOUNDATION</div>
+        <div class="space-y-1">
+          <button data-nav="master" class="nav w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 text-sm">Master Data</button>
+          <button data-nav="users" class="nav w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 text-sm">User & RBAC · Audit</button>
+        </div>
+      </div>
+      <div>
+        <div class="text-[11px] font-bold tracking-widest text-[#1E40AF] px-2 mb-2">MATERIAL TRADING</div>
+        <div class="space-y-1">
+          <button data-nav="sales" class="nav w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 text-sm">Sales, CRM, POS, Pricing</button>
+          <button data-nav="purchase" class="nav w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 text-sm">Purchase, Supplier, Landed Cost</button>
+          <button data-nav="inventory" class="nav w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 text-sm">Inventory & Warehouse</button>
+          <button data-nav="logistics" class="nav w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 text-sm">Logistics & Armada</button>
+          <button data-nav="consignment" class="nav w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 text-sm">Konsinyasi · Retur · Klaim</button>
+        </div>
+      </div>
+      <div>
+        <div class="text-[11px] font-bold tracking-widest text-amber-600 px-2 mb-2">PROPERTY DEVELOPMENT</div>
+        <div class="space-y-1">
+          <button data-nav="catalog" class="nav w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 text-sm">Katalog Material (A-Q)</button>
+          <button data-nav="property" class="nav w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 text-sm">Cluster · Blok · Unit · BOM</button>
+          <button data-nav="build" class="nav w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 text-sm">Progress 14 Tahap · Daily Report</button>
+          <button data-nav="site" class="nav w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 text-sm">Site Inventory · Issue · Waste</button>
+          <button data-nav="subkon" class="nav w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 text-sm">Subkon & Klaim Borongan</button>
+          <button data-nav="buyer" class="nav w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 text-sm">Buyer · KPR · Legal</button>
+          <button data-nav="qc" class="nav w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 text-sm">QC · BAST · Garansi · After-sales</button>
+          <button data-nav="infra" class="nav w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 text-sm">Infrastruktur · Permit · MRP</button>
+        </div>
+      </div>
+      <div>
+        <div class="text-[11px] font-bold tracking-widest text-slate-400 px-2 mb-2">SHARED SERVICES</div>
+        <div class="space-y-1">
+          <button data-nav="finance" class="nav w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 text-sm">Finance & Tax · Budgeting</button>
+          <button data-nav="hr" class="nav w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 text-sm">HR · Payroll · Absensi</button>
+          <button data-nav="reports" class="nav w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 text-sm">Laporan & BI</button>
+        </div>
+      </div>
+      <div class="card p-3 bg-amber-50 border-amber-200">
+        <div class="text-xs font-bold text-amber-800">PRD v3.0 — Panduan Baca</div>
+        <div class="text-xs text-amber-700 mt-1">1-3 konteks → 4 arsitektur → 5 fitur → 6 workflow → 7 UI → 8 ERD → 9-11 tech/roadmap.</div>
+      </div>
+    </div>
+    <div class="p-3 border-t border-slate-200">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-slate-900 text-white grid place-items-center text-xs font-bold" id="avatar">A</div>
+        <div class="flex-1 min-w-0"><div id="who" class="text-sm font-semibold truncate">admin</div><div class="text-xs text-slate-500 truncate" id="whoRole">super_admin</div></div>
+        <button onclick="logout()" class="btn btn-ghost h-8 px-3 text-xs">Keluar</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- main -->
+  <div class="flex-1 min-w-0 flex flex-col">
+    <header class="h-[64px] bg-white border-b border-slate-200 flex items-center gap-3 px-4 lg:px-6 sticky top-0 z-10">
+      <button onclick="toggleSidebar()" class="lg:hidden btn btn-ghost h-9">☰ Menu</button>
+      <div class="hidden lg:flex items-center gap-2 text-sm text-slate-500"><span class="font-semibold text-slate-800" id="pageTitle">Dashboard</span><span>·</span><span id="pageSub" class="truncate">Ringkasan konsolidasi Trading + Property</span></div>
+      <div class="flex-1"></div>
+      <div class="hidden md:flex items-center gap-2">
+        <input id="globalSearch" placeholder="Cari SKU, customer, unit, cluster… (Ctrl+K)" class="h-10 w-[320px] px-3 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:bg-white focus:border-[#1E40AF] text-sm"/>
+        <button onclick="doGlobalSearch()" class="btn btn-ghost h-10">Cari</button>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="hidden sm:inline-flex badge bg-emerald-50 text-emerald-700 border border-emerald-200">DB Postgres 15 · Docker</span>
+        <span class="hidden sm:inline-flex badge bg-slate-900 text-white">JS · Express · Vanilla SPA</span>
+      </div>
+    </header>
+    <main class="p-4 lg:p-6 space-y-6">
+      <!-- DASHBOARD -->
+      <section id="view-dashboard" class="space-y-6">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="card p-5"><div class="text-xs font-bold tracking-widest text-slate-400">PENJUALAN (SO)</div><div id="kpiSales" class="text-2xl font-extrabold mt-2">—</div><div class="text-xs text-slate-500" id="kpiSalesSub">memuat…</div></div>
+          <div class="card p-5"><div class="text-xs font-bold tracking-widest text-slate-400">PEMBELIAN (PO)</div><div id="kpiPO" class="text-2xl font-extrabold mt-2">—</div><div class="text-xs text-slate-500" id="kpiPOSub">memuat…</div></div>
+          <div class="card p-5"><div class="text-xs font-bold tracking-widest text-slate-400">NILAI STOK</div><div id="kpiStock" class="text-2xl font-extrabold mt-2">—</div><div class="text-xs text-slate-500">qty_on_hand × avg_cost</div></div>
+          <div class="card p-5"><div class="text-xs font-bold tracking-widest text-slate-400">PIUTANG OUTSTANDING</div><div id="kpiAR" class="text-2xl font-extrabold mt-2">—</div><div class="text-xs text-slate-500">invoice outstanding</div></div>
+        </div>
+        <div class="grid lg:grid-cols-3 gap-4">
+          <div class="card p-5 lg:col-span-2">
+            <div class="flex items-center justify-between"><h3 class="font-bold">Site Plan Interaktif — Cluster Alamanda</h3><button onclick="loadSitePlan(1)" class="btn btn-ghost h-8 text-xs">Muat ulang</button></div>
+            <div id="sitePlan" class="mt-4 grid grid-cols-5 sm:grid-cols-10 gap-2"></div>
+            <div class="flex flex-wrap gap-2 mt-4 text-xs">
+              <span class="badge bg-emerald-100 text-emerald-800">AVAILABLE</span><span class="badge bg-amber-100 text-amber-800">BOOKED</span><span class="badge bg-blue-100 text-blue-800">KPR_PROCESS</span><span class="badge bg-emerald-600 text-white">SOLD</span><span class="badge bg-orange-100 text-orange-800">KONSTRUKSI</span>
+            </div>
+          </div>
+          <div class="card p-5">
+            <h3 class="font-bold">KPI Property</h3>
+            <div id="kpiProperty" class="mt-3 space-y-2 text-sm"></div>
+            <h3 class="font-bold mt-6">Pipeline KPR</h3>
+            <div id="kpiKPR" class="mt-3 space-y-2 text-sm"></div>
+          </div>
+        </div>
+        <div class="grid lg:grid-cols-2 gap-4">
+          <div class="card p-5"><h3 class="font-bold">Workflow Trading</h3><div class="mt-3 text-sm leading-relaxed text-slate-600">[Lead] → [Quotation] → [SO + Approval] → [Cek Stok + Reservasi] → [DO + Armada] → [Invoice] → [AR + Reminder WA] → [Bayar] → [Jurnal]. Konsinyasi, retur berjenjang, landed cost import terpisah di modul masing-masing.</div></div>
+          <div class="card p-5"><h3 class="font-bold">Workflow Property</h3><div class="mt-3 text-sm leading-relaxed text-slate-600">[Land + Perizinan] → [Tipe+BOM] → [Cluster/Blok/Unit] → [MRP] → [Transfer Gudang] → [Issue ke Unit + Cek Over-Run] → [Daily Progress 14 Tahap] → [QC Punch List] → [BAST + Garansi + Retensi]. Kurva S & Gantt di Laporan.</div></div>
+        </div>
+      </section>
+
+      <!-- GENERIC TABLE VIEW -->
+      <section id="view-generic" class="hidden space-y-4">
+        <div class="flex flex-wrap items-center gap-3">
+          <h2 id="genericTitle" class="text-xl font-extrabold">Master Data</h2>
+          <span id="genericHint" class="text-xs text-slate-500">CRUD langsung ke Postgres via REST. Cari & filter by kolom.</span>
+          <div class="flex-1"></div>
+          <input id="genericSearch" placeholder="Search…" class="h-10 px-3 rounded-xl border border-slate-200 w-[220px] text-sm"/>
+          <button onclick="genericLoad()" class="btn btn-ghost h-10">Cari</button>
+          <button onclick="openCreate()" class="btn btn-primary h-10">+ Tambah</button>
+        </div>
+        <div class="card overflow-hidden">
+          <div class="overflow-auto max-h-[60vh]">
+            <table class="w-full text-sm">
+              <thead id="genericHead" class="sticky top-0 bg-slate-50 border-b border-slate-200"></thead>
+              <tbody id="genericBody"></tbody>
+            </table>
+          </div>
+          <div class="flex items-center justify-between p-3 border-t border-slate-200 text-sm">
+            <div id="genericMeta" class="text-slate-500"></div>
+            <div class="flex gap-2"><button onclick="genericPrev()" class="btn btn-ghost h-8">‹ Prev</button><button onclick="genericNext()" class="btn btn-ghost h-8">Next ›</button></div>
+          </div>
+        </div>
+        <!-- MRP & Issue helpers -->
+        <div id="genericHelpers" class="grid lg:grid-cols-2 gap-4"></div>
+      </section>
+
+      <!-- REPORTS -->
+      <section id="view-reports" class="hidden space-y-4">
+        <h2 class="text-xl font-extrabold">Laporan & BI</h2>
+        <div class="grid lg:grid-cols-4 gap-3">
+          <button onclick="runReport('sales-by-product')" class="card p-4 text-left hover:border-[#1E40AF]"><div class="font-bold text-sm">Penjualan per Produk</div><div class="text-xs text-slate-500">Top 50 by total</div></button>
+          <button onclick="runReport('stock-card')" class="card p-4 text-left hover:border-[#1E40AF]"><div class="font-bold text-sm">Kartu Stok</div><div class="text-xs text-slate-500">filter product & warehouse</div></button>
+          <button onclick="runReport('bom-variance')" class="card p-4 text-left hover:border-[#1E40AF]"><div class="font-bold text-sm">BOM vs Realisasi</div><div class="text-xs text-slate-500">variance per unit</div></button>
+          <button onclick="runReport('kpr-pipeline')" class="card p-4 text-left hover:border-[#1E40AF]"><div class="font-bold text-sm">Pipeline KPR</div><div class="text-xs text-slate-500">group by status</div></button>
+        </div>
+        <div id="reportOut" class="card p-4 overflow-auto text-sm"></div>
+      </section>
+    </main>
+    <footer class="px-6 py-4 text-xs text-slate-400 border-t border-slate-200">PRD v3.0 · 14 tahap konstruksi · Multi-gudang · Multi-satuan (m³/sak/batang/dus + pick up/engkel/fuso/tronton) · FIFO/Average/Specific · Approval matrix kondisional · ponytail: tambah Redis+ BullMQ & Elasticsearch saat trafik >300 concurrent.</footer>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm grid place-items-center p-4 z-50">
+  <div class="bg-white rounded-2xl w-full max-w-[720px] max-h-[90vh] flex flex-col overflow-hidden">
+    <div class="p-5 border-b border-slate-200 flex items-center justify-between"><h3 id="modalTitle" class="font-extrabold">Form</h3><button onclick="closeModal()" class="btn btn-ghost h-8">✕</button></div>
+    <div id="modalBody" class="p-5 overflow-auto space-y-3"></div>
+    <div class="p-4 border-t border-slate-200 flex justify-end gap-2"><button onclick="closeModal()" class="btn btn-ghost">Batal (Esc)</button><button onclick="submitModal()" class="btn btn-primary">Simpan (F2)</button></div>
+  </div>
+</div>
+<div id="toast" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+<script>
+let TOKEN=localStorage.getItem('erp_token')||'';
+let ME=null;
+let CURRENT=null; // {table, search, page}
+let MODAL_MODE=null, MODAL_ID=null, MODAL_FIELDS=null;
+
+const TABLES={
+  master:[
+    {table:'companies', label:'Perusahaan (Companies)', hint:'Multi-company grup'},
+    {table:'branches', label:'Cabang (Branches)', hint:'Per PT'},
+    {table:'warehouses', label:'Gudang (Warehouses)', hint:'MAIN/TRANSIT/RETURN/SITE/CONSIGNMENT'},
+    {table:'bin_locations', label:'Bin Locations'},
+    {table:'product_categories', label:'Kategori Produk'},
+    {table:'units', label:'Satuan & Konversi', hint:'m³, sak, batang, dus, + pick up/engkel/fuso/tronton'},
+    {table:'taxes', label:'Pajak (PPN/PPh)'},
+    {table:'products', label:'Produk / SKU', hint:'FIFO/Average/Specific, batch/serial, min/max/ROP'},
+    {table:'customers', label:'Pelanggan (Customers)'},
+    {table:'suppliers', label:'Pemasok (Suppliers)'},
+    {table:'employees', label:'Karyawan'},
+    {table:'material_catalog', label:'Katalog Material Bangunan A-Q', hint:'Freeze 1 bln sebelum go-live'},
+  ],
+  users:[
+    {table:'users', label:'Users'},
+    {table:'roles', label:'Roles & Permissions (RBAC)'},
+    {table:'audit_logs', label:'Audit Trail (immutable)'},
+    {table:'notifications', label:'Notifications'},
+    {table:'approvals', label:'Approval Workflow'},
+  ],
+  sales:[
+    {table:'sales_leads', label:'Leads Trading'},
+    {table:'sales_orders', label:'Sales Orders (SO)'},
+    {table:'so_details', label:'SO Details'},
+    {table:'delivery_orders', label:'Delivery Orders (DO + POD)'},
+    {table:'invoices', label:'Invoices (AR)'},
+    {table:'payments', label:'Payments (AR/AP)'},
+    {table:'price_lists', label:'Price Lists'},
+    {table:'price_list_items', label:'Price List Items'},
+    {table:'customer_prices', label:'Harga per Pelanggan'},
+    {table:'promotions', label:'Promo / Loyalty'},
+  ],
+  purchase:[
+    {table:'purchase_orders', label:'Purchase Orders (PO)'},
+    {table:'po_details', label:'PO Details'},
+    {table:'goods_receipts', label:'GRN (Penerimaan)'},
+    {table:'grn_details', label:'GRN Details (batch/expired/bin)'},
+    {table:'landed_costs', label:'Landed Cost & Import (PIB/BL/Container)'},
+    {table:'landed_cost_details', label:'Landed Cost Details'},
+    {table:'suppliers', label:'Supplier Master'},
+  ],
+  inventory:[
+    {table:'stocks', label:'Stok per Gudang/Bin/Batch'},
+    {table:'stock_movements', label:'Kartu Stok (IN/OUT/TRF/ADJ)'},
+    {table:'stock_transfers', label:'Transfer Antar Gudang'},
+    {table:'stock_opnames', label:'Stock Opname'},
+    {table:'products', label:'Products (min/max/ROP)'},
+  ],
+  logistics:[
+    {table:'vehicles', label:'Armada (Pickup/Engkel/Fuso/Tronton)'},
+    {table:'drivers', label:'Driver & SIM'},
+    {table:'trips', label:'Trip & Biaya (BBM/Tol/Makan)'},
+    {table:'vehicle_maintenance', label:'Maintenance & KIR'},
+    {table:'delivery_orders', label:'DO & Rute Multi-drop'},
+  ],
+  consignment:[
+    {table:'consignments', label:'Konsinyasi (OUT/IN)'},
+    {table:'consignment_items', label:'Consignment Items'},
+    {table:'sales_returns', label:'Retur Penjualan'},
+    {table:'claims', label:'Klaim Berjenjang (Supplier/Ekspedisi/Pabrik)'},
+  ],
+  catalog:[
+    {table:'material_catalog', label:'Katalog A-Q (Persiapan→Konsumabel)'},
+    {table:'product_catalog_mapping', label:'Mapping Katalog → Produk'},
+  ],
+  property:[
+    {table:'house_types', label:'Master Tipe Rumah (36/72 s/d Ruko)'},
+    {table:'house_type_bom', label:'BOM per Tipe (resep + waste%)'},
+    {table:'clusters', label:'Kluster (50–500 unit)'},
+    {table:'cluster_blocks', label:'Blok (A, B, C…)'},
+    {table:'property_units', label:'Unit Rumah (sale_status & build_status)'},
+    {table:'build_stages', label:'14 Tahap Konstruksi + Bobot %'},
+  ],
+  build:[
+    {table:'unit_build_progress', label:'Progress per Unit per Tahap'},
+    {table:'daily_progress_reports', label:'Daily Progress Report (foto wajib)'},
+    {table:'property_units', label:'Unit — Kurva S & Gantt (via Laporan)'},
+  ],
+  site:[
+    {table:'material_issues', label:'Material Issue (request → issue → unit)'},
+    {table:'material_issue_items', label:'Issue Items + Over-Run %'},
+    {table:'installed_materials', label:'Material Terpasang (WIP)'},
+    {table:'waste_records', label:'Waste (Returned/Broken/Lost)'},
+    {table:'stocks', label:'Stok Site vs Pusat'},
+  ],
+  subkon:[
+    {table:'subcontractors', label:'Subkon / Mandor'},
+    {table:'subcon_contracts', label:'Kontrak Borongan'},
+    {table:'subcon_contract_terms', label:'Termin Kontrak'},
+    {table:'subcon_claims', label:'Klaim Subkon (BA + Foto)'},
+    {table:'subcon_ratings', label:'Penilaian Subkon'},
+  ],
+  buyer:[
+    {table:'buyers', label:'Buyer Master (KTP/NPWP)'},
+    {table:'buyer_leads', label:'Leads Property'},
+    {table:'bookings', label:'Booking & DP'},
+    {table:'payment_schedules', label:'Payment Schedule (termin)'},
+    {table:'kpr_applications', label:'KPR (Bank, SP3K, Akad, Pencairan)'},
+    {table:'kpr_documents', label:'Dokumen KPR Checklist'},
+    {table:'legal_documents', label:'Legal (SHM/IMB/SLF/PPJB/AJB)'},
+    {table:'tax_payments', label:'BPHTB / PPh Final'},
+    {table:'banks', label:'Bank Rekanan'},
+  ],
+  qc:[
+    {table:'qc_checklists', label:'QC Checklist per Tipe'},
+    {table:'unit_qc', label:'Unit QC (Punch List)'},
+    {table:'bast_documents', label:'BAST & Serah Terima'},
+    {table:'warranties', label:'Garansi (Struktur 5-10th, Non-struktur 1th)'},
+    {table:'after_sales_complaints', label:'After-sales Complaint'},
+  ],
+  infra:[
+    {table:'infrastructure_items', label:'Infrastruktur Kluster (Jalan/Drainase/PJU/Taman/MEP)'},
+    {table:'permits', label:'Permit (Izin Lokasi/IMB/AMDAL/SLF)'},
+    {table:'mrp_runs', label:'MRP Runs'},
+    {table:'mrp_details', label:'MRP Details (gross/on-hand/net/suggested date)'},
+  ],
+  finance:[
+    {table:'accounts', label:'COA (Chart of Accounts)'},
+    {table:'journal_entries', label:'Jurnal (auto dari SO/PO/Payment)'},
+    {table:'journal_details', label:'Jurnal Details'},
+    {table:'bank_accounts', label:'Rekening Bank & Kas'},
+    {table:'budgets', label:'Budget vs Realisasi'},
+    {table:'fixed_assets', label:'Aset Tetap & Depresiasi'},
+    {table:'invoices', label:'AR Aging 30/60/90/120+'},
+    {table:'purchase_orders', label:'AP & 3-Way Match'},
+  ],
+  hr:[
+    {table:'employees', label:'Karyawan & Kontrak'},
+    {table:'attendances', label:'Absensi (Fingerprint)'},
+    {table:'leaves', label:'Cuti & Izin'},
+    {table:'payrolls', label:'Payroll & PPh21/BPJS'},
+  ],
+};
+
+function headers(){
+  return TOKEN? {Authorization:'Bearer '+TOKEN, 'Content-Type':'application/json'}: {'Content-Type':'application/json'};
+}
+function toast(msg, ok=true){
+  const el=document.createElement('div');
+  el.className='card px-4 py-3 text-sm shadow-lg '+(ok?'border-emerald-200 bg-emerald-50':'border-red-200 bg-red-50');
+  el.textContent=msg;
+  document.getElementById('toast').appendChild(el);
+  setTimeout(()=>el.remove(),3000);
+}
+function rupiah(n){ return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(n||0); }
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('hidden'); }
+
+async function doLogin(){
+  const u=document.getElementById('lu').value.trim(), p=document.getElementById('lp').value;
+  try{
+    const r=await fetch('/api/auth/login',{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username:u,password:p})});
+    const j=await r.json();
+    if(!r.ok) throw new Error(j.error||'Gagal login');
+    TOKEN=j.token; localStorage.setItem('erp_token',TOKEN); ME=j.user;
+    showApp();
+  }catch(e){ document.getElementById('loginErr').textContent=e.message; document.getElementById('loginErr').classList.remove('hidden'); }
+}
+function logout(){ localStorage.removeItem('erp_token'); TOKEN=''; location.reload(); }
+async function showApp(){
+  if(!TOKEN){ return }
+  if(!ME){
+    try{
+      const r=await fetch('/api/auth/me',{headers:headers()}); if(!r.ok) throw new Error('auth');
+      ME=await r.json();
+    }catch{ document.getElementById('loginView').classList.remove('hidden'); document.getElementById('appView').classList.add('hidden'); return }
+  }
+  document.getElementById('loginView').classList.add('hidden');
+  document.getElementById('appView').classList.remove('hidden');
+  document.getElementById('who').textContent=ME.username;
+  document.getElementById('whoRole').textContent=(ME.roles||[]).join(', ')||'user';
+  document.getElementById('avatar').textContent=ME.username.slice(0,2).toUpperCase();
+  loadDashboard();
+}
+function setNavActive(key){
+  document.querySelectorAll('.nav').forEach(b=>{ b.classList.remove('bg-[#1E40AF]','text-white'); if(b.dataset.nav===key) b.classList.add('bg-[#1E40AF]','text-white') });
+}
+function showView(id){
+  document.getElementById('view-dashboard').classList.add('hidden');
+  document.getElementById('view-generic').classList.add('hidden');
+  document.getElementById('view-reports').classList.add('hidden');
+  document.getElementById(id).classList.remove('hidden');
+}
+document.querySelectorAll('.nav').forEach(b=>{
+  b.addEventListener('click',()=>{
+    const key=b.dataset.nav;
+    setNavActive(key);
+    if(key==='dashboard'){ document.getElementById('pageTitle').textContent='Dashboard'; document.getElementById('pageSub').textContent='Ringkasan konsolidasi Trading + Property'; showView('view-dashboard'); loadDashboard(); return }
+    if(key==='reports'){ document.getElementById('pageTitle').textContent='Laporan & BI'; document.getElementById('pageSub').textContent='Builder, scheduled report, export PDF/Excel'; showView('view-reports'); return }
+    // generic tables: pick first table in group
+    const defs=TABLES[key];
+    if(!defs){ toast('Belum ada modul '+key,false); return }
+    openGenericGroup(key, defs[0].table);
+  });
+});
+
+async function loadDashboard(){
+  try{
+    const r=await fetch('/api/dashboard/summary',{headers:headers()}); const j=await r.json();
+    document.getElementById('kpiSales').textContent = (j.sales?.c||0)+' SO · '+rupiah(j.sales?.s||0);
+    document.getElementById('kpiPO').textContent = (j.purchase?.c||0)+' PO · '+rupiah(j.purchase?.s||0);
+    document.getElementById('kpiStock').textContent = rupiah(j.stock?.v||0);
+    document.getElementById('kpiAR').textContent = rupiah(j.ar||0);
+    document.getElementById('kpiProperty').innerHTML = (j.units||[]).map(u=>`<div class="flex justify-between"><span>${u.sale_status}</span><b>${u.c}</b></div>`).join('') || '<span class="text-slate-400">Belum ada unit</span>';
+    document.getElementById('kpiKPR').innerHTML = (j.kpr||[]).map(k=>`<div class="flex justify-between"><span>${k.status}</span><b>${k.c}</b></div>`).join('') || '<span class="text-slate-400">Belum ada KPR</span>';
+    loadSitePlan(1);
+  }catch(e){ console.error(e) }
+}
+async function loadSitePlan(clusterId){
+  try{
+    const r=await fetch('/api/site-plan/'+clusterId,{headers:headers()}); const j=await r.json();
+    const el=document.getElementById('sitePlan');
+    if(!j.units) { el.innerHTML='<span class="text-xs text-slate-500">Cluster belum ada / belum di-seed</span>'; return }
+    el.innerHTML = j.units.map(u=>{
+      let bg='bg-emerald-50 border-emerald-200';
+      if(u.sale_status==='BOOKED') bg='bg-amber-100 border-amber-300';
+      else if(u.sale_status==='KPR_PROCESS') bg='bg-blue-100 border-blue-300';
+      else if(u.sale_status==='SOLD') bg='bg-emerald-600 text-white border-emerald-700';
+      else if(u.sale_status==='HANDOVER') bg='bg-slate-800 text-white';
+      const prog = u.build_status==='COMPLETED' ? 'bg-emerald-500' : u.build_status==='NOT_STARTED' ? 'bg-slate-300' : 'bg-orange-400';
+      return `<div class="card p-2 text-center ${bg} cursor-pointer" onclick="openUnit('${u.unit_number}')" title="${u.unit_number} · ${u.sale_status} · ${u.build_status} ${u.progress_pct}%">
+        <div class="text-xs font-extrabold">${u.unit_number}</div>
+        <div class="text-[10px] opacity-70">${u.type_code||''}</div>
+        <div class="h-1.5 rounded-full mt-1 ${prog}" style="width:${u.progress_pct||0}%"></div>
+      </div>`;
+    }).join('');
+  }catch(e){ document.getElementById('sitePlan').innerHTML='<span class="text-xs text-red-500">'+e.message+'</span>'}
+}
+function openUnit(n){ toast('Unit '+n+' — klik "Property" → Unit Rumah untuk CRUD & progress 14 tahap'); }
+
+// generic table
+let genericGroup=null, genericTables=[];
+function openGenericGroup(groupKey, initialTable){
+  genericGroup=groupKey; genericTables=TABLES[groupKey]||[];
+  showView('view-generic');
+  const g=document.getElementById('genericHelpers');
+  // tabs for group
+  g.innerHTML = `<div class="col-span-2 flex flex-wrap gap-2">${genericTables.map(t=>`<button onclick="switchTable('${t.table}')" data-t="${t.table}" class="btn btn-ghost h-8 text-xs ${t.table===initialTable?'!bg-[#1E40AF] !text-white !border-[#1E40AF]':''}">${t.label}</button>`).join('')}</div>`;
+  // helpers per module
+  let extra='';
+  if(groupKey==='site') extra+=`<div class="card p-4"><div class="font-bold text-sm">Cek Over-Run BOM</div><div class="text-xs text-slate-500">Validasi issue > BOM + waste. &lt;5% SE, 5-15% PM, &gt;15% Direktur.</div><div class="grid grid-cols-3 gap-2 mt-3"><input id="orUnit" placeholder="unit_id (1)" class="h-9 px-2 rounded-lg border border-slate-200 text-sm"/><input id="orProd" placeholder="product_id (1)" class="h-9 px-2 rounded-lg border border-slate-200 text-sm"/><input id="orQty" placeholder="issued_qty" class="h-9 px-2 rounded-lg border border-slate-200 text-sm"/></div><button onclick="checkOverrun()" class="btn btn-ghost h-9 mt-2">Cek</button><div id="orOut" class="text-xs mt-2"></div></div>
+    <div class="card p-4"><div class="font-bold text-sm">Stock Move Cepat</div><div class="text-xs text-slate-500">POST /api/stock-move (IN/OUT/TRF/ADJ) + update avg_cost.</div><div class="grid grid-cols-2 gap-2 mt-3"><input id="smProd" placeholder="product_id" class="h-9 px-2 rounded-lg border border-slate-200 text-sm"/><input id="smWh" placeholder="warehouse_id" class="h-9 px-2 rounded-lg border border-slate-200 text-sm"/><select id="smType" class="h-9 px-2 rounded-lg border border-slate-200 text-sm"><option>IN</option><option>OUT</option><option>TRF</option><option>ADJ</option></select><input id="smQty" placeholder="qty" class="h-9 px-2 rounded-lg border border-slate-200 text-sm"/></div><button onclick="doStockMove()" class="btn btn-ghost h-9 mt-2">Proses</button><div id="smOut" class="text-xs mt-2"></div></div>`;
+  if(groupKey==='infra') extra+=`<div class="card p-4"><div class="font-bold text-sm">MRP — Material Requirement Planning</div><div class="text-xs text-slate-500">Input jadwal build → gross - onHand - onOrder = net requirement.</div><div class="grid grid-cols-2 gap-2 mt-3"><input id="mrpStart" type="date" class="h-9 px-2 rounded-lg border border-slate-200 text-sm"/><input id="mrpEnd" type="date" class="h-9 px-2 rounded-lg border border-slate-200 text-sm"/><input id="mrpHT" placeholder='house_type_id qty, ex: 1:20,2:15' class="h-9 px-2 rounded-lg border border-slate-200 text-sm col-span-2"/></div><button onclick="runMRP()" class="btn btn-primary h-9 mt-2">Hitung MRP</button><div id="mrpOut" class="text-xs mt-2 overflow-auto max-h-[200px]"></div></div>`;
+  if(extra) g.innerHTML += extra;
+  switchTable(initialTable);
+}
+function switchTable(tbl){
+  CURRENT={table:tbl, page:1, search:''};
+  document.querySelectorAll('[data-t]').forEach(b=>{ b.classList.toggle('!bg-[#1E40AF]', b.dataset.t===tbl); b.classList.toggle('!text-white', b.dataset.t===tbl); b.classList.toggle('!border-[#1E40AF]', b.dataset.t===tbl); });
+  const def = genericTables.find(x=>x.table===tbl);
+  document.getElementById('genericTitle').textContent = def?.label || tbl;
+  document.getElementById('genericHint').textContent = def?.hint || 'CRUD REST · klik cell untuk edit';
+  document.getElementById('genericSearch').value='';
+  genericLoad();
+}
+async function genericLoad(){
+  if(!CURRENT) return;
+  const s=document.getElementById('genericSearch').value.trim();
+  CURRENT.search=s;
+  const qs=new URLSearchParams({page:CURRENT.page, limit:20});
+  if(s) qs.set('search',s);
+  const r=await fetch(`/api/${CURRENT.table}?`+qs.toString(),{headers:headers()});
+  const j=await r.json();
+  if(!r.ok){ toast(j.error||'Gagal load',false); return }
+  const rows=j.data||[];
+  const cols = rows[0] ? Object.keys(rows[0]) : [];
+  document.getElementById('genericHead').innerHTML = cols.length? `<tr>`+cols.map(c=>`<th class="text-left px-3 py-2 font-bold text-xs tracking-wide text-slate-600 whitespace-nowrap">${c}</th>`).join('')+`<th class="px-3 py-2"></th></tr>` : `<tr><th class="px-3 py-4 text-slate-400">Belum ada data — klik + Tambah</th></tr>`;
+  document.getElementById('genericBody').innerHTML = rows.map(row=>{
+    return `<tr class="border-t border-slate-100 hover:bg-slate-50">`+cols.map(c=>{
+      let v=row[c];
+      if(v===null) v='';
+      else if(typeof v==='object') v=JSON.stringify(v);
+      else v=String(v);
+      if(v.length>80) v=v.slice(0,80)+'…';
+      return `<td class="px-3 py-2 whitespace-nowrap max-w-[220px] truncate" title="${String(row[c]??'')}">${escapeHtml(v)}</td>`;
+    }).join('')+`<td class="px-2 py-1 whitespace-nowrap"><button onclick='openEdit(${JSON.stringify(row).replace(/'/g,"&#39;")})' class="btn btn-ghost h-7 text-xs px-2">Edit</button> <button onclick="doDelete('${row.id}')" class="btn btn-ghost h-7 text-xs px-2 text-red-600">Hapus</button></td></tr>`;
+  }).join('') || `<tr><td colspan="${cols.length+1}" class="px-3 py-10 text-center text-slate-400">Tidak ada data. Tambah data pertama via tombol + Tambah.</td></tr>`;
+  document.getElementById('genericMeta').textContent = `Total ${j.total} · Hal ${j.page} · ${rows.length} baris · Tabel ${CURRENT.table}`;
+}
+function genericPrev(){ if(CURRENT.page>1){ CURRENT.page--; genericLoad(); } }
+function genericNext(){ CURRENT.page++; genericLoad(); }
+document.getElementById('genericSearch').addEventListener('keydown',e=>{ if(e.key==='Enter') genericLoad(); });
+
+function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// modal create/edit
+async function openCreate(){
+  if(!CURRENT) return;
+  // fetch one row to infer columns, or use empty
+  MODAL_MODE='create'; MODAL_ID=null;
+  const r=await fetch(`/api/${CURRENT.table}?limit=1`,{headers:headers()}); const j=await r.json();
+  const sample=j.data?.[0]||{};
+  // columns to show: exclude id, created_at etc but allow editing all except generated
+  const exclude=new Set(['id','created_at','updated_at','book_value','qty_available','total_qty_with_waste','over_run_pct','net_amount','overall_score','outstanding','waste_qty','waste_pct','balance_qty']);
+  let fields = Object.keys(sample).filter(k=>!exclude.has(k));
+  if(!fields.length){
+    // fallback: guess common fields
+    fields=['code','name'];
+  }
+  MODAL_FIELDS=fields;
+  document.getElementById('modalTitle').textContent='+ Tambah — '+CURRENT.table;
+  document.getElementById('modalBody').innerHTML = fields.map(f=>`<label class="block"><div class="text-xs font-semibold text-slate-600 mb-1">${f}</div><input data-f="${f}" class="w-full h-10 px-3 rounded-xl border border-slate-200 outline-none focus:border-[#1E40AF] text-sm" placeholder="${f}"/></label>`).join('') + `<div class="text-xs text-slate-400">Kosongkan untuk NULL. JSON field isi dengan JSON (misal []). Tanggal format YYYY-MM-DD.</div>`;
+  document.getElementById('modal').classList.remove('hidden');
+}
+function openEdit(row){
+  MODAL_MODE='edit'; MODAL_ID=row.id;
+  const exclude=new Set(['id','created_at','updated_at','book_value','qty_available','total_qty_with_waste','over_run_pct','net_amount','overall_score','outstanding','waste_qty','waste_pct','balance_qty']);
+  const fields=Object.keys(row).filter(k=>!exclude.has(k));
+  MODAL_FIELDS=fields;
+  document.getElementById('modalTitle').textContent='Edit — '+CURRENT.table+' #'+row.id;
+  document.getElementById('modalBody').innerHTML = fields.map(f=>{
+    let v=row[f]; if(v===null) v=''; else if(typeof v==='object') v=JSON.stringify(v);
+    return `<label class="block"><div class="text-xs font-semibold text-slate-600 mb-1">${f}</div><input data-f="${f}" value="${escapeHtml(String(v)).replace(/"/g,'&quot;')}" class="w-full h-10 px-3 rounded-xl border border-slate-200 outline-none focus:border-[#1E40AF] text-sm"/></label>`;
+  }).join('');
+  document.getElementById('modal').classList.remove('hidden');
+}
+function closeModal(){ document.getElementById('modal').classList.add('hidden'); }
+async function submitModal(){
+  const body={};
+  document.querySelectorAll('#modalBody [data-f]').forEach(inp=>{
+    let k=inp.dataset.f, v=inp.value.trim();
+    if(v==='') v=null;
+    else if(v==='true'||v==='false') v=v==='true';
+    else if(!isNaN(v) && v!=='' && !/^[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(v) && !/[^0-9.\-]/.test(v)) v=Number(v);
+    else if((v.startsWith('{')||v.startsWith('['))){ try{ v=JSON.parse(v)}catch{} }
+    body[k]=v;
+  });
+  try{
+    let r;
+    if(MODAL_MODE==='create'){
+      r=await fetch(`/api/${CURRENT.table}`,{method:'POST', headers:headers(), body:JSON.stringify(body)});
+    }else{
+      r=await fetch(`/api/${CURRENT.table}/${MODAL_ID}`,{method:'PUT', headers:headers(), body:JSON.stringify(body)});
+    }
+    const j=await r.json();
+    if(!r.ok) throw new Error(j.error||JSON.stringify(j));
+    toast(MODAL_MODE==='create'?'Tersimpan':'Terupdate');
+    closeModal(); genericLoad();
+  }catch(e){ toast(e.message,false); }
+}
+async function doDelete(id){
+  if(!confirm('Hapus #'+id+'?')) return;
+  const r=await fetch(`/api/${CURRENT.table}/${id}`,{method:'DELETE', headers:headers()});
+  const j=await r.json();
+  if(!r.ok) toast(j.error||'Gagal hapus',false); else { toast('Terhapus'); genericLoad(); }
+}
+async function checkOverrun(){
+  const unit_id=document.getElementById('orUnit').value, product_id=document.getElementById('orProd').value, issued_qty=document.getElementById('orQty').value;
+  const r=await fetch('/api/material-issues/check-overrun',{method:'POST', headers:headers(), body:JSON.stringify({unit_id:Number(unit_id), product_id:Number(product_id), issued_qty:Number(issued_qty)})});
+  const j=await r.json();
+  document.getElementById('orOut').innerHTML = `<div class="card p-3 bg-slate-50">BOM: ${j.bom_qty} · Over: ${j.over_pct}% · ${j.needs_approval?'Butuh approval: <b>'+j.approval_level+'</b>':'OK — langsung issue'}</div>`;
+}
+async function doStockMove(){
+  const body={ product_id:Number(document.getElementById('smProd').value), warehouse_id:Number(document.getElementById('smWh').value), movement_type:document.getElementById('smType').value, qty:Number(document.getElementById('smQty').value), reference_type:'MANUAL', reference_id:0, unit_cost:0 };
+  const r=await fetch('/api/stock-move',{method:'POST', headers:headers(), body:JSON.stringify(body)});
+  const j=await r.json();
+  document.getElementById('smOut').textContent = r.ok? 'OK — balance '+j.balance_qty : (j.error||'Gagal');
+  if(r.ok) toast('Stock move tercatat');
+}
+async function runMRP(){
+  const s=document.getElementById('mrpStart').value, e=document.getElementById('mrpEnd').value, ht=document.getElementById('mrpHT').value;
+  const planned_units = ht.split(',').map(x=>{ const [a,b]=x.split(':'); return {house_type_id:Number(a), qty:Number(b)} }).filter(x=>x.house_type_id&&x.qty);
+  const r=await fetch('/api/mrp/run',{method:'POST', headers:headers(), body:JSON.stringify({period_start:s, period_end:e, cluster_ids:[1], planned_units})});
+  const j=await r.json();
+  if(!r.ok) { document.getElementById('mrpOut').textContent=j.error; return }
+  document.getElementById('mrpOut').innerHTML = `<div class="font-semibold">Run #${j.run.id} — ${j.details.length} items</div>`+ j.details.slice(0,30).map(d=>`<div class="flex justify-between border-t border-slate-100 py-1"><span>${d.sku} ${d.name_id}</span><span>gross ${d.gross_requirement} · onHand ${d.on_hand_qty} · net <b>${d.net_requirement}</b></span></div>`).join('');
+  toast('MRP selesai — '+j.details.length+' baris');
+}
+async function runReport(type){
+  let url=`/api/reports/${type}`;
+  if(type==='stock-card'){
+    const pid=prompt('product_id (kosongkan untuk semua)','');
+    const wid=prompt('warehouse_id (kosongkan untuk semua)','');
+    const qs=new URLSearchParams(); if(pid) qs.set('product_id',pid); if(wid) qs.set('warehouse_id',wid);
+    url+='?'+qs.toString();
+  }
+  const r=await fetch(url,{headers:headers()}); const j=await r.json();
+  const el=document.getElementById('reportOut');
+  if(!j.length) { el.innerHTML='<span class="text-slate-400">Tidak ada data</span>'; return }
+  const cols=Object.keys(j[0]);
+  el.innerHTML = `<div class="overflow-auto max-h-[60vh]"><table class="w-full text-xs"><thead class="sticky top-0 bg-slate-50"><tr>${cols.map(c=>`<th class="text-left px-2 py-2 font-bold">${c}</th>`).join('')}</tr></thead><tbody>${j.map(row=>`<tr class="border-t border-slate-100">${cols.map(c=>`<td class="px-2 py-1 whitespace-nowrap">${escapeHtml(String(row[c]??''))}</td>`).join('')}</tr>`).join('')}</tbody></table></div><div class="text-xs text-slate-500 mt-2">${j.length} baris · Export: gunakan /api/reports/${type} (JSON) → convert Excel di backend saat perlu.</div>`;
+}
+function doGlobalSearch(){
+  const q=document.getElementById('globalSearch').value.trim();
+  if(!q) return;
+  // try products search
+  CURRENT={table:'products', page:1, search:q};
+  document.getElementById('genericSearch').value=q;
+  openGenericGroup('master','products');
+  setNavActive('master');
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') closeModal();
+  if(e.key==='F2'){ e.preventDefault(); if(!document.getElementById('modal').classList.contains('hidden')) submitModal(); }
+  if((e.ctrlKey||e.metaKey)&& e.key.toLowerCase()==='k'){ e.preventDefault(); document.getElementById('globalSearch').focus(); }
+});
+
+// boot
+if(TOKEN) showApp();
+else { document.getElementById('loginView').classList.remove('hidden'); }
+</script>
+</body>
+</html>

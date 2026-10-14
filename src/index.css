@@ -1,0 +1,5 @@
+@tailwind base; @tailwind components; @tailwind utilities;
+*{font-family:Inter,system-ui,sans-serif}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:999px}
+.badge{font-size:11px;letter-spacing:.06em;font-weight:700;padding:3px 8px;border-radius:999px}

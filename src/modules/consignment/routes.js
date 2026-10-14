@@ -1,0 +1,57 @@
+import express from 'express';
+import { pool } from '../../config/db.js';
+import { paginate } from '../../utils/helpers.js';
+const router=express.Router();
+router.get('/', async(req,res)=>{
+  const {type,status}=req.query; let where='WHERE 1=1'; const p=[];
+  if(type){ p.push(type); where+=' AND type=$'+p.length; }
+  if(status){ p.push(status); where+=' AND status=$'+p.length; }
+  const data=await pool.query('SELECT c.*, coalesce(json_agg(json_build_object(\'product_name\',p.name,\'sku\',p.sku,\'qty_sent\',ci.qty_sent,\'qty_sold\',ci.qty_sold) ORDER BY ci.id),\'[]\') as items FROM consignments c LEFT JOIN consignment_items ci ON ci.consignment_id=c.id LEFT JOIN products p ON p.id=ci.product_id '+where+' GROUP BY c.id ORDER BY c.id DESC',p);
+  const stats=await pool.query("SELECT type, status, COUNT(*) FROM consignments GROUP BY type,status");
+  res.json({data:data.rows, stats:stats.rows});
+});
+router.get('/:id', async(req,res)=>{
+  const c=await pool.query('SELECT * FROM consignments WHERE id=$1',[req.params.id]);
+  if(!c.rows[0]) return res.status(404).json({error:'Not found'});
+  const items=await pool.query('SELECT ci.*, p.name as product_name, p.sku FROM consignment_items ci JOIN products p ON p.id=ci.product_id WHERE ci.consignment_id=$1',[req.params.id]);
+  const moves=await pool.query('SELECT cm.*, p.name FROM consignment_movements cm JOIN consignment_items ci ON ci.id=cm.consignment_item_id JOIN products p ON p.id=ci.product_id WHERE ci.consignment_id=$1 ORDER BY cm.id DESC',[req.params.id]);
+  res.json({...c.rows[0], items:items.rows, movements:moves.rows});
+});
+router.post('/', async(req,res)=>{
+  const {type, partner_type, partner_id, location_name, location_address, start_date, end_date, notes, items}=req.body;
+  if(!location_name||!items?.length) return res.status(400).json({error:'location_name & items required'});
+  const num=(type==='IN'?'CSI-':'CSO-')+Date.now().toString().slice(-6);
+  const ins=await pool.query('INSERT INTO consignments (consignment_number,type,partner_type,partner_id,location_name,location_address,start_date,end_date,notes,created_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id', [num,type||'OUT',partner_type||'CUSTOMER',partner_id,location_name,location_address,start_date||new Date().toISOString().slice(0,10),end_date,notes,req.user.id]);
+  const cid=ins.rows[0].id;
+  for(const it of items){
+    const itIns=await pool.query('INSERT INTO consignment_items (consignment_id,product_id,qty_sent,selling_price) VALUES ($1,$2,$3,$4) RETURNING id',[cid,it.product_id,it.qty_sent||it.qty,it.selling_price||65000]);
+    await pool.query('INSERT INTO consignment_movements (consignment_item_id,type,qty) VALUES ($1,\'SENT\',$2)',[itIns.rows[0].id, it.qty_sent||it.qty]);
+    // move stock OUT from warehouse 1 to consignment (decrease on_hand, keep as consigned asset)
+    await pool.query('UPDATE stocks SET qty_on_hand = qty_on_hand - $1 WHERE product_id=$2 AND warehouse_id=1',[it.qty_sent||it.qty, it.product_id]);
+    await pool.query("INSERT INTO stock_movements (product_id,warehouse_id,movement_type,reference_type,reference_id,qty_out,created_by) VALUES ($1,1,'OUT','CONSIGNMENT',$2,$3,$4)",[it.product_id,cid,it.qty_sent||it.qty,req.user.id]);
+  }
+  await pool.query('INSERT INTO audit_logs (user_id,action,entity_type,entity_id,new_value) VALUES ($1,\'CREATE\',\'CONSIGNMENT\',$2,$3)',[req.user.id,cid,JSON.stringify({num,type})]);
+  res.json({id:cid, consignment_number:num});
+});
+router.post('/:id/movement', async(req,res)=>{
+  const {item_id,type,qty,notes}=req.body;
+  await pool.query('INSERT INTO consignment_movements (consignment_item_id,type,qty,notes) VALUES ($1,$2,$3,$4)',[item_id,type,qty,notes]);
+  if(type==='SOLD') await pool.query('UPDATE consignment_items SET qty_sold = qty_sold + $1 WHERE id=$2',[qty,item_id]);
+  if(type==='RETURNED'){ await pool.query('UPDATE consignment_items SET qty_returned = qty_returned + $1 WHERE id=$2',[qty,item_id]); // balik ke gudang
+    const it=await pool.query('SELECT product_id FROM consignment_items WHERE id=$1',[item_id]);
+    await pool.query('UPDATE stocks SET qty_on_hand = qty_on_hand + $1 WHERE product_id=$2 AND warehouse_id=1',[qty,it.rows[0].product_id]);
+  }
+  if(type==='LOST') await pool.query('UPDATE consignment_items SET qty_lost = qty_lost + $1 WHERE id=$2',[qty,item_id]);
+  // auto close check
+  res.json({ok:true});
+});
+router.post('/:id/close', async(req,res)=>{
+  await pool.query("UPDATE consignments SET status='CLOSED' WHERE id=$1",[req.params.id]);
+  res.json({ok:true});
+});
+router.get('/stats/summary', async(req,res)=>{
+  const s=await pool.query("SELECT COUNT(*) FILTER (WHERE type='OUT' AND status='ACTIVE') as out_active, COUNT(*) FILTER (WHERE type='IN' AND status='ACTIVE') as in_active, COUNT(*) FILTER (WHERE status='CLOSED') as closed FROM consignments");
+  const aging=await pool.query("SELECT consignment_number, location_name, CURRENT_DATE - start_date as umur_hari FROM consignments WHERE type='OUT' AND status='ACTIVE' AND CURRENT_DATE - start_date > 90");
+  res.json({...s.rows[0], long_pending:aging.rows});
+});
+export default router;
