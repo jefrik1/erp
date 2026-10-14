@@ -1,0 +1,42 @@
+# deps
+node_modules/
+package-lock.json
+# ponytail: keep lock if team wants deterministic install -> remove line above
+
+# env
+.env
+.env.local
+.env.*.local
+
+# build
+dist/
+build/
+.next/
+out/
+.next
+tsconfig.tsbuildinfo
+
+# prisma
+# ponytail: uncomment if generated client should not be committed
+# src/generated/
+
+# logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# os / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# temp / local scripts
+temp_produk.txt
+fix_blank.mjs
+build_addendum.mjs
+build_pages.mjs
+test_*.mjs
