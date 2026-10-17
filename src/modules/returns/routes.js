@@ -1,9 +1,49 @@
 import express from 'express';
 import { pool } from '../../config/db.js';
-const router=express.Router();
+import { sendReport } from '../../lib/exporters.js';
+const router = express.Router();
+
+const num = (v)=> parseFloat(v ?? 0) || 0;
+
+// Express 4 tidak meneruskan rejection dari handler async ke error middleware -
+// tanpa pembungkus ini, satu request dengan :id bukan angka bisa mematikan proses.
+const wrap = (fn)=> (req,res)=> Promise.resolve(fn(req,res)).catch(e=>{
+  console.error('[returns]', req.method, req.originalUrl, e.message);
+  if (!res.headersSent) res.status(e.code === '22P02' ? 400 : 500).json({ error: e.code === '22P02' ? 'ID tidak valid' : e.message });
+});
+
+// Item invoice untuk form retur: invoice tidak menyimpan barisnya sendiri,
+// diambil dari so_details lewat invoices.so_id.
+router.get('/invoice/:id', async (req,res)=>{
+  try{
+    const inv = await pool.query('SELECT inv.*, c.name AS customer_name FROM invoices inv LEFT JOIN customers c ON c.id=inv.customer_id WHERE inv.id=$1',[req.params.id]);
+    if(!inv.rows[0]) return res.status(404).json({error:'Invoice tidak ditemukan'});
+    let items = [];
+    if (inv.rows[0].so_id){
+      const r = await pool.query(`SELECT sd.*, p.name AS product_name, p.sku FROM so_details sd LEFT JOIN products p ON p.id=sd.product_id WHERE sd.so_id=$1 ORDER BY sd.id`,[inv.rows[0].so_id]);
+      items = r.rows.map(x=>({ ...x, qty:num(x.qty), unit_price:num(x.unit_price ?? x.price), total:num(x.total) }));
+    }
+    res.json({ invoice: inv.rows[0], items });
+  }catch(e){ res.status(500).json({error:e.message}); }
+});
+
 router.get('/sales', async(req,res)=>{
-  const r=await pool.query('SELECT sr.*, c.name as customer_name, i.invoice_number FROM sales_returns sr LEFT JOIN customers c ON c.id=sr.customer_id LEFT JOIN invoices i ON i.id=sr.invoice_id ORDER BY sr.id DESC LIMIT 50');
-  res.json(r.rows);
+  const w=[]; const p=[];
+  if(req.query.q){
+    p.push('%'+String(req.query.q).toLowerCase()+'%');
+    w.push(`(LOWER(sr.return_number) LIKE $${p.length} OR LOWER(COALESCE(c.name,'')) LIKE $${p.length} OR LOWER(COALESCE(i.invoice_number,'')) LIKE $${p.length})`);
+  }
+  if(req.query.status && req.query.status!=='Semua'){ p.push(req.query.status); w.push(`sr.status = $${p.length}`); }
+  if(req.query.reason && req.query.reason!=='Semua'){ p.push(req.query.reason); w.push(`sr.reason = $${p.length}`); }
+  const r=await pool.query(
+    `SELECT sr.*, c.name as customer_name, i.invoice_number,
+            (SELECT COUNT(*)::int FROM sales_return_items sri WHERE sri.return_id=sr.id) as item_count,
+            (SELECT COALESCE(SUM(sri.qty),0)::float FROM sales_return_items sri WHERE sri.return_id=sr.id) as total_qty
+       FROM sales_returns sr
+       LEFT JOIN customers c ON c.id=sr.customer_id
+       LEFT JOIN invoices i ON i.id=sr.invoice_id
+       ${w.length? 'WHERE '+w.join(' AND ') : ''} ORDER BY sr.id DESC LIMIT 200`, p);
+  res.json(r.rows.map(x=>({ ...x, total:num(x.total) })));
 });
 router.get('/sales/:id', async(req,res)=>{
   const h=await pool.query('SELECT sr.*, c.name FROM sales_returns sr LEFT JOIN customers c ON c.id=sr.customer_id WHERE sr.id=$1',[req.params.id]);
@@ -16,40 +56,87 @@ router.post('/sales', async(req,res)=>{
   if(!items?.length) return res.status(400).json({error:'items required'});
   const num='RS-'+Date.now().toString().slice(-6);
   let total=0; for(const it of items) total+= parseFloat(it.qty)*parseFloat(it.unit_price||0);
-  const ins=await pool.query('INSERT INTO sales_returns (return_number,invoice_id,customer_id,reason,settlement_type,total,created_by) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id',[num,invoice_id,customer_id,reason||'OTHER',settlement_type||'CREDIT_NOTE',total,req.user.id]);
-  const rid=ins.rows[0].id;
-  for(const it of items){
-    await pool.query('INSERT INTO sales_return_items (return_id,product_id,qty,unit_price,total,condition) VALUES ($1,$2,$3,$4,$5,$6)',[rid,it.product_id,it.qty,it.unit_price||0,parseFloat(it.qty)*parseFloat(it.unit_price||0),it.condition||'QUARANTINE']);
-    // masuk karantina, tambah stok karantina (warehouse transit)
-    await pool.query('INSERT INTO stocks (product_id,warehouse_id,qty_on_hand) VALUES ($1,2,$2) ON CONFLICT (product_id,warehouse_id,batch_no) DO UPDATE SET qty_on_hand = stocks.qty_on_hand + EXCLUDED.qty_on_hand',[it.product_id,it.qty]);
-    await pool.query("INSERT INTO stock_movements (product_id,warehouse_id,movement_type,reference_type,reference_id,qty_in,created_by) VALUES ($1,2,'IN','SALES_RETURN',$2,$3,$4)",[it.product_id,rid,it.qty,req.user.id]);
-  }
-  // jika CREDIT_NOTE, kurangi piutang
-  if(settlement_type==='CREDIT_NOTE' && invoice_id){
-    await pool.query('UPDATE invoices SET total = total - $1 WHERE id=$2',[total,invoice_id]);
-    await pool.query("INSERT INTO journal_entries (entry_number,entry_date,description,total_debit,total_credit,posted) VALUES ($1,CURRENT_DATE,$2,$3,$3,true)",['JE-RS-'+rid,'Retur '+num,total]);
-  }
-  await pool.query('INSERT INTO audit_logs (user_id,action,entity_type,entity_id,new_value) VALUES ($1,\'CREATE\',\'SALES_RETURN\',$2,$3)',[req.user.id,rid,JSON.stringify({num,reason})]);
-  res.json({id:rid, return_number:num, total});
+  const client=await pool.connect();
+  try{
+    await client.query('BEGIN');
+    const ins=await client.query('INSERT INTO sales_returns (return_number,invoice_id,customer_id,reason,settlement_type,total,created_by) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id',[num,invoice_id,customer_id,reason||'OTHER',settlement_type||'CREDIT_NOTE',total,req.user.id]);
+    const rid=ins.rows[0].id;
+    for(const it of items){
+      await client.query('INSERT INTO sales_return_items (return_id,product_id,qty,unit_price,total,condition) VALUES ($1,$2,$3,$4,$5,$6)',[rid,it.product_id,it.qty,it.unit_price||0,parseFloat(it.qty)*parseFloat(it.unit_price||0),it.condition||'QUARANTINE']);
+      // masuk gudang karantina (warehouse 2). Update-atau-insert supaya tidak
+      // bergantung pada unique constraint (product_id,warehouse_id,batch_no).
+      const ex=await client.query('SELECT id FROM stocks WHERE product_id=$1 AND warehouse_id=2 ORDER BY id LIMIT 1',[it.product_id]);
+      if(ex.rows[0]){
+        // qty_available adalah kolom generated - jangan diisi manual
+        await client.query('UPDATE stocks SET qty_on_hand = COALESCE(qty_on_hand,0) + $1 WHERE id=$2',[it.qty, ex.rows[0].id]);
+      } else {
+        await client.query('INSERT INTO stocks (product_id,warehouse_id,qty_on_hand,avg_cost) VALUES ($1,2,$2,0)',[it.product_id,it.qty]);
+      }
+      await client.query("INSERT INTO stock_movements (product_id,warehouse_id,movement_type,reference_type,reference_id,qty_in,created_by) VALUES ($1,2,'IN','SALES_RETURN',$2,$3,$4)",[it.product_id,rid,it.qty,req.user.id]);
+    }
+    // jika CREDIT_NOTE, kurangi piutang
+    if(settlement_type==='CREDIT_NOTE' && invoice_id){
+      await client.query('UPDATE invoices SET total = total - $1 WHERE id=$2',[total,invoice_id]);
+      await client.query("INSERT INTO journal_entries (entry_number,entry_date,description,total_debit,total_credit,posted) VALUES ($1,CURRENT_DATE,$2,$3,$3,true)",['JE-RS-'+rid,'Retur '+num,total]);
+    }
+    await client.query('INSERT INTO audit_logs (user_id,action,entity_type,entity_id,new_value) VALUES ($1,\'CREATE\',\'SALES_RETURN\',$2,$3)',[req.user.id,rid,JSON.stringify({num,reason})]);
+    await client.query('COMMIT');
+    res.json({id:rid, return_number:num, total});
+  }catch(e){
+    await client.query('ROLLBACK').catch(()=>{});
+    console.error('[sales return]',e);
+    res.status(500).json({error:'Gagal menyimpan retur: '+e.message});
+  }finally{ client.release(); }
 });
 router.post('/sales/:id/approve', async(req,res)=>{
   await pool.query("UPDATE sales_returns SET status='APPROVED' WHERE id=$1",[req.params.id]);
   res.json({ok:true});
 });
 router.get('/purchase', async(req,res)=>{
-  const r=await pool.query('SELECT pr.*, s.name as supplier_name FROM purchase_returns pr LEFT JOIN suppliers s ON s.id=pr.supplier_id ORDER BY pr.id DESC LIMIT 50');
-  res.json(r.rows);
+  const w=[]; const p=[];
+  if(req.query.q){
+    p.push('%'+String(req.query.q).toLowerCase()+'%');
+    w.push(`(LOWER(pr.return_number) LIKE $${p.length} OR LOWER(COALESCE(s.name,'')) LIKE $${p.length})`);
+  }
+  if(req.query.status && req.query.status!=='Semua'){ p.push(req.query.status); w.push(`pr.status = $${p.length}`); }
+  const r=await pool.query(`SELECT pr.*, s.name as supplier_name FROM purchase_returns pr LEFT JOIN suppliers s ON s.id=pr.supplier_id ${w.length?'WHERE '+w.join(' AND '):''} ORDER BY pr.id DESC LIMIT 200`, p);
+  res.json(r.rows.map(x=>({ ...x, total:num(x.total) })));
 });
 router.post('/purchase', async(req,res)=>{
-  const {po_id,supplier_id,reason,items}=req.body;
+  const {po_id,supplier_id,reason,items,notes}=req.body;
+  if(!items?.length) return res.status(400).json({error:'Minimal satu item retur'});
   const num='RP-'+Date.now().toString().slice(-6);
-  let total=0; for(const it of items) total+= parseFloat(it.qty)*50000;
-  await pool.query('INSERT INTO purchase_returns (return_number,po_id,supplier_id,reason,total) VALUES ($1,$2,$3,$4,$5)',[num,po_id,supplier_id,reason||'OTHER',total]);
-  res.json({ok:true, return_number:num});
+  const total=items.reduce((a,it)=> a + (parseFloat(it.qty)||0)*(parseFloat(it.unit_cost)||0), 0);
+  const client=await pool.connect();
+  try{
+    await client.query('BEGIN');
+    const ins=await client.query('INSERT INTO purchase_returns (return_number,po_id,supplier_id,reason,total,status) VALUES ($1,$2,$3,$4,$5,\'SUBMITTED\') RETURNING id',[num,po_id||null,supplier_id||null,reason||'OTHER',total]);
+    const rid=ins.rows[0].id;
+    // simpan rincian bila tabelnya tersedia (tidak wajib ada di semua instalasi)
+    const t=await client.query("SELECT COUNT(*)::int n FROM information_schema.tables WHERE table_name='purchase_return_items'");
+    if(t.rows[0].n){
+      for(const it of items){
+        await client.query('INSERT INTO purchase_return_items (return_id,product_id,qty,unit_cost,total,condition) VALUES ($1,$2,$3,$4,$5,$6)',
+          [rid, it.product_id, it.qty, it.unit_cost||0, (parseFloat(it.qty)||0)*(parseFloat(it.unit_cost)||0), it.condition||'DAMAGED']);
+      }
+    }
+    await client.query('COMMIT');
+    res.json({ok:true, id:rid, return_number:num, total});
+  }catch(e){
+    await client.query('ROLLBACK').catch(()=>{});
+    res.status(500).json({error:'Gagal menyimpan retur pembelian: '+e.message});
+  }finally{ client.release(); }
 });
 router.get('/claims', async(req,res)=>{
-  const r=await pool.query('SELECT * FROM claims ORDER BY id DESC LIMIT 50');
-  res.json(r.rows);
+  const w=[]; const p=[];
+  if(req.query.q){
+    p.push('%'+String(req.query.q).toLowerCase()+'%');
+    w.push(`(LOWER(claim_number) LIKE $${p.length} OR LOWER(COALESCE(notes,'')) LIKE $${p.length})`);
+  }
+  if(req.query.status && req.query.status!=='Semua'){ p.push(req.query.status); w.push(`status = $${p.length}`); }
+  if(req.query.claim_type && req.query.claim_type!=='Semua'){ p.push(req.query.claim_type); w.push(`claim_type = $${p.length}`); }
+  const r=await pool.query(`SELECT * FROM claims ${w.length?'WHERE '+w.join(' AND '):''} ORDER BY id DESC LIMIT 200`, p);
+  res.json(r.rows.map(x=>({ ...x, amount_claimed:num(x.amount_claimed), amount_settled:num(x.amount_settled) })));
 });
 router.post('/claims', async(req,res)=>{
   const {claim_type,reference_type,reference_id,amount_claimed,notes}=req.body;
@@ -65,5 +152,56 @@ router.post('/claims/:id/settle', async(req,res)=>{
 router.post('/claims/:id/attach', async(req,res)=>{
   await pool.query('INSERT INTO claim_attachments (claim_id,file_url,file_type,description) VALUES ($1,$2,$3,$4)',[req.params.id,req.body.file_url,req.body.file_type,req.body.description]);
   res.json({ok:true});
+});
+
+// ------------------------------------------------------------- GET /export
+router.get('/export', async(req,res)=>{
+  const format=String(req.query.format||'xlsx').toLowerCase();
+  if(!['csv','xlsx','pdf'].includes(format)) return res.status(400).json({error:`Format tidak didukung: ${format}`});
+  const dataset=String(req.query.dataset||'sales');
+  const money=(n)=>new Intl.NumberFormat('id-ID').format(num(n));
+  try{
+    if(dataset==='purchase'){
+      const r=await pool.query('SELECT pr.*, s.name as supplier_name, po.po_number FROM purchase_returns pr LEFT JOIN suppliers s ON s.id=pr.supplier_id LEFT JOIN purchase_orders po ON po.id=pr.po_id ORDER BY pr.id DESC LIMIT 5000');
+      const columns=[{label:'No Retur'},{label:'Tanggal'},{label:'Supplier'},{label:'PO'},{label:'Alasan'},{label:'Total',numeric:true,total:true},{label:'Status'}];
+      const rows=r.rows.map(x=>[x.return_number, String(x.return_date||'').slice(0,10), x.supplier_name||'-', x.po_number||'-', x.reason||'-', num(x.total), x.status||'-']);
+      const totals=columns.map((c,i)=>c.total?rows.reduce((a,x)=>a+num(x[i]),0):'');
+      return sendReport(res,{format,filename:'retur-pembelian',
+        payload:{title:'Retur Pembelian ke Supplier',subtitle:`${rows.length} dokumen  |  Total ${money(totals[5]||0)}`,columns,rows,totals,sheetName:'Retur Pembelian'}});
+    }
+    if(dataset==='claims'){
+      const r=await pool.query('SELECT * FROM claims ORDER BY id DESC LIMIT 5000');
+      const columns=[{label:'No Klaim'},{label:'Tipe'},{label:'Referensi'},{label:'Diajukan',numeric:true,total:true},
+        {label:'Diselesaikan',numeric:true,total:true},{label:'Selisih',numeric:true,total:true},
+        {label:'Tgl Ajukan'},{label:'Tgl Selesai'},{label:'Status'},{label:'Catatan'}];
+      const rows=r.rows.map(c=>[c.claim_number, c.claim_type||'-', c.reference_type?`${c.reference_type} #${c.reference_id??'-'}`:'-',
+        num(c.amount_claimed), num(c.amount_settled), num(c.amount_claimed)-num(c.amount_settled),
+        c.filed_date?String(c.filed_date).slice(0,10):'-', c.settled_date?String(c.settled_date).slice(0,10):'-',
+        c.status||'-', c.notes||'-']);
+      const totals=columns.map((c,i)=>c.total?rows.reduce((a,x)=>a+num(x[i]),0):'');
+      return sendReport(res,{format,filename:'klaim-supplier-ekspedisi',
+        payload:{title:'Klaim Supplier & Ekspedisi',subtitle:`${rows.length} klaim  |  Diajukan ${money(totals[3]||0)}  |  Diselesaikan ${money(totals[4]||0)}`,columns,rows,totals,sheetName:'Klaim'}});
+    }
+    const w=[]; const p=[];
+    if(req.query.q){ p.push('%'+String(req.query.q).toLowerCase()+'%'); w.push(`(LOWER(sr.return_number) LIKE $${p.length} OR LOWER(COALESCE(c.name,'')) LIKE $${p.length})`); }
+    if(req.query.status && req.query.status!=='Semua'){ p.push(req.query.status); w.push(`sr.status = $${p.length}`); }
+    const r=await pool.query(
+      `SELECT sr.*, c.name as customer_name, i.invoice_number,
+              (SELECT COUNT(*)::int FROM sales_return_items sri WHERE sri.return_id=sr.id) as item_count,
+              (SELECT COALESCE(SUM(sri.qty),0)::float FROM sales_return_items sri WHERE sri.return_id=sr.id) as total_qty
+         FROM sales_returns sr LEFT JOIN customers c ON c.id=sr.customer_id LEFT JOIN invoices i ON i.id=sr.invoice_id
+         ${w.length?'WHERE '+w.join(' AND '):''} ORDER BY sr.id DESC LIMIT 5000`, p);
+    const columns=[{label:'No Retur'},{label:'Tanggal'},{label:'Customer'},{label:'Invoice'},{label:'Alasan'},
+      {label:'Settlement'},{label:'Item',numeric:true,total:true},{label:'Qty',numeric:true,total:true},
+      {label:'Total',numeric:true,total:true},{label:'Status'}];
+    const rows=r.rows.map(x=>[x.return_number, String(x.return_date||'').slice(0,10), x.customer_name||'-', x.invoice_number||'-',
+      x.reason||'-', x.settlement_type||'-', x.item_count||0, num(x.total_qty), num(x.total), x.status||'-']);
+    const totals=columns.map((c,i)=>c.total?rows.reduce((a,x)=>a+num(x[i]),0):'');
+    return sendReport(res,{format,filename:'retur-penjualan',
+      payload:{title:'Retur Penjualan',subtitle:`${rows.length} dokumen  |  Total ${money(totals[8]||0)}`,columns,rows,totals,sheetName:'Retur Penjualan'}});
+  }catch(e){
+    console.error('returns export error',e);
+    res.status(500).json({error:'Gagal membuat laporan: '+e.message});
+  }
 });
 export default router;

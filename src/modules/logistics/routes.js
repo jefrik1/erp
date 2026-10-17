@@ -93,7 +93,7 @@ router.post('/deliveries/:id/pod', async (req,res)=>{
     if(chk.rows[0].vehicle_no){
       await client.query("UPDATE vehicles SET status='AVAILABLE' WHERE plat_no=$1",[chk.rows[0].vehicle_no]);
     }
-    // SO TIDAK auto COMPLETED di POD — hanya setelah Invoice LUNAS (PAID). Biarkan PARTIAL.
+    // SO TIDAK auto COMPLETED di POD - hanya setelah Invoice LUNAS (PAID). Biarkan PARTIAL.
     await client.query('COMMIT');
   }catch(e){ try{ await client.query('ROLLBACK'); }catch{}; console.error('[pod]',e); return res.status(500).json({error:e.message}); }
   finally{ client.release(); }

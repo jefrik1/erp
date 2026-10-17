@@ -1,9 +1,21 @@
 import express from 'express';
 import { pool } from '../../config/db.js';
+import { paginate } from '../../utils/helpers.js';
+import { sendReport } from '../../lib/exporters.js';
 const router=express.Router();
-router.get('/', async(req,res)=>{
-  const r=await pool.query('SELECT w.*, p.name as product_name, p.sku, wh.name as warehouse_name, u.username as approver FROM waste_logs w LEFT JOIN products p ON p.id=w.product_id LEFT JOIN warehouses wh ON wh.id=w.warehouse_id LEFT JOIN users u ON u.id=w.approved_by ORDER BY w.id DESC LIMIT 50');
-  res.json(r.rows);
+router.get('/', async (req,res)=>{
+  const {limit,offset}=paginate(req);
+  const {waste_type,status,q,start,end}=req.query;
+  let where='WHERE 1=1'; const p=[];
+  if(waste_type){ p.push(waste_type); where+=' AND w.waste_type=$'+p.length; }
+  if(status){ p.push(status); where+=' AND w.status=$'+p.length; }
+  if(start){ p.push(start); where+=' AND w.created_at >= $'+p.length; }
+  if(end){ p.push(end); where+=' AND w.created_at <= $'+p.length+'::date + 1'; }
+  if(q){ p.push('%'+q+'%'); where+=' AND (p.name ILIKE $'+p.length+' OR p.sku ILIKE $'+p.length+')'; }
+  const base=' FROM waste_logs w LEFT JOIN products p ON p.id=w.product_id LEFT JOIN warehouses wh ON wh.id=w.warehouse_id LEFT JOIN users u ON u.id=w.approved_by '+where;
+  const cnt=await pool.query('SELECT COUNT(*) '+base,p);
+  const r=await pool.query('SELECT w.*, p.name as product_name, p.sku, wh.name as warehouse_name, u.username as approver '+base+' ORDER BY w.id DESC LIMIT $'+(p.length+1)+' OFFSET $'+(p.length+2), [...p,limit,offset]);
+  res.json({data:r.rows, total:parseInt(cnt.rows[0].count)});
 });
 router.post('/', async(req,res)=>{
   const {product_id,warehouse_id,qty,waste_type,reason}=req.body;
@@ -35,6 +47,36 @@ router.post('/:id/approve', async(req,res)=>{
     await pool.query("INSERT INTO stock_movements (product_id,warehouse_id,movement_type,reference_type,reference_id,qty_out,created_by) VALUES ($1,$2,'ADJ','WASTE',$3,$4,$5)",[w.rows[0].product_id,w.rows[0].warehouse_id,req.params.id,w.rows[0].qty,req.user.id]);
   }
   res.json({ok:true});
+});
+// ---------------------------------------------------------- GET /waste/export
+router.get('/export', async (req,res)=>{
+  const format=String(req.query.format||'xlsx').toLowerCase();
+  if(!['csv','xlsx','pdf'].includes(format)) return res.status(400).json({error:`Format tidak didukung: ${format}`});
+  const {waste_type,status,q,start,end}=req.query;
+  let where='WHERE 1=1'; const p=[];
+  if(waste_type){ p.push(waste_type); where+=' AND w.waste_type=$'+p.length; }
+  if(status){ p.push(status); where+=' AND w.status=$'+p.length; }
+  if(start){ p.push(start); where+=' AND w.created_at >= $'+p.length; }
+  if(end){ p.push(end); where+=' AND w.created_at <= $'+p.length+'::date + 1'; }
+  if(q){ p.push('%'+q+'%'); where+=' AND (p.name ILIKE $'+p.length+' OR p.sku ILIKE $'+p.length+')'; }
+  try{
+    const r=await pool.query('SELECT w.*, p.name as product_name, p.sku, wh.name as warehouse_name, u.username as approver FROM waste_logs w LEFT JOIN products p ON p.id=w.product_id LEFT JOIN warehouses wh ON wh.id=w.warehouse_id LEFT JOIN users u ON u.id=w.approved_by '+where+' ORDER BY w.id DESC LIMIT 5000',p);
+    const num=(v)=>parseFloat(v||0)||0;
+    const columns=[{label:'Tanggal'},{label:'SKU'},{label:'Produk'},{label:'Gudang'},{label:'Jenis'},
+      {label:'Qty',numeric:true,total:true},{label:'Biaya',numeric:true,total:true},
+      {label:'Status'},{label:'Alasan'},{label:'Approver'}];
+    const rows=r.rows.map(w=>[String(w.created_at||'').slice(0,10), w.sku, w.product_name, w.warehouse_name||'-',
+      w.waste_type, num(w.qty), num(w.cost), w.status, w.reason||'-', w.approver||'-']);
+    const totals=columns.map((c,i)=>c.total?rows.reduce((a,x)=>a+num(x[i]),0):'');
+    const sub=[`${rows.length} catatan`];
+    if(waste_type) sub.unshift('Jenis '+waste_type); if(status) sub.unshift('Status '+status);
+    if(start||end) sub.unshift(`Periode ${start||'awal'} s/d ${end||'sekarang'}`);
+    return sendReport(res,{format,filename:'susut-pecah',
+      payload:{title:'Laporan Susut, Pecah & Waste',subtitle:sub.join('  |  '),columns,rows,totals,sheetName:'Susut & Waste'}});
+  }catch(e){
+    console.error('waste export error',e);
+    res.status(500).json({error:'Gagal membuat laporan: '+e.message});
+  }
 });
 router.get('/stats/summary', async(req,res)=>{
   const r=await pool.query("SELECT waste_type, COUNT(*) as cnt, SUM(qty) as qty, SUM(cost) as cost FROM waste_logs GROUP BY waste_type ORDER BY cost DESC");

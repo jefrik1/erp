@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { FileText } from 'lucide-react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { FileText, Check } from 'lucide-react';
 import api from '../lib/api';
+import { PosPageHeader } from '../components/PosUI';
 import { useDialog } from '../components/DialogProvider';
 
 const Badge=({status})=>{
@@ -75,7 +76,7 @@ export default function SalesOrderDetail(){
 
   const handleComplete=async()=>{
     setMsg(''); setError('');
-    const ok=await dialog.confirm('Validasi pembayaran lunas — tandai SO sebagai COMPLETED?', {title:'Tandai Selesai', confirmText:'Ya, Complete', cancelText:'Batal'});
+    const ok=await dialog.confirm('Validasi pembayaran lunas - tandai SO sebagai COMPLETED?', {title:'Tandai Selesai', confirmText:'Ya, Complete', cancelText:'Batal'});
     if(!ok) return;
     setCompleting(true);
     try{
@@ -102,21 +103,20 @@ export default function SalesOrderDetail(){
 
   return(
     <div className="p-6 max-w-4xl">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">{order.so_number}</h1>
-        <button onClick={()=>navigate(-1)} className="text-blue-600 underline">← Kembali</button>
+      <div className="mb-4">
+        <PosPageHeader icon={FileText} title={order.so_number} subtitle={(order.customer_name||'')+(order.so_date? ' - '+String(order.so_date).slice(0,10):'')} badge={order.status} onBack={()=>navigate(-1)}/>
       </div>
 
       {/* klikable workflow navigasi ke halaman */}
       <div className="bg-white rounded-[20px] border border-[#E2E8F0] shadow-sm overflow-hidden p-3 mb-4">
-        <div className="text-xs font-bold text-[#64748B] mb-2">Workflow — klik untuk navigasi</div>
+        <div className="text-xs font-bold text-[#64748B] mb-2">Workflow - klik untuk navigasi</div>
         <div className="flex flex-wrap gap-1.5">
           {WF.map((w,i)=>{
             const active = i===activeIdx;
             const done = i < activeIdx;
             return (
-              <button key={w.k} onClick={()=>location.href=w.to} className={`px-3 py-1.5 rounded-full border text-xs font-bold flex items-center gap-1.5 ${active?'bg-[#1E40AF] text-white border-[#1E40AF]':done?'bg-emerald-50 text-emerald-700 border-emerald-200':'bg-white hover:bg-[#F8FAFC]'}`}>
-                <span className={`w-5 h-5 rounded-full grid place-items-center text-[10px] ${active?'bg-white text-[#1E40AF]':done?'bg-emerald-600 text-white':'bg-gray-100'}`}>{done?'✓':i+1}</span>
+              <button key={w.k} onClick={()=>navigate(w.to)} className={`px-3 py-1.5 rounded-full border text-xs font-bold flex items-center gap-1.5 ${active?'bg-[#1E40AF] text-white border-[#1E40AF]':done?'bg-emerald-50 text-emerald-700 border-emerald-200':'bg-white hover:bg-[#F8FAFC]'}`}>
+                <span className={`w-5 h-5 rounded-full grid place-items-center text-[10px] ${active?'bg-white text-[#1E40AF]':done?'bg-emerald-600 text-white':'bg-gray-100'}`}>{done? <Check size={11}/> : i+1}</span>
                 {w.k}
               </button>
             );
@@ -161,34 +161,34 @@ export default function SalesOrderDetail(){
         <div className="mt-4 flex flex-wrap gap-2">
           {order.status==='PENDING' && (
             <>
-              <button disabled={actioning} onClick={()=>postAction(`/sales/orders/${id}/approve`,'Approve')} className="h-9 px-5 bg-emerald-600 text-white rounded-xl text-sm font-bold disabled:opacity-50">{actioning==='Approve'?'Memproses...':'✓ Approve → PICKING'}</button>
+              <button disabled={actioning} onClick={()=>postAction(`/sales/orders/${id}/approve`,'Approve')} className="h-9 px-5 bg-emerald-600 text-white rounded-xl text-sm font-bold disabled:opacity-50">{actioning==='Approve'?'Memproses...':'Approve, lanjut PICKING'}</button>
               <button disabled={actioning} onClick={()=>postAction(`/sales/orders/${id}/cancel`,'Cancel')} className="h-9 px-4 bg-white border rounded-xl text-sm">Cancel</button>
-              <a href="/approvals" className="h-9 px-4 bg-white border rounded-xl grid place-items-center text-sm">Ke Approval</a>
+              <Link to="/approvals" className="h-9 px-4 bg-white border rounded-xl grid place-items-center text-sm">Ke Approval</Link>
             </>
           )}
           {order.status==='APPROVED' && (
             <>
               <button disabled={actioning} onClick={()=>postAction(`/sales/orders/${id}/picking`,'Picking')} className="h-9 px-5 bg-purple-600 text-white rounded-xl text-sm font-bold disabled:opacity-50">{actioning==='Picking'?'...':'📦 Mulai Picking'}</button>
-              <a href="/logistics" className="h-9 px-4 bg-sky-600 text-white rounded-xl grid place-items-center text-sm">Buat DO → Logistik</a>
-              <a href="/sales/invoices" className="h-9 px-4 bg-white border rounded-xl grid place-items-center text-sm">Invoice</a>
+              <Link to="/logistics" className="h-9 px-4 bg-sky-600 text-white rounded-xl grid place-items-center text-sm">Buat DO → Logistik</Link>
+              <Link to="/sales/invoices" className="h-9 px-4 bg-white border rounded-xl grid place-items-center text-sm">Invoice</Link>
             </>
           )}
           {(order.status==='PICKING' || order.status==='SHIPPED') && (
             <>
-              <a href="/logistics" className="h-9 px-5 bg-sky-600 text-white rounded-xl grid place-items-center text-sm font-bold">Buat DO di Logistik</a>
-              <span className="text-xs text-[#64748B]">{order.status==='PICKING'?'Picking selesai → buat DO, status jadi SHIPPED':'Sedang dikirim — POD di Logistik → DELIVERED → Invoice'}</span>
+              <Link to="/logistics" className="h-9 px-5 bg-sky-600 text-white rounded-xl grid place-items-center text-sm font-bold">Buat DO di Logistik</Link>
+              <span className="text-xs text-[#64748B]">{order.status==='PICKING'?'Picking selesai → buat DO, status jadi SHIPPED':'Sedang dikirim - POD di Logistik → DELIVERED → Invoice'}</span>
             </>
           )}
           {(order.status==='SHIPPED' || order.status==='PARTIAL') && invoice && !isPaid && (
-            <a href="/sales/invoices" className="h-9 px-5 bg-[#1E40AF] text-white rounded-xl grid place-items-center text-sm font-bold">Bayar Sisa {rupiah(sisa)} → Invoice</a>
+            <Link to="/sales/invoices" className="h-9 px-5 bg-[#1E40AF] text-white rounded-xl grid place-items-center text-sm font-bold">Bayar Sisa {rupiah(sisa)} → Invoice</Link>
           )}
           {showCompleteBtn && (
-            <button onClick={handleComplete} disabled={completing} className="h-9 px-5 bg-emerald-600 text-white rounded-xl text-sm font-bold disabled:opacity-50">{completing ? 'Memproses...' : '✓ Validasi & Tandai Selesai (Complete)'}</button>
+            <button onClick={handleComplete} disabled={completing} className="h-9 px-5 bg-emerald-600 text-white rounded-xl text-sm font-bold disabled:opacity-50">{completing ? 'Memproses...' : 'Validasi & Tandai Selesai'}</button>
           )}
           {!showCompleteBtn && !isCompleted && invoice && !isPaid && (
-            <div className="text-xs bg-amber-50 border border-amber-200 text-amber-700 px-3 py-2 rounded-xl">Belum lunas — sisa {rupiah(sisa)}. Lunasi di Invoice → tombol Bayar.</div>
+            <div className="text-xs bg-amber-50 border border-amber-200 text-amber-700 px-3 py-2 rounded-xl">Belum lunas - sisa {rupiah(sisa)}. Lunasi di Invoice → tombol Bayar.</div>
           )}
-          {isCompleted && <span className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-xl">✅ Pesanan lunas & selesai.</span>}
+          {isCompleted && <span className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-xl">Pesanan lunas & selesai.</span>}
           {deliveries.length>0 && <span className="text-xs bg-sky-50 border border-sky-200 text-sky-700 px-3 py-2 rounded-xl">DO: {deliveries.map(d=>d.do_number).join(', ')}</span>}
         </div>
       </div>

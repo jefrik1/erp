@@ -53,6 +53,24 @@ function estCostForVehicle(w, v){
   const td=tarifDalamForVehicle(v), tl=tarifLuarForVehicle(v);
   return { dalam: Math.round(td.flat + w*td.perTon), luar: Math.round(tl.flat + w*tl.perTon) };
 }
+async function assertCustomerCredit(customer_id, addAmount=0){
+  if(!customer_id) return null;
+  const c=await pool.query('SELECT id, name, credit_limit, is_hold, hold_reason FROM customers WHERE id=$1',[customer_id]);
+  if(!c.rows[0]) return null;
+  const limit=parseFloat(c.rows[0].credit_limit||0);
+  const isHold=c.rows[0].is_hold;
+  if(isHold) return { blocked:true, reason:`Customer di-HOLD: ${c.rows[0].hold_reason||'-'} - hanya Direktur bisa buka. Tidak bisa buat SO/POS baru.` };
+  if(limit>0){
+    const ar=await pool.query("SELECT COALESCE(SUM(COALESCE(total,0)-COALESCE(paid_amount,0)),0) as o FROM invoices WHERE customer_id=$1 AND UPPER(TRIM(status)) NOT IN ('PAID','CANCELLED','VOID','LUNAS') AND COALESCE(total,0)-COALESCE(paid_amount,0) > 0.5",[customer_id]);
+    const outstanding=parseFloat(ar.rows[0].o||0);
+    const projected=outstanding + parseFloat(addAmount||0);
+    if(projected > limit){
+      const usage=((projected/limit)*100).toFixed(1);
+      return { blocked:true, reason:`Melebihi limit kredit: limit ${new Intl.NumberFormat('id-ID').format(limit)} outstanding ${new Intl.NumberFormat('id-ID').format(outstanding)} + baru ${new Intl.NumberFormat('id-ID').format(addAmount)} = ${new Intl.NumberFormat('id-ID').format(projected)} (${usage}%). Butuh approval Finance Manager atau lunasi dulu / HOLD.` };
+    }
+  }
+  return null;
+}
 
 router.get('/orders', async (req,res)=>{
   const {limit,offset}=paginate(req);
@@ -79,6 +97,18 @@ router.post('/orders', async (req,res)=>{
   await ensureDeliveryEst();
   const {customer_id, branch_id, delivery_date, delivery_address, delivery_lat, delivery_lng, notes, items, discount, discount_percent, voucher_code, dp_percent} = req.body;
   if(!items||!items.length) return res.status(400).json({error:'Items required'});
+  if(customer_id){
+    // gate: HOLD / limit - blok bikin SO baru
+    const so_number_tmp = 'SO-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+String(Math.floor(Math.random()*9000+1000));
+    // hitung total dulu untuk cek limit (tanpa commit)
+    let tmpSub=0; for(const it of items) tmpSub+=parseFloat(it.qty)*parseFloat(it.unit_price);
+    const tmpPct=Math.min(100,Math.max(0,parseInt(discount_percent||0,10)||0)); const tmpV=voucherAmt(voucher_code);
+    const tmpDisc = (tmpPct>0||voucher_code) ? Math.min(tmpSub, Math.round(tmpSub*tmpPct/100)+tmpV) : parseFloat(discount||0);
+    const tmpTotal=(tmpSub-tmpDisc)*1.11;
+    const block=await assertCustomerCredit(customer_id, tmpTotal);
+    if(block) return res.status(403).json({error:block.reason, blocked:true});
+    void so_number_tmp;
+  }
   const so_number = 'SO-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+String(Math.floor(Math.random()*9000+1000));
   let subtotal=0;
   for(const it of items){ subtotal += parseFloat(it.qty)*parseFloat(it.unit_price); }
@@ -102,9 +132,15 @@ router.post('/orders', async (req,res)=>{
   for(const it of items){
     const lineTotal = parseFloat(it.qty)*parseFloat(it.unit_price) - (parseFloat(it.discount_amt||0));
     const lineTax = lineTotal*0.11;
-    await pool.query('INSERT INTO so_details (so_id, product_id, unit_id, qty, unit_price, discount_pct, discount_amt, tax_amt, total) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',[soId, it.product_id, it.unit_id||1, it.qty, it.unit_price, it.discount_pct||0, it.discount_amt||0, lineTax, lineTotal+lineTax]);
-    await pool.query('UPDATE stocks SET qty_reserved = qty_reserved + $1 WHERE product_id=$2 AND warehouse_id=$3', [it.qty, it.product_id, 1]);
-    await pool.query("INSERT INTO stock_movements (product_id, warehouse_id, movement_type, reference_type, reference_id, qty_out, balance_qty, created_by) VALUES ($1,$2,'OUT','SO',$3,$4,0,$5)",[it.product_id, 1, soId, it.qty, req.user.id]);
+    const pid = it.product_id ? parseInt(it.product_id) : null;
+    if(pid){
+      await pool.query('INSERT INTO so_details (so_id, product_id, unit_id, qty, unit_price, discount_pct, discount_amt, tax_amt, total) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',[soId, pid, it.unit_id||1, it.qty, it.unit_price, it.discount_pct||0, it.discount_amt||0, lineTax, lineTotal+lineTax]);
+      await pool.query('UPDATE stocks SET qty_reserved = qty_reserved + $1 WHERE product_id=$2 AND warehouse_id=$3', [it.qty, pid, 1]);
+      await pool.query("INSERT INTO stock_movements (product_id, warehouse_id, movement_type, reference_type, reference_id, qty_out, balance_qty, created_by) VALUES ($1,$2,'OUT','SO',$3,$4,0,$5)",[pid, 1, soId, it.qty, req.user.id]);
+    } else {
+      // barang ketik manual - tanpa stok, simpan tanpa product_id (nama ikut di notes SO jika ada)
+      await pool.query('INSERT INTO so_details (so_id, product_id, unit_id, qty, unit_price, discount_pct, discount_amt, tax_amt, total) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',[soId, null, it.unit_id||1, it.qty, it.unit_price, it.discount_pct||0, it.discount_amt||0, lineTax, lineTotal+lineTax]);
+    }
   }
   res.json({id:soId, so_number, status});
 });
@@ -134,7 +170,7 @@ router.post('/orders/:id/complete', async (req,res)=>{
   const unpaid=invs.rows.filter(r=> String(r.status)!=='PAID' || parseFloat(r.paid_amount)+0.5 < parseFloat(r.total));
   if(unpaid.length){
     const sisa=unpaid.reduce((s,r)=> s + (parseFloat(r.total)-parseFloat(r.paid_amount)),0);
-    return res.status(400).json({error:`Belum lunas — ${unpaid.length} invoice belum PAID, sisa Rp ${new Intl.NumberFormat('id-ID').format(sisa)}`});
+    return res.status(400).json({error:`Belum lunas - ${unpaid.length} invoice belum PAID, sisa Rp ${new Intl.NumberFormat('id-ID').format(sisa)}`});
   }
   await pool.query("UPDATE sales_orders SET status='COMPLETED' WHERE id=$1",[req.params.id]);
   res.json({ok:true});
@@ -192,7 +228,7 @@ router.post('/deliveries', async (req,res)=>{
   } else {
     return res.status(400).json({error:'Pilih armada AVAILABLE terlebih dahulu'});
   }
-  // Plan B: hitung estimasi — jarak bisa dari map (haversine dari origin fixed) atau input manual
+  // Plan B: hitung estimasi - jarak bisa dari map (haversine dari origin fixed) atau input manual
   const totalQty = Array.isArray(items) ? items.reduce((s,it)=> s + (parseFloat(it.qty)||0), 0) : 0;
   let distKm = distance_km!=null && distance_km!=='' ? parseFloat(distance_km) : null;
   let effLat = delivery_lat!=null && delivery_lat!=='' ? parseFloat(delivery_lat) : null;
@@ -322,7 +358,7 @@ router.post('/invoices', async (req,res)=>{
     if(initPaid>0){ await client.query("INSERT INTO payments (payment_number, type, invoice_id, payment_date, method, amount, created_by) VALUES ($1,'AR',$2,CURRENT_DATE,'TRANSFER',$3,$4)",['PAY-INV-'+Date.now(), invId, initPaid, req.user.id]); }
     if(doRow){
       await client.query("UPDATE delivery_orders SET status='INVOICED' WHERE id=$1",[do_id]);
-      // SO TIDAK auto COMPLETED saat Invoice dibuat (SENT/PARTIAL) — tunggu PAID lunas.
+      // SO TIDAK auto COMPLETED saat Invoice dibuat (SENT/PARTIAL) - tunggu PAID lunas.
     }
     await client.query('COMMIT');
     res.json({id:invId, invoice_number: inv_number, do_invoiced: !!doRow, total, subtotal, discount, discount_pct: discPct, voucher_code: bodyVoucher||null, dp_percent: dpPct, dp_amount: initPaid, remaining: total-initPaid, status: invStatus, tax, est_cost: doRow?.est_cost, est_cost_dalam: doRow?.est_cost_dalam, est_cost_luar: doRow?.est_cost_luar});
@@ -365,6 +401,14 @@ router.post('/pos', async (req,res)=>{
   try{
     const {customer_id, items, payment_method, delivery_address, delivery_lat, delivery_lng, notes, dp_percent, discount_percent, voucher_code} = req.body;
     if(!items||!items.length) return res.status(400).json({error:'Items required'});
+    if(customer_id){
+      let tmpSub2=0; for(const it of items) tmpSub2+=parseFloat(it.qty)*parseFloat(it.unit_price);
+      const tmpPct2=Math.min(100,Math.max(0,parseInt(discount_percent||0,10)||0)); const tmpV2=voucherAmt(voucher_code);
+      const tmpDisc2=Math.min(tmpSub2, Math.round(tmpSub2*tmpPct2/100)+tmpV2);
+      const tmpTotal2=(tmpSub2-tmpDisc2)*1.11;
+      const block2=await assertCustomerCredit(customer_id, tmpTotal2);
+      if(block2) return res.status(403).json({error:block2.reason, blocked:true});
+    }
     const so_number='SO-POS-'+Date.now();
     let subtotal=0; for(const it of items) subtotal+= parseFloat(it.qty)*parseFloat(it.unit_price);
     const discPct=Math.min(100,Math.max(0,parseInt(discount_percent||0,10)||0));
@@ -381,7 +425,6 @@ router.post('/pos', async (req,res)=>{
     const isPartial = dp + 0.5 < total;
     const soStatus = isPartial ? 'PARTIAL' : 'COMPLETED';
     const invStatus = isPartial ? 'PARTIAL' : 'PAID';
-    console.log(`[POS] dp%=${dpPctValid} disc%=${discPct} voucher=${voucher_code}->${vAmt} discTotal=${discTotal} total=${total} dp=${dp}`);
     await pool.query(`ALTER TABLE sales_orders ADD COLUMN IF NOT EXISTS discount_pct INT DEFAULT 0`).catch(()=>{});
     await pool.query(`ALTER TABLE sales_orders ADD COLUMN IF NOT EXISTS voucher_code VARCHAR(30)`).catch(()=>{});
     await pool.query(`ALTER TABLE invoices ADD COLUMN IF NOT EXISTS discount_pct INT DEFAULT 0`).catch(()=>{});

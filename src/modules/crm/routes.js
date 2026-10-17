@@ -125,7 +125,7 @@ router.post('/leads/:id/convert', async (req,res)=>{
         }
       }
       if(!customerId){
-        // auto create customer dari lead — retry code jika collision
+        // auto create customer dari lead - retry code jika collision
         let tries=0; let ins=null;
         while(tries<3){
           const code='C'+String(Date.now()+tries).slice(-6) + String(Math.floor(Math.random()*10));
@@ -188,13 +188,11 @@ router.post('/leads/:id/convert', async (req,res)=>{
       const lineTotal= it.qty * it.unit_price - (parseFloat(it.discount_amt||0) || 0);
       const lineTax= lineTotal*0.11;
       await client.query('INSERT INTO so_details (so_id, product_id, unit_id, qty, unit_price, discount_pct, discount_amt, tax_amt, total) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',[soId, it.product_id, it.unit_id, it.qty, it.unit_price, it.discount_pct||0, it.discount_amt||0, lineTax, lineTotal+lineTax]);
-      // upsert stocks qty_reserved — jika row belum ada, buat 0 lalu update
-      const upd=await client.query('UPDATE stocks SET qty_reserved = qty_reserved + $1 WHERE product_id=$2 AND warehouse_id=$3',[it.qty, it.product_id, warehouseId]);
+      // upsert stocks qty_reserved - batch NULL = satu baris (lihat catatan di inventory)
+      const upd=await client.query('UPDATE stocks SET qty_reserved = qty_reserved + $1 WHERE product_id=$2 AND warehouse_id=$3 AND batch_no IS NULL',[it.qty, it.product_id, warehouseId]);
       if(upd.rowCount===0){
-        // buat stok placeholder jika belum ada (toko: produk baru belum stok di gudang cabang)
-        await client.query('INSERT INTO stocks (product_id, warehouse_id, qty_on_hand, qty_reserved, avg_cost) VALUES ($1,$2,0,$3,0) ON CONFLICT DO NOTHING',[it.product_id, warehouseId, it.qty]);
-        // fallback kedua: jika insert conflict karena batch_no null unique, coba update lagi
-        await client.query('UPDATE stocks SET qty_reserved = qty_reserved + $1 WHERE product_id=$2 AND warehouse_id=$3',[0, it.product_id, warehouseId]);
+        // produk belum punya baris stok di gudang ini → buat placeholder
+        await client.query('INSERT INTO stocks (product_id, warehouse_id, qty_on_hand, qty_reserved, avg_cost, batch_no) VALUES ($1,$2,0,$3,0,NULL)',[it.product_id, warehouseId, it.qty]);
       }
       await client.query("INSERT INTO stock_movements (product_id, warehouse_id, movement_type, reference_type, reference_id, qty_out, balance_qty, created_by) VALUES ($1,$2,'OUT','SO',$3,$4,0,$5)",[it.product_id, warehouseId, soId, it.qty, req.user.id]);
     }

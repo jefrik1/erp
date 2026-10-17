@@ -33,7 +33,7 @@ export function DialogProvider({ children }){
       {dlg && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={()=> dlg.type==='alert' ? dlg.resolve(true) : dlg.resolve(false)} />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-[440px] max-h-[90vh] flex flex-col border border-[#E2E8F0] animate-in fade-in zoom-in-95 overflow-hidden">
+          <div className="relative bg-white rounded-[20px] shadow-2xl w-full max-w-[440px] max-h-[90vh] flex flex-col border border-[#E2E8F0] animate-pop overflow-hidden">
             <div className="px-6 pt-5 pb-4 overflow-auto">
               <div className={"w-10 h-10 rounded-full grid place-items-center mb-3 "+(dlg.type==='confirm'?"bg-[#1E40AF]/10 text-[#1E40AF]":"bg-amber-100 text-amber-700")}>
                 {dlg.type==='confirm' ? '?' : '!'}

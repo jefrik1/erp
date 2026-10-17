@@ -1,15 +1,52 @@
 import express from 'express';
 import { pool } from '../../config/db.js';
 import { paginate } from '../../utils/helpers.js';
+import { sendReport } from '../../lib/exporters.js';
 const router=express.Router();
 router.get('/', async(req,res)=>{
-  const {type,status}=req.query; let where='WHERE 1=1'; const p=[];
+  const {type,status,q}=req.query; let where='WHERE 1=1'; const p=[];
   if(type){ p.push(type); where+=' AND type=$'+p.length; }
   if(status){ p.push(status); where+=' AND status=$'+p.length; }
+  if(q){ p.push('%'+q+'%'); where+=' AND (consignment_number ILIKE $'+p.length+' OR location_name ILIKE $'+p.length+')'; }
   const data=await pool.query('SELECT c.*, coalesce(json_agg(json_build_object(\'product_name\',p.name,\'sku\',p.sku,\'qty_sent\',ci.qty_sent,\'qty_sold\',ci.qty_sold) ORDER BY ci.id),\'[]\') as items FROM consignments c LEFT JOIN consignment_items ci ON ci.consignment_id=c.id LEFT JOIN products p ON p.id=ci.product_id '+where+' GROUP BY c.id ORDER BY c.id DESC',p);
   const stats=await pool.query("SELECT type, status, COUNT(*) FROM consignments GROUP BY type,status");
   res.json({data:data.rows, stats:stats.rows});
 });
+// ---------------------------------------------------- GET /consignments/export
+// WAJIB di atas '/:id' supaya 'export' tidak dianggap id.
+router.get('/export', async(req,res)=>{
+  const format=String(req.query.format||'xlsx').toLowerCase();
+  if(!['csv','xlsx','pdf'].includes(format)) return res.status(400).json({error:`Format tidak didukung: ${format}`});
+  const {type,status,q}=req.query;
+  let where='WHERE 1=1'; const p=[];
+  if(type){ p.push(type); where+=' AND type=$'+p.length; }
+  if(status){ p.push(status); where+=' AND status=$'+p.length; }
+  if(q){ p.push('%'+q+'%'); where+=' AND (consignment_number ILIKE $'+p.length+' OR location_name ILIKE $'+p.length+')'; }
+  try{
+    const data=await pool.query("SELECT c.*, coalesce(json_agg(json_build_object('product_name',p.name,'sku',p.sku,'qty_sent',ci.qty_sent,'qty_sold',ci.qty_sold,'qty_returned',ci.qty_returned,'qty_lost',ci.qty_lost) ORDER BY ci.id),'[]') as items FROM consignments c LEFT JOIN consignment_items ci ON ci.consignment_id=c.id LEFT JOIN products p ON p.id=ci.product_id "+where+' GROUP BY c.id ORDER BY c.id DESC',p);
+    const columns=[{label:'No Konsinyasi'},{label:'Tipe'},{label:'Partner'},{label:'Lokasi'},{label:'Alamat'},
+      {label:'Tgl Mulai'},{label:'Status'},{label:'Qty Dikirim',numeric:true,total:true},
+      {label:'Qty Terjual',numeric:true,total:true},{label:'Sisa',numeric:true,total:true},{label:'Daftar Produk'}];
+    const rows=data.rows.map(c=>{
+      const items=Array.isArray(c.items)?c.items:[];
+      const sent=items.reduce((a,i)=>a+(parseFloat(i.qty_sent)||0),0);
+      const sold=items.reduce((a,i)=>a+(parseFloat(i.qty_sold)||0),0);
+      const back=items.reduce((a,i)=>a+(parseFloat(i.qty_returned)||0),0);
+      const lost=items.reduce((a,i)=>a+(parseFloat(i.qty_lost)||0),0);
+      return [c.consignment_number, c.type, `${c.partner_type||''}${c.partner_id?' #'+c.partner_id:''}`.trim(),
+        c.location_name||'-', c.location_address||'-', String(c.start_date||'').slice(0,10), c.status,
+        sent, sold, sent-sold-back-lost, items.map(i=>`${i.product_name} (${i.qty_sent})`).join(', ')||'-'];
+    });
+    const totals=columns.map((c,i)=>c.total?rows.reduce((a,x)=>a+(parseFloat(x[i])||0),0):'');
+    const sub=[`${rows.length} dokumen`]; if(type) sub.unshift('Tipe '+type); if(status) sub.unshift('Status '+status); if(q) sub.unshift('Pencarian "'+q+'"');
+    return sendReport(res,{format,filename:'konsinyasi',
+      payload:{title:'Laporan Konsinyasi In & Out',subtitle:sub.join('  |  '),columns,rows,totals,sheetName:'Konsinyasi'}});
+  }catch(e){
+    console.error('consignment export error',e);
+    res.status(500).json({error:'Gagal membuat laporan: '+e.message});
+  }
+});
+
 router.get('/:id', async(req,res)=>{
   const c=await pool.query('SELECT * FROM consignments WHERE id=$1',[req.params.id]);
   if(!c.rows[0]) return res.status(404).json({error:'Not found'});

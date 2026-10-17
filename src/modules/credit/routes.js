@@ -47,10 +47,26 @@ router.get('/check/:customer_id', async(req,res)=>{
   res.json({credit_limit:limit, outstanding, usage_pct:usage, is_hold:isHold, blocked: isHold || outstanding > limit, warning: outstanding>limit? 'Melebihi limit kredit, butuh approval Finance Manager': isHold? 'Customer di-HOLD, hanya Direktur bisa buka':''});
 });
 router.patch('/promises/:id', async(req,res)=>{
-  const id=parseInt(req.params.id,10); const {status}=req.body;
-  if(!['FULFILLED','BROKEN','PENDING'].includes(String(status||'').toUpperCase())) return res.status(400).json({error:'status FULFILLED/BROKEN/PENDING'});
-  await pool.query('UPDATE promise_to_pay SET status=$1 WHERE id=$2',[String(status).toUpperCase(), id]);
-  res.json({ok:true});
+  const id=parseInt(req.params.id,10); const st=String(req.body.status||'').toUpperCase();
+  if(!['FULFILLED','BROKEN','PENDING'].includes(st)) return res.status(400).json({error:'status FULFILLED/BROKEN/PENDING'});
+  const cur=await pool.query('SELECT * FROM promise_to_pay WHERE id=$1',[id]);
+  if(!cur.rows[0]) return res.status(404).json({error:'Janji tidak ditemukan'});
+  await pool.query('UPDATE promise_to_pay SET status=$1 WHERE id=$2',[st, id]);
+  // FULFILLED: tetap history di promise_to_pay (tidak pindah tabel). Jika janji terikat invoice, auto lunasi invoice linked (AR) biar outstanding turun.
+  if(st==='FULFILLED' && cur.rows[0].invoice_id){
+    const inv=await pool.query('SELECT id, total, paid_amount, status FROM invoices WHERE id=$1',[cur.rows[0].invoice_id]);
+    if(inv.rows[0] && String(inv.rows[0].status).toUpperCase()!=='PAID'){
+      const remain=parseFloat(inv.rows[0].total||0)-parseFloat(inv.rows[0].paid_amount||0);
+      const payAmt=Math.min(remain, parseFloat(cur.rows[0].amount||remain));
+      if(payAmt>0.5){
+        const payNo='PAY-PTP-'+Date.now();
+        await pool.query("INSERT INTO payments (payment_number, type, invoice_id, payment_date, method, amount, created_by) VALUES ($1,'AR',$2,CURRENT_DATE,'TRANSFER',$3,$4)",[payNo, cur.rows[0].invoice_id, payAmt, req.user.id]);
+        await pool.query("UPDATE invoices SET paid_amount = paid_amount + $1, status = CASE WHEN paid_amount + $1 >= total - 0.5 THEN 'PAID' ELSE 'PARTIAL' END WHERE id=$2",[payAmt, cur.rows[0].invoice_id]);
+      }
+    }
+  }
+  // BROKEN: tetap history, jadi dasar HOLD / dunning level naik (tidak auto HOLD, Finance putuskan manual biar tidak salah blokir)
+  res.json({ok:true, note: st==='FULFILLED' ? 'Status jadi FULFILLED (history tetap di promise_to_pay); jika terikat invoice, invoice ter-bayar otomatis.' : st==='BROKEN' ? 'BROKEN - history tetap, gunakan sebagai alasan HOLD/dunning.' : 'updated'});
 });
 router.post('/reminders/send', async(req,res)=>{
   const {invoice_number}=req.body;

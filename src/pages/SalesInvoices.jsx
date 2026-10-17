@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Search, MoreVertical, Percent, Ticket, CreditCard } from 'lucide-react';
+import { Search, MoreVertical, Percent, Ticket, CreditCard, X, Receipt } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import api from '../lib/api';
+import { PosPageHeader } from '../components/PosUI';
 import { Badge } from '../components/Layout';
 
 function rupiah(n){ return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(n||0); }
@@ -24,7 +26,7 @@ function DoInvoiceModal({ open, onClose, onSuccess, onErr }){
     try{
       const r=await api.post('/sales/invoices',{do_id: parseInt(sel), discount_percent: discPct, voucher_code: voucher||undefined, dp_percent: dpPct});
       const d=r.data;
-      onSuccess(`Invoice ${d.invoice_number} dibuat — Total ${new Intl.NumberFormat('id-ID').format(d.total)}${d.discount?` Disc ${new Intl.NumberFormat('id-ID').format(d.discount)}`:''}${d.dp_amount?` DP ${d.dp_percent}%`:''} • ${d.status}`);
+      onSuccess(`Invoice ${d.invoice_number} dibuat - Total ${new Intl.NumberFormat('id-ID').format(d.total)}${d.discount?` Disc ${new Intl.NumberFormat('id-ID').format(d.discount)}`:''}${d.dp_amount?` DP ${d.dp_percent}%`:''} • ${d.status}`);
       onClose();
     }catch(e){ onErr(e.response?.data?.error||e.message); }
     finally{ setLoading(false); }
@@ -32,21 +34,21 @@ function DoInvoiceModal({ open, onClose, onSuccess, onErr }){
   if(!open) return null;
   return (
     <div className="fixed inset-0 z-50 grid place-items-center p-4 bg-black/40">
-      <div className="bg-white rounded-[20px] w-full max-w-[480px] shadow-xl border border-[#E2E8F0] overflow-hidden max-h-[92vh] flex flex-col">
+      <div className="bg-white rounded-[20px] w-full max-w-[480px] shadow-xl border border-[#E2E8F0] overflow-hidden max-h-[92vh] flex flex-col animate-pop">
         <div className="p-4 border-b bg-[#F8FAFC] flex justify-between gap-2 shrink-0">
           <div><div className="text-sm font-black text-[#0F172A]">Buat Invoice dari DO</div><div className="text-xs text-[#64748B]">DELIVERED → INVOICED • Diskon % + Voucher + DP % seperti POS</div></div>
-          <button onClick={onClose} className="h-8 w-8 grid place-items-center rounded-full border bg-white shrink-0">✕</button>
+          <button onClick={onClose} className="h-8 w-8 grid place-items-center rounded-full border bg-white shrink-0"><X size={14}/></button>
         </div>
         <div className="p-4 space-y-3 overflow-auto">
           {fetching ? <div className="text-xs text-[#94A3B8] p-3 text-center">Memuat DO DELIVERED...</div> : (
             <>
-              <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">PILIH DO — DELIVERED *</span>
+              <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">PILIH DO - DELIVERED *</span>
                 <select value={sel} onChange={e=>setSel(e.target.value)} className="w-full h-[42px] px-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm">
-                  <option value="">— Pilih DO —</option>
+                  <option value="">- Pilih DO -</option>
                   {dos.map(d=> <option key={d.id} value={d.id}>{d.do_number} • {d.customer_name} • {d.so_number} • {d.vehicle_no||'-'}</option>)}
                 </select>
               </label>
-              {dos.length===0 && <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-2.5">Tidak ada DO DELIVERED — selesaikan POD di Logistik dulu.</div>}
+              {dos.length===0 && <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-2.5">Tidak ada DO DELIVERED - selesaikan POD di Logistik dulu.</div>}
               <div className="grid grid-cols-3 gap-2">
                 <label className="space-y-1"><span className="text-[11px] font-bold text-[#64748B] flex items-center gap-1"><Percent size={12}/> Diskon %</span>
                   <select value={discPct} onChange={e=>setDiscPct(parseInt(e.target.value)||0)} className="w-full h-9 px-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm">
@@ -101,7 +103,7 @@ export default function SalesInvoices(){
     setPaying(true); setErr('');
     try{
       await api.post('/sales/invoices/'+payInv.id+'/pay',{amount: sisa, method: payMethod});
-      setOk(`Pembayaran ${rupiah(sisa)} lunas — ${payInv.invoice_number} → PAID`);
+      setOk(`Pembayaran ${rupiah(sisa)} lunas - ${payInv.invoice_number} → PAID`);
       setPayOpen(false); setPayInv(null);
       load();
     }catch(e){ setErr(e.response?.data?.error || e.message); }
@@ -126,10 +128,7 @@ export default function SalesInvoices(){
 
   return (
     <div className="space-y-3">
-      <div>
-        <h1 className="text-[22px] font-black tracking-tight text-[#0F172A] leading-none">Invoice (AR)</h1>
-        <p className="text-xs text-[#64748B] mt-1">{total||0} invoice • halaman {page}/{pages} • DO status baru: DELIVERED → INVOICED via “Invoice DO”</p>
-      </div>
+      <PosPageHeader icon={Receipt} title="Invoice (AR)" subtitle={`${total||0} invoice • halaman ${page}/${pages} • DO status DELIVERED bisa di-Invoice DO`}/>
 
       <div className="bg-white rounded-[20px] border border-[#E2E8F0] shadow-sm overflow-hidden">
         <div className="p-3 sm:p-4">
@@ -146,13 +145,13 @@ export default function SalesInvoices(){
             </div>
             <div className="flex items-center gap-2 shrink-0 flex-wrap">
               <button onClick={()=>{setSearch(q); setPage(1);}} className="h-[42px] px-5 bg-white border border-[#E2E8F0] rounded-xl text-sm font-semibold text-[#334155] hover:bg-[#F8FAFC]">Cari</button>
-              {search && <button onClick={()=>{setQ(''); setSearch('');}} className="h-[42px] w-[42px] grid place-items-center bg-white border border-[#E2E8F0] rounded-xl text-[#64748B] hover:bg-[#F8FAFC] shrink-0">✕</button>}
+              {search && <button onClick={()=>{setQ(''); setSearch('');}} className="h-[42px] w-[42px] grid place-items-center bg-white border border-[#E2E8F0] rounded-xl text-[#64748B] hover:bg-[#F8FAFC] shrink-0"><X size={14}/></button>}
               <button onClick={()=>setSource('')} className={"h-[42px] px-5 rounded-xl text-xs font-bold border whitespace-nowrap "+(source===''?"bg-[#1E40AF] text-white border-[#1E40AF] shadow":"bg-white text-[#334155] border-[#E2E8F0] hover:bg-[#F8FAFC]")}>SEMUA</button>
               <button onClick={()=>setSource(source==='pos'?'':'pos')} className={"h-[42px] px-5 rounded-xl text-xs font-bold border whitespace-nowrap "+(source==='pos'?"bg-[#1E40AF] text-white border-[#1E40AF] shadow":"bg-white text-[#334155] border-[#E2E8F0] hover:bg-[#F8FAFC]")}>POS saja</button>
               <button onClick={()=>{setErr(''); setOk(''); setDoPickOpen(true);}} className="h-[42px] px-4 bg-amber-500 text-white rounded-xl inline-flex items-center justify-center gap-1.5 text-sm font-bold shadow-sm hover:bg-amber-600 whitespace-nowrap">+ Invoice DO</button>
-              <a href="/sales/orders/new" className="h-[42px] px-5 bg-[#1E40AF] text-white rounded-xl inline-flex items-center justify-center gap-1.5 text-sm font-bold shadow-sm hover:bg-[#1E3A8A] whitespace-nowrap">
+              <Link to="/sales/orders/new" className="h-[42px] px-5 bg-[#1E40AF] text-white rounded-xl inline-flex items-center justify-center gap-1.5 text-sm font-bold shadow-sm hover:bg-[#1E3A8A] whitespace-nowrap">
                 <span className="text-lg leading-none -mt-0.5">+</span> Buat Invoice
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -218,7 +217,7 @@ export default function SalesInvoices(){
             </table>
           </div>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-[#F8FAFC] border-t border-[#E2E8F0] text-xs">
-            <div className="text-[#64748B]">{data.length?`Menampilkan ${(page-1)*LIMIT+1}–${(page-1)*LIMIT+data.length} dari ${total}`:`0 dari ${total}`}</div>
+            <div className="text-[#64748B]">{data.length?`Menampilkan ${(page-1)*LIMIT+1}-${(page-1)*LIMIT+data.length} dari ${total}`:`0 dari ${total}`}</div>
             <div className="flex items-center gap-1">
               <button disabled={page<=1} onClick={()=>setPage(p=>Math.max(1,p-1))} className="h-8 px-3 bg-white border border-[#E2E8F0] rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-[#F8FAFC]">‹ Prev</button>
               <span className="h-8 px-3 grid place-items-center text-xs font-bold text-[#334155]">{page} / {pages}</span>
@@ -235,7 +234,7 @@ export default function SalesInvoices(){
       {payOpen && payInv && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={closePay} />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+          <div className="relative bg-white rounded-[20px] shadow-2xl w-full max-w-md overflow-hidden animate-pop">
             <div className="px-6 pt-6 pb-4">
               <div className="w-12 h-12 rounded-full bg-[#1E40AF]/10 grid place-items-center mb-3">💳</div>
               <h3 className="text-lg font-black text-[#0F172A]">Konfirmasi Pembayaran</h3>

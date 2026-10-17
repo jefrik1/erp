@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText } from 'lucide-react';
+import { FileText, Plus } from 'lucide-react';
 import api from '../lib/api';
 import { useDialog } from '../components/DialogProvider';
+import { PosPageHeader, PosSkeleton, PosError, posBtnPrimary } from '../components/PosUI';
 export default function RFQs(){
   const nav=useNavigate(); const dialog=useDialog();
   const [data,setData]=useState([]); const [suppliers,setSuppliers]=useState([]);
   const [sel,setSel]=useState(null); const [qs,setQs]=useState([]);
   const [add,setAdd]=useState({supplier_id:'',unit_price:'',lead_days:3});
-  const load=()=> api.get('/purchase/rfqs').then(r=>setData(r.data?.data ?? r.data ?? [])).catch(()=>setData([]));
+  const [err,setErr]=useState(''); const [loading,setLoading]=useState(true);
+  const load=async()=>{ setErr(''); try{ const r=await api.get('/purchase/rfqs'); setData(r.data?.data ?? r.data ?? []); }catch(e){ setErr(e.response?.data?.error||e.message||'Gagal memuat RFQ'); } finally{ setLoading(false); } };
   const loadDetail=async(id)=>{
     const r=await api.get('/purchase/rfqs/'+id); setSel(r.data); setQs(r.data.quotations||[]);
   };
@@ -24,7 +26,7 @@ export default function RFQs(){
   const selectWinner=async(qid)=>{
     try{
       const r=await api.post('/purchase/rfqs/'+sel.id+'/select-winner',{quotation_id:qid});
-      await dialog.alert('Winner dipilih → PO '+r.data.po_number+' ('+r.data.status+')',{title:'Sukses'});
+      await dialog.alert('Winner dipilih, PO dibuat: '+r.data.po_number+' ('+r.data.status+')',{title:'Sukses'});
       nav('/purchase/orders');
     }catch(err){ await dialog.alert(err.response?.data?.error||err.message,{title:'Gagal'}); }
   };
@@ -32,7 +34,7 @@ export default function RFQs(){
     <div className="space-y-3">
       <div className="flex justify-between items-start gap-4 flex-wrap">
         <div>
-          <div className="flex items-center gap-3"><div className="w-9 h-9 rounded-xl bg-[#2563EB] text-white grid place-items-center"><FileText size={18}/></div><h1 className="text-[20px] font-black text-[#0F172A]">RFQ — Quotation</h1></div>
+          <PosPageHeader icon={FileText} title="RFQ (Quotation)" subtitle="Bandingkan penawaran supplier, pilih winner, PO otomatis dibuat"/>
           <nav className="mt-2 flex flex-wrap items-center gap-1 p-1 bg-[#F1F5F9] border rounded-full w-fit shadow-sm">
             {[
               {label:'PR',sub:'Purchase Request',to:'/purchase/requests'},
@@ -52,7 +54,7 @@ export default function RFQs(){
             ))}
           </nav>
         </div>
-        <button onClick={createRfq} className="h-[42px] px-5 bg-[#1E40AF] text-white rounded-xl text-sm font-bold">+ Buat RFQ</button>
+        <button onClick={createRfq} className={posBtnPrimary}><Plus size={15}/> Buat RFQ</button>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4">
@@ -62,18 +64,20 @@ export default function RFQs(){
             <tbody>{data.map(r=>(
               <tr key={r.id} className={"border-b hover:bg-[#F8FAFC] cursor-pointer "+(sel?.id===r.id?"bg-blue-50":"")} onClick={()=>loadDetail(r.id)}>
                 <td className="px-4 py-3 font-mono text-xs font-bold">{r.rfq_number}</td>
-                <td className="px-4 py-3 text-xs">{r.pr_number||'—'} • {r.product_name||'—'} {r.pr_qty?`x${r.pr_qty}`:''}</td>
+                <td className="px-4 py-3 text-xs">{r.pr_number||'-'} • {r.product_name||'-'} {r.pr_qty?`x${r.pr_qty}`:''}</td>
                 <td className="px-4 py-3"><span className="text-xs px-2 py-1 rounded-full border bg-white font-bold">{r.status}</span></td>
                 <td className="px-4 py-3 text-right"><button className="text-xs text-[#1E40AF] font-bold">Lihat</button></td>
               </tr>
-            ))}{data.length===0 && <tr><td colSpan={4} className="p-6 text-center text-sm text-[#94A3B8]">Belum ada RFQ — buat dari PR atau + Buat RFQ</td></tr>}</tbody>
+            ))}{loading && <tr><td colSpan={4} className="p-0"><PosSkeleton rows={4} cols={3}/></td></tr>}
+            {err && !loading && <tr><td colSpan={4} className="p-0"><PosError message={err} onRetry={load}/></td></tr>}
+            {!loading && !err && data.length===0 && <tr><td colSpan={4} className="p-6 text-center text-sm text-[#94A3B8]">Belum ada RFQ - buat dari PR atau tombol Buat RFQ</td></tr>}</tbody>
           </table></div>
         </div>
 
         <div className="bg-white rounded-[20px] border shadow-sm p-4 space-y-3">
           {!sel ? <div className="text-sm text-[#94A3B8] p-6 text-center">Pilih RFQ di kiri untuk kelola penawaran</div> : (
             <>
-              <div className="flex justify-between items-start"><div><div className="font-black">{sel.rfq_number} — {sel.status}</div><div className="text-xs text-[#64748B]">{sel.pr_number?`PR ${sel.pr_number} • `:''}{sel.product_name} • qty {sel.pr_qty}</div></div><span className={"text-xs px-2 py-1 rounded-full border font-bold "+(sel.status==='OPEN'?"bg-emerald-50 border-emerald-200 text-emerald-700":sel.status==='SELECTED'?"bg-blue-50 border-blue-200":"bg-gray-100")}>{sel.status}</span></div>
+              <div className="flex justify-between items-start"><div><div className="font-black">{sel.rfq_number} - {sel.status}</div><div className="text-xs text-[#64748B]">{sel.pr_number?`PR ${sel.pr_number} • `:''}{sel.product_name} • qty {sel.pr_qty}</div></div><span className={"text-xs px-2 py-1 rounded-full border font-bold "+(sel.status==='OPEN'?"bg-emerald-50 border-emerald-200 text-emerald-700":sel.status==='SELECTED'?"bg-blue-50 border-blue-200":"bg-gray-100")}>{sel.status}</span></div>
 
               {sel.status==='OPEN' && (
                 <form onSubmit={addQuote} className="border rounded-xl p-3 space-y-2 bg-[#F8FAFC]">
@@ -91,13 +95,13 @@ export default function RFQs(){
                 {qs.map(q=>(
                   <div key={q.id} className={"flex justify-between items-center p-3 border rounded-xl "+(q.is_winner?"bg-blue-50 border-blue-200":"bg-white")}>
                     <div><div className="font-bold text-sm">{q.supplier_name} {q.is_winner && <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded bg-[#1E40AF] text-white">WINNER</span>}</div><div className="text-xs text-[#64748B]">Rp {new Intl.NumberFormat('id-ID').format(q.unit_price)} • {q.lead_days||'-'} hari</div></div>
-                    {sel.status==='OPEN' && !q.is_winner && <button onClick={()=>selectWinner(q.id)} className="h-8 px-3 bg-[#1E40AF] text-white rounded-full text-xs font-bold">Pilih Winner → PO</button>}
+                    {sel.status==='OPEN' && !q.is_winner && <button onClick={()=>selectWinner(q.id)} className="h-8 px-3 bg-[#1E40AF] text-white rounded-full text-xs font-bold">Pilih Winner</button>}
                   </div>
                 ))}
-                {qs.length===0 && <div className="text-xs text-[#94A3B8] text-center py-4">Belum ada penawaran — tambah di atas lalu bandingkan harga terendah</div>}
+                {qs.length===0 && <div className="text-xs text-[#94A3B8] text-center py-4">Belum ada penawaran - tambah di atas lalu bandingkan harga terendah</div>}
               </div>
 
-              {sel.status==='SELECTED' && <div className="text-xs bg-blue-50 border border-blue-200 rounded-xl p-3 text-[#1E40AF] font-semibold">Winner sudah dipilih — PO otomatis terbuat. Lihat di <button onClick={()=>nav('/purchase/orders')} className="underline">Purchase Orders</button></div>}
+              {sel.status==='SELECTED' && <div className="text-xs bg-blue-50 border border-blue-200 rounded-xl p-3 text-[#1E40AF] font-semibold">Winner sudah dipilih - PO otomatis terbuat. Lihat di <button onClick={()=>nav('/purchase/orders')} className="underline">Purchase Orders</button></div>}
             </>
           )}
         </div>

@@ -1,43 +1,317 @@
-
-import { useEffect, useState } from 'react';
-import { FileText, Search } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Flame, Search, RefreshCw, Plus, X, AlertTriangle, CheckCircle2, Clock, Wallet } from 'lucide-react';
 import api from '../lib/api';
-import { Badge } from '../components/Layout';
 import { useDialog } from '../components/DialogProvider';
+import {
+  PosPageHeader, PosCard, PosCardBody, PosChip, PosSelect, PosTh, PosPager,
+  PosBadge, PosEmpty, PosSkeleton, PosError, PosStat, PosToolbar, PosChipRow, PosExportButtons,
+  posInput, posBtnPrimary, posBtnSecondary, posSearchWrap, posSelectWrap,
+} from '../components/PosUI';
+
+const PAGE_SIZE = 10;
+const angka = (n)=> new Intl.NumberFormat('id-ID').format(Number(n)||0);
+const rupiah = (n)=> 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(Number(n)||0));
+const fmtDate = (d)=> d ? String(d).slice(0,10) : '-';
+
+const TYPES = [
+  ['PECAH_GUDANG', 'Pecah Gudang'],
+  ['PECAH_KIRIM', 'Pecah Kirim'],
+  ['PECAH_BONGKAR', 'Pecah Bongkar'],
+  ['SUSUT_ALAMI', 'Susut Alami'],
+  ['SALAH_HITUNG', 'Salah Hitung'],
+  ['OTHER', 'Lain-lain'],
+];
+const TYPE_LABEL = Object.fromEntries(TYPES);
+const TYPE_TONE = { PECAH_GUDANG:'red', PECAH_KIRIM:'amber', PECAH_BONGKAR:'amber', SUSUT_ALAMI:'sky', SALAH_HITUNG:'slate', OTHER:'slate' };
+const STATUS_TONE = { PENDING:'amber', APPROVED:'emerald', REJECTED:'red' };
+
 export default function Waste(){
-  const dialog=useDialog();
-  const [data,setData]=useState([]); const [stats,setStats]=useState(null); const [show,setShow]=useState(false);
-  const [products,setProducts]=useState([]); const [warehouses,setWarehouses]=useState([]);
-  const [form,setForm]=useState({product_id:'', warehouse_id:1, qty:'', waste_type:'PECAH_GUDANG', reason:''});
-  const load=()=>{ api.get('/waste').then(r=>setData(r.data)).catch(()=>setData([])); api.get('/waste/stats/summary').then(r=>setStats(r.data)); };
-  useEffect(()=>{ load(); api.get('/master/products',{params:{limit:100}}).then(r=>setProducts(r.data?.data ?? r.data ?? [])).catch(()=>{}); api.get('/master/warehouses').then(r=>setWarehouses(r.data ?? [])).catch(()=>{}); },[]);
-  const submit=async(e)=>{
+  const dialog = useDialog();
+  const [rows, setRows] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState('');
+  const [f, setF] = useState({ q:'', waste_type:'', status:'', start:'', end:'' });
+  const [applied, setApplied] = useState({ q:'', waste_type:'', status:'', start:'', end:'' });
+  const [page, setPage] = useState(1);
+
+  const [products, setProducts] = useState([]);
+  const [warehouses, setWarehouses] = useState([]);
+  const [show, setShow] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [formErr, setFormErr] = useState('');
+  const [form, setForm] = useState({ product_id:'', warehouse_id:'', qty:'', waste_type:'PECAH_GUDANG', reason:'' });
+
+  const load = useCallback(async ()=>{
+    setLoading(true); setErr('');
+    try{
+      const params = { limit: 300, offset: 0 };
+      if (applied.q) params.q = applied.q;
+      if (applied.waste_type) params.waste_type = applied.waste_type;
+      if (applied.status) params.status = applied.status;
+      if (applied.start) params.start = applied.start;
+      if (applied.end) params.end = applied.end;
+      const r = await api.get('/waste', { params });
+      const data = Array.isArray(r.data?.data) ? r.data.data : (Array.isArray(r.data) ? r.data : []);
+      setRows(data);
+      setTotal(Number(r.data?.total) || data.length);
+    }catch(e){ setErr(e.response?.data?.error || e.message); setRows([]); setTotal(0); }
+    finally{ setLoading(false); }
+  },[applied]);
+
+  const loadStats = ()=> api.get('/waste/stats/summary').then(r=>setStats(r.data)).catch(()=>{});
+
+  useEffect(()=>{
+    api.get('/master/products',{ params:{ limit: 200 } }).then(r=>setProducts(r.data?.data||r.data||[])).catch(()=>{});
+    api.get('/master/warehouses').then(r=>setWarehouses(Array.isArray(r.data)?r.data:(r.data?.data||[]))).catch(()=>{});
+  },[]);
+  useEffect(()=>{ load(); loadStats(); },[load]);
+  useEffect(()=>{ setPage(1); },[applied]);
+
+  const pageRows = rows.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
+  const totalCost = rows.reduce((a,w)=> a + (Number(w.cost)||0), 0);
+  const pending = rows.filter(w=> w.status === 'PENDING').length;
+  const approved = rows.filter(w=> w.status === 'APPROVED').length;
+  const byType = Array.isArray(stats?.by_type) ? stats.by_type : [];
+
+  const submit = async (e)=>{
     e.preventDefault();
-    const r=await api.post('/waste',{product_id: parseInt(form.product_id), warehouse_id: parseInt(form.warehouse_id), qty: parseFloat(form.qty), waste_type:form.waste_type, reason:form.reason});
-    await dialog.alert('Write-off '+new Intl.NumberFormat('id-ID').format(r.data.cost)+' • status '+r.data.status+'\n>500rb butuh Manager+Finance • >5jt Direktur', {title:'Write-off'}) ;
-    setShow(false); load();
+    if (!form.product_id) return setFormErr('Produk wajib dipilih.');
+    if (!(Number(form.qty) > 0)) return setFormErr('Qty harus lebih dari 0.');
+    setSaving(true); setFormErr('');
+    try{
+      const r = await api.post('/waste', {
+        product_id: parseInt(form.product_id),
+        warehouse_id: form.warehouse_id ? parseInt(form.warehouse_id) : 1,
+        qty: Number(form.qty),
+        waste_type: form.waste_type,
+        reason: form.reason,
+      });
+      setShow(false);
+      setForm({ product_id:'', warehouse_id:'', qty:'', waste_type:'PECAH_GUDANG', reason:'' });
+      await dialog.alert(
+        `Write-off ${rupiah(r.data?.cost)} tercatat dengan status ${r.data?.status}.\n` +
+        'Aturan approval: >500rb butuh Manager + Finance, >5jt butuh Direktur.',
+        { title: 'Susut Dicatat' });
+      load(); loadStats();
+    }catch(err2){ setFormErr(err2.response?.data?.error || err2.message || 'Gagal menyimpan.'); }
+    finally{ setSaving(false); }
   };
+
+  const approve = async (w)=>{
+    const ok = await dialog.confirm(
+      `Setujui write-off ${w.product_name} sebanyak ${angka(w.qty)} (${rupiah(w.cost)})?\nStok dan jurnal penyesuaian akan ikut tercatat.`,
+      { title: 'Setujui Susut' });
+    if (!ok) return;
+    try{
+      await api.post(`/waste/${w.id}/approve`, { status:'APPROVED' });
+      await dialog.alert('Write-off disetujui.', { title: 'Tersimpan' });
+      load(); loadStats();
+    }catch(e){ await dialog.alert(e.response?.data?.error || e.message, { title: 'Gagal' }); }
+  };
+
+  const [expBusy, setExpBusy] = useState('');
+  const downloadExport = async (format)=>{
+    setExpBusy(format);
+    try{
+      const params = { format };
+      if (applied.q) params.q = applied.q;
+      if (applied.waste_type) params.waste_type = applied.waste_type;
+      if (applied.status) params.status = applied.status;
+      if (applied.start) params.start = applied.start;
+      if (applied.end) params.end = applied.end;
+      const r = await api.get('/waste/export', { params, responseType:'blob' });
+      const url = URL.createObjectURL(new Blob([r.data]));
+      const a = document.createElement('a');
+      a.href = url; a.download = 'susut-pecah.' + format;
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    }catch(e){ setErr(e.response?.data?.error || e.message || 'Gagal mengunduh laporan'); }
+    finally{ setExpBusy(''); }
+  };
+
+  const preset = (k)=>{
+    const today = new Date();
+    const iso = (d)=> d.toISOString().slice(0,10);
+    if (k === 'month'){ const a = new Date(today.getFullYear(), today.getMonth(), 1); setF(s=>({ ...s, start: iso(a), end: iso(today) })); }
+    else if (k === 'year'){ setF(s=>({ ...s, start: `${today.getFullYear()}-01-01`, end: iso(today) })); }
+    else setF(s=>({ ...s, start:'', end:'' }));
+  };
+
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap justify-between gap-3 items-end"><div className="flex items-center gap-3"><div className="w-9 h-9 rounded-xl bg-[#2563EB] text-white grid place-items-center shrink-0 shadow-sm"><FileText size={18} strokeWidth={2.2}/></div><div className="min-w-0 flex-1"><h1 className="text-[18px] sm:text-[20px] font-black tracking-tight text-[#0F172A] leading-none">Susut, Pecah & Waste</h1><p className="text-xs text-[#64748B] mt-1">Pecah gudang/kirim/bongkar • Susut alami • Reklasifikasi grade B • Approval berjenjang</p></div></div><button onClick={()=>setShow(true)} className="h-[42px] px-5 bg-[#1E40AF] text-white rounded-xl inline-flex items-center justify-center gap-1.5 text-sm font-bold shadow-sm hover:bg-[#1E3A8A] active:scale-[0.98] transition">+ Catat Susut</button></div>
-      {stats && <div className="grid grid-cols-4 gap-2"><div className="bg-white rounded-xl border p-3 text-center"><div className="text-lg font-black">{stats.pending||0}</div><div className="text-xs">Pending</div></div>{stats.by_type?.slice(0,3).map(t=> <div key={t.waste_type} className="bg-white rounded-xl border p-3 text-center"><div className="text-xs font-bold">{t.waste_type}</div><div className="text-sm font-black">{new Intl.NumberFormat('id-ID',{notation:'compact'}).format(t.cost)}</div><div className="text-xs text-[#64748B]">{t.cnt} kejadian</div></div>)}</div>}
-      <div className="bg-white rounded-[20px] border border-[#E2E8F0] shadow-sm overflow-hidden">
-        <div className="overflow-auto"><table className="w-full text-sm"><thead><tr className="bg-[#F1F5F9] border-y border-[#E2E8F0] text-[11px] font-bold tracking-widest text-[#64748B]"><th className="text-left px-4 py-3 whitespace-nowrap">TGL</th><th className="text-left px-4 py-3 whitespace-nowrap">PRODUK</th><th className="text-left px-4 py-3 whitespace-nowrap">GUDANG</th><th className="text-left px-4 py-3 whitespace-nowrap">JENIS</th><th className="text-right px-4 py-3 whitespace-nowrap">QTY</th><th className="text-right px-4 py-3 whitespace-nowrap">BIAYA</th><th className="text-left px-4 py-3 whitespace-nowrap">STATUS</th><th></th></tr></thead><tbody>{(Array.isArray(data)?data:[]).map((w,idx)=>(
-          <tr key={w.id} className={"border-b border-[#F1F5F9] hover:bg-[#F8FAFC] transition "+(idx%2===1?"bg-[#F8FAFC]/70":"bg-white")}><td className="px-4 py-3.5 text-xs">{w.created_at?.slice(0,10)}</td><td className="px-4 py-3.5">{w.product_name} <span className="text-xs text-[#94A3B8]">{w.sku}</span></td><td className="px-4 py-3.5 text-xs text-center">{w.warehouse_name}</td><td className="px-4 py-3.5 text-xs"><Badge status={w.waste_type}/></td><td className="px-4 py-3.5 text-right">{w.qty}</td><td className="px-4 py-3.5 text-right font-bold">{new Intl.NumberFormat('id-ID').format(w.cost)}</td><td className="px-4 py-3.5 text-center"><Badge status={w.status}/></td><td className="px-4 py-3.5">{w.status==='PENDING' && <button onClick={async()=>{ await api.post('/waste/'+w.id+'/approve',{status:'APPROVED'}); load(); }} className="text-xs px-2 py-1 bg-emerald-600 text-white rounded-full">Approve</button>}</td></tr>
-        ))}</tbody></table></div>
+      <PosPageHeader icon={Flame} title="Susut, Pecah & Waste"
+        subtitle="Pecah gudang/kirim/bongkar • Susut alami • Reklasifikasi grade B • Approval berjenjang"
+        badge={`${angka(total)} catatan`} />
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <PosStat icon={Wallet} tone="bg-red-50 text-red-700" label="NILAI SUSUT" value={rupiah(totalCost)} sub="pada filter ini" />
+        <PosStat icon={Clock} tone="bg-amber-50 text-amber-700" label="MENUNGGU APPROVAL" value={angka(pending)} sub="status PENDING" />
+        <PosStat icon={CheckCircle2} tone="bg-emerald-50 text-emerald-700" label="DISETUJUI" value={angka(approved)} sub="sudah dibukukan" />
+        <PosStat icon={AlertTriangle} tone="bg-[#EFF6FF] text-[#1E40AF]" label="JENIS TERBANYAK"
+          value={byType.length ? TYPE_LABEL[byType[0].waste_type] || byType[0].waste_type : '-'}
+          sub={byType.length ? `${rupiah(byType[0].cost)} • ${angka(byType[0].cnt)} kejadian` : 'belum ada data'} />
       </div>
-      {show && <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50"><form onSubmit={submit} className="bg-white rounded-2xl p-6 w-full max-w-md space-y-3">
-        <h3 className="font-bold">Catat Susut / Pecah</h3>
-        <select required value={form.product_id} onChange={e=>setForm({...form,product_id:e.target.value})} className="w-full h-[42px] pl-3 pr-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[13px] placeholder:text-[#94A3B8] outline-none focus:bg-white focus:border-[#1E40AF] focus:ring-2 focus:ring-[#1E40AF]/10 transition"><option value="">Pilih produk</option>{products.map(p=> <option key={p.id} value={p.id}>{p.name}</option>)}</select>
-        <select value={form.warehouse_id} onChange={e=>setForm({...form,warehouse_id:e.target.value})} className="w-full h-[42px] pl-3 pr-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[13px] placeholder:text-[#94A3B8] outline-none focus:bg-white focus:border-[#1E40AF] focus:ring-2 focus:ring-[#1E40AF]/10 transition">{warehouses.map(w=> <option key={w.id} value={w.id}>{w.code} • {w.name}</option>)}</select>
-        <div className="grid grid-cols-2 gap-2">
-          <input type="number" required placeholder="Qty" value={form.qty} onChange={e=>setForm({...form,qty:e.target.value})} className="h-[42px] px-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm outline-none focus:bg-white focus:border-[#1E40AF]"/>
-          <select value={form.waste_type} onChange={e=>setForm({...form,waste_type:e.target.value})} className="h-[42px] px-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm outline-none focus:bg-white focus:border-[#1E40AF]"><option value="PECAH_GUDANG">Pecah Gudang</option><option value="PECAH_KIRIM">Pecah Kirim</option><option value="PECAH_BONGKAR">Pecah Bongkar</option><option value="SUSUT_ALAMI">Susut Alami</option><option value="SALAH_HITUNG">Salah Hitung</option><option value="OTHER">Lain</option></select>
+
+      {byType.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {byType.map(t=>(
+            <div key={t.waste_type} className="flex items-center gap-2 bg-white border border-[#E2E8F0] rounded-xl px-3 py-2">
+              <PosBadge tone={TYPE_TONE[t.waste_type]||'slate'}>{TYPE_LABEL[t.waste_type]||t.waste_type}</PosBadge>
+              <span className="text-xs font-bold text-[#0F172A] tabular-nums">{rupiah(t.cost)}</span>
+              <span className="text-[11px] text-[#64748B]">{angka(t.cnt)} kejadian</span>
+            </div>
+          ))}
         </div>
-        <textarea value={form.reason} onChange={e=>setForm({...form,reason:e.target.value})} placeholder="Penyebab & tindak lanjut (klaim supplier/asuransi?)" className="w-full border rounded-xl p-3" rows={2}/>
-        <div className="text-xs text-[#64748B]">&lt;500rb Supervisor • 500rb-5jt Manager+Gudang+Finance • &gt;5jt Direktur</div>
-        <div className="flex justify-end gap-2"><button type="button" onClick={()=>setShow(false)} className="h-[42px] px-5 bg-white border border-[#E2E8F0] rounded-xl text-sm font-semibold text-[#334155] hover:bg-[#F8FAFC] active:scale-[0.98] transition">Batal</button><button className="h-[42px] px-5 bg-[#1E40AF] text-white rounded-xl inline-flex items-center justify-center gap-1.5 text-sm font-bold shadow-sm hover:bg-[#1E3A8A] active:scale-[0.98] transition">Simpan</button></div>
-      </form></div>}
+      )}
+
+      <PosCard>
+        <PosCardBody className="space-y-3">
+          <PosToolbar actions={<>
+            <button onClick={()=>setApplied({...f})} className={posBtnSecondary+' h-9 px-4 text-xs'}>
+              <RefreshCw size={13} className={loading?'animate-spin':''}/> Terapkan
+            </button>
+            <button onClick={()=>{ const r={q:'',waste_type:'',status:'',start:'',end:''}; setF(r); setApplied(r); }}
+              className={posBtnSecondary+' h-9 px-4 text-xs'}>Reset</button>
+            <PosExportButtons onExport={downloadExport} busyKey={expBusy} prefix="Susut"/>
+            <button onClick={()=>{ setFormErr(''); setShow(true); }} className={posBtnPrimary+' h-9 px-4 text-xs'}><Plus size={14}/> Catat Susut</button>
+          </>}>
+            <div className={posSearchWrap}>
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]"/>
+              <input value={f.q} onChange={e=>setF({...f, q:e.target.value})} onKeyDown={e=>e.key==='Enter'&&setApplied({...f})}
+                placeholder="Cari produk / SKU lalu Enter..." className={posInput+' pl-9'} />
+            </div>
+            <div className={posSelectWrap}>
+              <PosSelect value={f.waste_type} onChange={v=>setF({...f, waste_type:v})}>
+                <option value="">Semua Jenis</option>
+                {TYPES.map(([k,v])=> <option key={k} value={k}>{v}</option>)}
+              </PosSelect>
+            </div>
+            <div className={posSelectWrap}>
+              <PosSelect value={f.status} onChange={v=>setF({...f, status:v})}>
+                <option value="">Semua Status</option>
+                <option value="PENDING">PENDING</option>
+                <option value="APPROVED">APPROVED</option>
+                <option value="REJECTED">REJECTED</option>
+              </PosSelect>
+            </div>
+          </PosToolbar>
+
+          <PosChipRow label="PERIODE">
+            <PosChip active={!f.start && !f.end} onClick={()=>preset('all')}>Semua</PosChip>
+            <PosChip onClick={()=>preset('month')}>Bulan ini</PosChip>
+            <PosChip onClick={()=>preset('year')}>Tahun ini</PosChip>
+            <span className="ml-auto flex items-center gap-1.5">
+              <input type="date" value={f.start} onChange={e=>setF({...f, start:e.target.value})} className={posInput+' w-[150px]'}/>
+              <span className="text-[11px] text-[#94A3B8]">s/d</span>
+              <input type="date" value={f.end} onChange={e=>setF({...f, end:e.target.value})} className={posInput+' w-[150px]'}/>
+            </span>
+          </PosChipRow>
+
+          {loading ? <PosSkeleton rows={6} cols={7}/> : err ? <PosError message={err} onRetry={load}/> : rows.length===0 ? (
+            <PosEmpty text="Belum ada catatan susut/pecah"/>
+          ) : (
+            <div className="overflow-auto rounded-xl border border-[#E2E8F0]">
+              <table className="w-full text-sm">
+                <thead><tr className="bg-[#F1F5F9] border-b border-[#E2E8F0]">
+                  <PosTh>TANGGAL</PosTh><PosTh>PRODUK</PosTh><PosTh align="center">GUDANG</PosTh>
+                  <PosTh align="center">JENIS</PosTh><PosTh align="right">QTY</PosTh><PosTh align="right">BIAYA</PosTh>
+                  <PosTh align="center">STATUS</PosTh><PosTh>ALASAN</PosTh><PosTh align="right">AKSI</PosTh>
+                </tr></thead>
+                <tbody>
+                  {pageRows.map(w=>(
+                    <tr key={w.id} className="border-b border-[#F1F5F9] hover:bg-[#F8FAFC] transition bg-white">
+                      <td className="px-4 py-3.5 text-xs tabular-nums text-[#334155] whitespace-nowrap">{fmtDate(w.created_at)}</td>
+                      <td className="px-4 py-3.5">
+                        <div className="text-xs font-semibold text-[#0F172A]">{w.product_name}</div>
+                        <div className="text-[11px] text-[#64748B]">{w.sku}</div>
+                      </td>
+                      <td className="px-4 py-3.5 text-center text-xs text-[#334155]">{w.warehouse_name || '-'}</td>
+                      <td className="px-4 py-3.5 text-center">
+                        <PosBadge tone={TYPE_TONE[w.waste_type]||'slate'}>{TYPE_LABEL[w.waste_type]||w.waste_type}</PosBadge>
+                      </td>
+                      <td className="px-4 py-3.5 text-right font-bold tabular-nums">{angka(w.qty)}</td>
+                      <td className="px-4 py-3.5 text-right font-bold tabular-nums text-red-700">{rupiah(w.cost)}</td>
+                      <td className="px-4 py-3.5 text-center">
+                        <PosBadge tone={STATUS_TONE[w.status]||'slate'} title={w.approver ? 'Disetujui '+w.approver : undefined}>{w.status}</PosBadge>
+                      </td>
+                      <td className="px-4 py-3.5 text-xs text-[#64748B] max-w-[220px] truncate" title={w.reason||''}>{w.reason || '-'}</td>
+                      <td className="px-4 py-3.5 text-right">
+                        {w.status === 'PENDING' ? (
+                          <button onClick={()=>approve(w)} className="text-[11px] px-2.5 py-1 rounded-lg bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition">Setujui</button>
+                        ) : <span className="text-[11px] text-[#94A3B8]">-</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {!loading && !err && rows.length > 0 && (
+            <PosPager page={page} setPage={setPage} total={rows.length} size={PAGE_SIZE} unit="catatan" />
+          )}
+        </PosCardBody>
+      </PosCard>
+
+      {show && (
+        <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50" onClick={()=>setShow(false)}>
+          <form onSubmit={submit} onClick={e=>e.stopPropagation()} className="bg-white rounded-[20px] w-full max-w-lg max-h-[90vh] overflow-auto animate-pop">
+            <div className="flex items-center justify-between gap-3 p-5 border-b border-[#F1F5F9]">
+              <div>
+                <h3 className="font-black text-[16px] text-[#0F172A]">Catat Susut / Pecah</h3>
+                <p className="text-xs text-[#64748B] mt-1">Stok dikurangi dan dibebankan sesuai nilai rata-rata (avg cost) gudang terkait.</p>
+              </div>
+              <button type="button" onClick={()=>setShow(false)} className="h-9 w-9 grid place-items-center rounded-xl border border-[#E2E8F0] text-[#64748B] hover:bg-[#F8FAFC]"><X size={16}/></button>
+            </div>
+
+            <div className="p-5 space-y-3">
+              <div>
+                <label className="block text-[11px] font-bold tracking-widest text-[#64748B] mb-1">PRODUK *</label>
+                <PosSelect size="md" value={form.product_id} onChange={v=>setForm({...form, product_id:v})}>
+                  <option value="">Pilih produk</option>
+                  {products.map(p=> <option key={p.id} value={String(p.id)}>{p.name} {p.sku ? '• '+p.sku : ''}</option>)}
+                </PosSelect>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold tracking-widest text-[#64748B] mb-1">GUDANG</label>
+                  <PosSelect size="md" value={form.warehouse_id} onChange={v=>setForm({...form, warehouse_id:v})}>
+                    <option value="">Gudang Pusat (default)</option>
+                    {warehouses.map(w=> <option key={w.id} value={String(w.id)}>{w.code} • {w.name}</option>)}
+                  </PosSelect>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold tracking-widest text-[#64748B] mb-1">QTY *</label>
+                  <input type="number" min="0" step="any" value={form.qty} onChange={e=>setForm({...form, qty:e.target.value})}
+                    placeholder="0" className={posInput+' h-[42px] text-right tabular-nums'}/>
+                </div>
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold tracking-widest text-[#64748B] mb-1">JENIS SUSUT</label>
+                <PosSelect size="md" value={form.waste_type} onChange={v=>setForm({...form, waste_type:v})}>
+                  {TYPES.map(([k,v])=> <option key={k} value={k}>{v}</option>)}
+                </PosSelect>
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold tracking-widest text-[#64748B] mb-1">PENYEBAB & TINDAK LANJUT</label>
+                <textarea value={form.reason} onChange={e=>setForm({...form, reason:e.target.value})} rows={3}
+                  placeholder="Mis. pecah saat bongkar, klaim supplier / asuransi?"
+                  className="w-full px-3 py-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm outline-none focus:bg-white focus:border-[#1E40AF] placeholder:text-[#94A3B8]"/>
+              </div>
+
+              <div className="text-xs text-[#64748B] bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5">
+                Approval berjenjang: <b>&lt;500rb</b> Supervisor • <b>500rb-5jt</b> Manager + Gudang + Finance • <b>&gt;5jt</b> Direktur.
+              </div>
+              {formErr && <div className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2">{formErr}</div>}
+            </div>
+
+            <div className="flex justify-end gap-2 p-5 border-t border-[#F1F5F9]">
+              <button type="button" onClick={()=>setShow(false)} className={posBtnSecondary}>Batal</button>
+              <button disabled={saving} className={posBtnPrimary+' disabled:opacity-60'}>{saving ? 'Menyimpan...' : 'Simpan'}</button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
-  )
+  );
 }

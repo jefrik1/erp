@@ -1,5 +1,10 @@
 @tailwind base; @tailwind components; @tailwind utilities;
-*{font-family:Inter,system-ui,sans-serif}
+*{font-family:'Inter Variable',Inter,system-ui,sans-serif}
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:999px}
 .badge{font-size:11px;letter-spacing:.06em;font-weight:700;padding:3px 8px;border-radius:999px}
+
+/* Animasi modal (pengganti class animate-in yang butuh plugin tailwindcss-animate) */
+@keyframes pop-in{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:none}}
+.animate-pop{animation:pop-in .18s cubic-bezier(.16,1,.3,1)}
+@media (prefers-reduced-motion: reduce){.animate-pop{animation:none}}

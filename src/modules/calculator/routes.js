@@ -84,7 +84,7 @@ router.post('/estimate', async(req,res)=>{
   } else if(type==='baja' || type==='besi' || type==='steel'){
     const btg = Math.ceil(area * 1.2);
     const kawat = parseFloat((area * 0.05).toFixed(2));
-    base={area, batang: btg+' btg (12m)', kawat_kg: kawat+' kg', catatan:'Baja/besi beton ulir — estimasi rangka @1.2 btg/m²'};
+    base={area, batang: btg+' btg (12m)', kawat_kg: kawat+' kg', catatan:'Baja/besi beton ulir - estimasi rangka @1.2 btg/m²'};
     items=[
       {sku:'BES-010', name:'Besi Beton 10mm x12m', qty:btg, unit:'BTG'},
     ];
@@ -138,7 +138,7 @@ router.post('/estimate', async(req,res)=>{
       baja_batang: bajaQty+' btg',
       semen_total: totSemen+' sak',
       pasir_total: totPasir+' m3',
-      catatan:'KOMBO: keramik + cat (2 lapis) + bata merah + plester + baja — semua dari luas '+area+' m²'
+      catatan:'KOMBO: keramik + cat (2 lapis) + bata merah + plester + baja - semua dari luas '+area+' m²'
     };
     items=[
       {sku:'KRM-001', name:'Keramik 40x40 Putih', qty:dus, unit:'DUS'},

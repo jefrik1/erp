@@ -1,8 +1,8 @@
 import express from 'express';
 import { pool } from '../../config/db.js';
 import { paginate } from '../../utils/helpers.js';
+import { sendReport } from '../../lib/exporters.js';
 const router = express.Router();
-console.log('[finance] routes loaded — POS/DO/SO only — /ar /ar/debug /ap /cash /trial-balance /profit-loss');
 
 router.get('/ping', (req,res)=>res.json({ok:true, routes:['/ar','/ar/debug','/ap','/cash'], note:'AR POS/DO/SO only'}));
 router.get('/ar/debug', async (req,res)=>{
@@ -12,7 +12,7 @@ router.get('/ar/debug', async (req,res)=>{
     res.json({all: all.rows, byStatus: byStatus.rows});
   }catch(e){ res.status(500).json({error:e.message}); }
 });
-// atur due date — hanya SENT/PARTIAL/OVERDUE
+// atur due date - hanya SENT/PARTIAL/OVERDUE
 router.patch('/ar/:id/due-date', async (req,res)=>{
   try{
     const id=parseInt(req.params.id,10);
@@ -52,7 +52,7 @@ router.post('/journals', async (req,res)=>{
   res.json({id:jid, entry_number});
 });
 
-// AR POS/DO/SO only — ponytail: jangan buat dummy di finance, baca invoices langsung
+// AR POS/DO/SO only - ponytail: jangan buat dummy di finance, baca invoices langsung
 router.get('/ar', async (req,res)=>{
   try{
     for(const sql of [
@@ -84,12 +84,10 @@ router.get('/ar', async (req,res)=>{
     }).filter(x=>{
       if(!(x.outstanding > 0.5)) return false;
       if(['PAID','CANCELLED','VOID','LUNAS','COMPLETED'].includes(x._norm)) return false;
-      // allow SENT/PARTIAL/OVERDUE/DRAFT/APPROVED dll — selama belum lunas tampil
+      // allow SENT/PARTIAL/OVERDUE/DRAFT/APPROVED dll - selama belum lunas tampil
       return true;
     });
-    console.log('[AR] rows',r.rows.length,'mapped',mapped.length, r.rows.slice(0,3).map(x=>[x.invoice_number,x.status, parseFloat(x.total||0)-parseFloat(x.paid_amount||0)]));
     if(mapped.length===0 && r.rows.length>0){
-      console.log('[AR debug] sample raw', r.rows.slice(0,5).map(x=>({n:x.invoice_number,s:JSON.stringify(x.status),t:x.total,p:x.paid_amount, o: parseFloat(x.total||0)-parseFloat(x.paid_amount||0)})));
     }
     // strip helper fields before send but keep is_pos/outstanding
     res.json(mapped.map(({_norm,_raw,...rest})=>rest));
@@ -116,7 +114,7 @@ router.post('/ap/pay', async (req,res)=>{
   if(purchase_invoice_id){
     const q=await pool.query('SELECT * FROM purchase_invoices WHERE id=$1',[purchase_invoice_id]);
     if(!q.rows[0]) return res.status(404).json({error:'Invoice not found'});
-    if(q.rows[0].status==='HOLD') return res.status(400).json({error:'Invoice HOLD — tidak bisa dibayar, selesaikan 3-way dulu'});
+    if(q.rows[0].status==='HOLD') return res.status(400).json({error:'Invoice HOLD - tidak bisa dibayar, selesaikan 3-way dulu'});
     inv=q.rows[0]; piId=inv.id; total=parseFloat(inv.total);
   } else {
     const q=await pool.query('SELECT * FROM purchase_orders WHERE id=$1',[po_id]);
@@ -153,6 +151,90 @@ router.get('/trial-balance', async (req,res)=>{
   try{ const r=await pool.query("SELECT a.code, a.name, a.type, COALESCE(SUM(jd.debit),0) as debit, COALESCE(SUM(jd.credit),0) as credit FROM accounts a LEFT JOIN journal_details jd ON jd.account_id=a.id LEFT JOIN journal_entries je ON je.id=jd.journal_id WHERE je.posted=true OR je.posted IS NULL GROUP BY a.code, a.name, a.type ORDER BY a.code"); res.json(r.rows.map(x=>({...x, debit:parseFloat(x.debit), credit:parseFloat(x.credit)}))); }catch(e){ console.error('tb',e.message); res.json([]); }
 });
 router.get('/profit-loss', async (req,res)=>{
-  try{ const rev=await pool.query("SELECT COALESCE(SUM(total),0) as val FROM invoices WHERE status != 'CANCELLED'"); const cogs=await pool.query("SELECT COALESCE(SUM(total),0)*0.75 as val FROM invoices WHERE status != 'CANCELLED'"); const revVal=parseFloat(rev.rows[0].val); const cogsVal=parseFloat(cogs.rows[0].val); res.json({ revenue: revVal, cogs: cogsVal, gross_profit: revVal - cogsVal, opex: revVal*0.08, net_profit: revVal - cogsVal - revVal*0.08 }); }catch(e){ console.error('pl',e.message); res.json({revenue:0,cogs:0,gross_profit:0,opex:0,net_profit:0}); }
+  // ESTIMASI: HPP = qty x avg_cost stok saat ini; opex diambil dari jurnal akun EXPENSE (real).
+  try{
+    const rev=await pool.query("SELECT COALESCE(SUM(total),0) as val FROM invoices WHERE status != 'CANCELLED'");
+    const cogs=await pool.query(`SELECT COALESCE(SUM(d.qty * COALESCE(c.avg_cost,0)),0) as val
+      FROM invoices i JOIN so_details d ON d.so_id=i.so_id
+      LEFT JOIN LATERAL (SELECT SUM(s.qty_on_hand*s.avg_cost)/NULLIF(SUM(s.qty_on_hand),0) as avg_cost FROM stocks s WHERE s.product_id=d.product_id) c ON true
+      WHERE i.status != 'CANCELLED'`);
+    const opex=await pool.query("SELECT COALESCE(SUM(jd.debit)-SUM(jd.credit),0) as val FROM journal_details jd JOIN accounts a ON a.id=jd.account_id WHERE a.type='EXPENSE'");
+    const revVal=parseFloat(rev.rows[0].val), cogsVal=parseFloat(cogs.rows[0].val), opexVal=parseFloat(opex.rows[0].val);
+    res.json({ revenue: revVal, cogs: cogsVal, gross_profit: revVal-cogsVal, opex: opexVal, net_profit: revVal-cogsVal-opexVal, estimated:true });
+  }catch(e){ console.error('pl',e.message); res.json({revenue:0,cogs:0,gross_profit:0,opex:0,net_profit:0,estimated:true}); }
 });
+
+// ------------------------------------------------------------- EXPORT
+router.get('/export', async (req,res)=>{
+  const format=String(req.query.format||'xlsx').toLowerCase();
+  if(!['csv','xlsx','pdf'].includes(format)) return res.status(400).json({error:'Format tidak didukung: '+format});
+  const dataset=String(req.query.dataset||'coa');
+  const money=(n)=>new Intl.NumberFormat('id-ID').format(Math.round(Number(n)||0));
+  try{
+    if(dataset==='coa'){
+      const r=await pool.query('SELECT * FROM accounts ORDER BY code');
+      const columns=[{label:'Kode'},{label:'Nama Akun'},{label:'Tipe'},{label:'Induk'}];
+      const rows=r.rows.map(a=>[a.code, a.name, a.type, a.parent_id||'-']);
+      return sendReport(res,{format,filename:'coa',payload:{title:'Chart of Accounts',subtitle:`${rows.length} akun`,columns,rows,sheetName:'COA'}});
+    }
+    if(dataset==='journals'){
+      const r=await pool.query('SELECT je.*, u.username FROM journal_entries je LEFT JOIN users u ON u.id=je.created_by ORDER BY je.id DESC LIMIT 2000');
+      for(const je of r.rows){
+        const d=await pool.query('SELECT jd.*, a.code, a.name FROM journal_details jd JOIN accounts a ON a.id=jd.account_id WHERE jd.journal_id=$1',[je.id]);
+        je._details=d.rows;
+      }
+      const columns=[{label:'No. Jurnal'},{label:'Tanggal'},{label:'Deskripsi'},{label:'Debit',numeric:true,total:true},{label:'Kredit',numeric:true,total:true},{label:'Status'}];
+      const rows=r.rows.map(j=>[j.entry_number, String(j.entry_date||'').slice(0,10), j.description||'-', parseFloat(j.total_debit||0), parseFloat(j.total_credit||0), j.posted?'POSTED':'DRAFT']);
+      const totals=columns.map((c,i)=>c.total?rows.reduce((a,x)=>a+(parseFloat(x[i])||0),0):'');
+      return sendReport(res,{format,filename:'jurnal-umum',payload:{title:'Jurnal Umum',subtitle:`${rows.length} jurnal  |  Debit ${money(totals[3]||0)}  Kredit ${money(totals[4]||0)}`,columns,rows,totals,sheetName:'Jurnal'}});
+    }
+    if(dataset==='ar'){
+      const r=await pool.query(`SELECT inv.invoice_number, inv.status, inv.total, inv.paid_amount, COALESCE(inv.total,0)-COALESCE(inv.paid_amount,0) as outstanding, c.name as customer_name FROM invoices inv LEFT JOIN customers c ON c.id=inv.customer_id ORDER BY inv.id DESC LIMIT 2000`);
+      const columns=[{label:'Invoice'},{label:'Customer'},{label:'Status'},{label:'Total',numeric:true,total:true},{label:'Terbayar',numeric:true,total:true},{label:'Sisa',numeric:true,total:true}];
+      const rows=r.rows.map(x=>[x.invoice_number, x.customer_name||'-', x.status, parseFloat(x.total||0), parseFloat(x.paid_amount||0), parseFloat(x.outstanding||0)]);
+      const totals=columns.map((c,i)=>c.total?rows.reduce((a,x)=>a+(parseFloat(x[i])||0),0):'');
+      return sendReport(res,{format,filename:'aging-piutang',payload:{title:'Aging Piutang (AR)',subtitle:`${rows.length} invoice`,columns,rows,totals,sheetName:'AR'}});
+    }
+    if(dataset==='ap'){
+      const r=await pool.query(`SELECT 'PURCHASE' as source, pi.inv_number as doc_number, pi.total, pi.status, s.name as supplier_name FROM purchase_invoices pi JOIN suppliers s ON s.id=pi.supplier_id UNION ALL SELECT 'PO' as source, po.po_number as doc_number, po.total, po.status, s.name as supplier_name FROM purchase_orders po JOIN suppliers s ON s.id=po.supplier_id WHERE po.status IN ('RECEIVED','PARTIAL') LIMIT 2000`);
+      const columns=[{label:'Sumber'},{label:'Dokumen'},{label:'Supplier'},{label:'Status'},{label:'Total',numeric:true,total:true}];
+      const rows=r.rows.map(x=>[x.source, x.doc_number, x.supplier_name||'-', x.status, parseFloat(x.total||0)]);
+      const totals=columns.map((c,i)=>c.total?rows.reduce((a,x)=>a+(parseFloat(x[i])||0),0):'');
+      return sendReport(res,{format,filename:'hutang-usaha',payload:{title:'Hutang Usaha (AP)',subtitle:`${rows.length} dokumen`,columns,rows,totals,sheetName:'AP'}});
+    }
+    if(dataset==='cash'){
+      const r=await pool.query('SELECT bank_name, account_no, account_name, balance FROM bank_accounts ORDER BY bank_name');
+      const columns=[{label:'Bank'},{label:'No. Rekening'},{label:'Atas Nama'},{label:'Saldo',numeric:true,total:true}];
+      const rows=r.rows.map(x=>[x.bank_name, x.account_no, x.account_name||'-', parseFloat(x.balance||0)]);
+      const totals=columns.map((c,i)=>c.total?rows.reduce((a,x)=>a+(parseFloat(x[i])||0),0):'');
+      return sendReport(res,{format,filename:'saldo-bank',payload:{title:'Saldo Kas & Bank',subtitle:`${rows.length} rekening`,columns,rows,totals,sheetName:'Kas'}});
+    }
+    return res.status(400).json({error:'dataset tidak dikenal: '+dataset});
+  }catch(e){ res.status(500).json({error:e.message}); }
+});
+
+
+router.put('/coa/:id', async (req,res)=>{
+  const {code,name,type,parent_id}=req.body;
+  try{
+    const sets=[]; const vals=[]; let i=1;
+    if(code!==undefined){ sets.push('code=$'+i); vals.push(code); i++; }
+    if(name!==undefined){ sets.push('name=$'+i); vals.push(name); i++; }
+    if(type!==undefined){ sets.push('type=$'+i); vals.push(type); i++; }
+    if(parent_id!==undefined){ sets.push('parent_id=$'+i); vals.push(parent_id||null); i++; }
+    if(!sets.length) return res.status(400).json({error:'Tidak ada perubahan'});
+    vals.push(req.params.id);
+    await pool.query('UPDATE accounts SET '+sets.join(', ')+' WHERE id=$'+i, vals);
+    res.json({ok:true});
+  }catch(e){ res.status(500).json({error:e.message}); }
+});
+router.delete('/coa/:id', async (req,res)=>{
+  try{
+    const j=await pool.query('SELECT COUNT(*) FROM journal_details WHERE account_id=$1',[req.params.id]);
+    if(parseInt(j.rows[0].count)>0) return res.status(400).json({error:'Akun masih dipakai di jurnal - tidak bisa dihapus'});
+    await pool.query('DELETE FROM accounts WHERE id=$1',[req.params.id]);
+    res.json({ok:true});
+  }catch(e){ res.status(500).json({error:e.message}); }
+});
+
 export default router;

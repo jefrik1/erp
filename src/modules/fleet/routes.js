@@ -1,6 +1,11 @@
 import express from 'express';
 import { pool } from '../../config/db.js';
+import { rbac } from '../../middleware/auth.js';
 const router=express.Router();
+const R_ALL=['direktur','super_admin'];
+async function myEmployeeId(user){ const r=await pool.query('SELECT employee_id FROM users WHERE id=$1',[user.id]); return r.rows[0]?.employee_id||null; }
+async function myDriverId(user){ const emp=await myEmployeeId(user); if(!emp) return null; const d=await pool.query('SELECT id FROM drivers WHERE employee_id=$1',[emp]); return d.rows[0]?.id||null; }
+function isDriverOnly(user){ const roles=(user?.roles||[]).map(r=>String(r).toLowerCase()); return roles.includes('driver') && !roles.some(r=>['warehouse','direktur','super_admin'].includes(r)); }
 
 let fleetEnsured=false;
 async function ensureFleetCols(){
@@ -13,6 +18,12 @@ async function ensureFleetCols(){
     await pool.query(`ALTER TABLE vehicles ADD COLUMN IF NOT EXISTS photo_url TEXT`);
     await pool.query(`ALTER TABLE vehicles ADD COLUMN IF NOT EXISTS stnk_url TEXT`);
     await pool.query(`ALTER TABLE vehicles ADD COLUMN IF NOT EXISTS notes TEXT`);
+    // Data perolehan untuk Aset Tetap - armada milik sendiri ikut didepresiasi
+    await pool.query(`ALTER TABLE vehicles ADD COLUMN IF NOT EXISTS acquisition_date DATE`).catch(()=>{});
+    await pool.query(`ALTER TABLE vehicles ADD COLUMN IF NOT EXISTS acquisition_cost DECIMAL(18,2) DEFAULT 0`).catch(()=>{});
+    await pool.query(`ALTER TABLE vehicles ADD COLUMN IF NOT EXISTS residual_value DECIMAL(18,2) DEFAULT 0`).catch(()=>{});
+    await pool.query(`ALTER TABLE vehicles ADD COLUMN IF NOT EXISTS useful_life_years INT DEFAULT 8`).catch(()=>{});
+    await pool.query(`ALTER TABLE vehicles ADD COLUMN IF NOT EXISTS asset_code VARCHAR(20)`).catch(()=>{});
     // Plan B: pastikan kolom estimasi DO ada (defensive, juga ada di sales)
     await pool.query(`ALTER TABLE delivery_orders ADD COLUMN IF NOT EXISTS distance_km DECIMAL(10,2)`).catch(()=>{});
     await pool.query(`ALTER TABLE delivery_orders ADD COLUMN IF NOT EXISTS est_weight_ton DECIMAL(10,2)`).catch(()=>{});
@@ -45,8 +56,8 @@ async function ensureFleetCols(){
   }catch(e){ console.error('[fleet ensure]',e.message); }
 }
 
-// GET vehicles — enriched for Phase 0-2
-router.get('/vehicles', async(req,res)=>{
+// GET vehicles - enriched for Phase 0-2
+router.get('/vehicles', rbac('warehouse','driver','super_admin'), async(req,res)=>{
   await ensureFleetCols();
   try{
     const r=await pool.query(`
@@ -71,7 +82,7 @@ router.get('/vehicles', async(req,res)=>{
         v.trips_30=parseInt(agg.rows[0].cnt||0);
         v.cost_30=parseFloat(agg.rows[0].cost||0);
         v.km_30=parseFloat(agg.rows[0].km||0);
-        // DO estimasi 30d per kendaraan — 2 kolom terpisah Dalam Kota vs Luar Kota (per-armada tarif)
+        // DO estimasi 30d per kendaraan - 2 kolom terpisah Dalam Kota vs Luar Kota (per-armada tarif)
         const aggEst=await pool.query(`SELECT COALESCE(SUM(est_cost),0) as est, COALESCE(SUM(est_cost_dalam),0) as est_dalam, COALESCE(SUM(est_cost_luar),0) as est_luar, COALESCE(SUM(distance_km),0) as km FROM delivery_orders WHERE vehicle_no=$1 AND created_at >= NOW() - INTERVAL '30 days' AND est_cost IS NOT NULL`,[v.plat_no]);
         v.est_30=parseFloat(aggEst.rows[0].est||0);
         v.est_dalam_30=parseFloat(aggEst.rows[0].est_dalam||0);
@@ -86,7 +97,7 @@ router.get('/vehicles', async(req,res)=>{
   }catch(e){ console.error('[fleet vehicles]',e); res.status(500).json({error:e.message}); }
 });
 
-router.get('/vehicles/:id/history', async(req,res)=>{
+router.get('/vehicles/:id/history', rbac('warehouse','super_admin'), async(req,res)=>{
   await ensureFleetCols();
   const v=await pool.query('SELECT plat_no FROM vehicles WHERE id=$1',[req.params.id]);
   if(!v.rows[0]) return res.status(404).json({error:'Armada tidak ditemukan'});
@@ -97,10 +108,10 @@ router.get('/vehicles/:id/history', async(req,res)=>{
   res.json({plat_no: plat, deliveries: dos.rows, trips: trips.rows, maintenance: maint.rows});
 });
 
-router.post('/vehicles', async(req,res)=>{
+router.post('/vehicles', rbac('warehouse','super_admin'), async(req,res)=>{
   await ensureFleetCols();
   try{
-    const {plat_no, plate_number, type, brand, model, year, capacity_ton, capacity_volume_m3, capacity_weight_kg, ownership, kir_expiry, tax_expiry, driver_id, photo_url, area, tarif_dalam_flat, tarif_dalam_per_ton, tarif_luar_flat, tarif_luar_per_ton} = req.body;
+    const {plat_no, plate_number, type, brand, model, year, capacity_ton, capacity_volume_m3, capacity_weight_kg, ownership, kir_expiry, tax_expiry, driver_id, photo_url, area, tarif_dalam_flat, tarif_dalam_per_ton, tarif_luar_flat, tarif_luar_per_ton, acquisition_date, acquisition_cost, residual_value, useful_life_years} = req.body;
     const plat=(plat_no||plate_number||'').trim().toUpperCase();
     if(!plat) return res.status(400).json({error:'Plat nomor wajib'});
     if(!type) return res.status(400).json({error:'Tipe armada wajib'});
@@ -116,18 +127,22 @@ router.post('/vehicles', async(req,res)=>{
     const tLuarFlat = tarif_luar_flat!=null? parseFloat(tarif_luar_flat):600000;
     const tLuarTon  = tarif_luar_per_ton!=null? parseFloat(tarif_luar_per_ton):350000;
     const ins=await pool.query(
-      `INSERT INTO vehicles (plat_no,plate_number,type,brand,model,year,capacity_ton,capacity_weight_kg,capacity_volume_m3,ownership,status,driver_id,kir_expiry,tax_expiry,photo_url, area, tarif_dalam_flat, tarif_dalam_per_ton, tarif_luar_flat, tarif_luar_per_ton)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'AVAILABLE',$11,$12,$13,$14,$15,$16,$17,$18,$19) RETURNING id`,
-      [plat, plat, type||'ENGKEL', brand||'Mitsubishi', model||null, year?parseInt(year):null, ton, wkg, vol, own, driver_id||null, kir_expiry||null, tax_expiry||null, photo_url||null, areaVal, tDalamFlat, tDalamTon, tLuarFlat, tLuarTon]
+      `INSERT INTO vehicles (plat_no,plate_number,type,brand,model,year,capacity_ton,capacity_weight_kg,capacity_volume_m3,ownership,status,driver_id,kir_expiry,tax_expiry,photo_url, area, tarif_dalam_flat, tarif_dalam_per_ton, tarif_luar_flat, tarif_luar_per_ton, acquisition_date, acquisition_cost, residual_value, useful_life_years)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'AVAILABLE',$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING id`,
+      [plat, plat, type||'ENGKEL', brand||'Mitsubishi', model||null, year?parseInt(year):null, ton, wkg, vol, own, driver_id||null, kir_expiry||null, tax_expiry||null, photo_url||null, areaVal, tDalamFlat, tDalamTon, tLuarFlat, tLuarTon, acquisition_date||null, parseFloat(acquisition_cost)||0, parseFloat(residual_value)||0, parseInt(useful_life_years)||8]
     );
+    // armada milik sendiri langsung dibuatkan baris Aset Tetap (bisa juga lewat tombol di halaman Aset)
+    if(own==='OWNED'){
+      try{ await fetch(`${process.env.SELF_URL||'http://127.0.0.1:'+(process.env.PORT||4000)}/api/assets/sync-fleet`, {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'}); }catch{}
+    }
     res.json(ins.rows[0]);
   }catch(e){ console.error('[fleet POST vehicles]',e); res.status(500).json({error:e.message}); }
 });
 
-router.put('/vehicles/:id', async(req,res)=>{
+router.put('/vehicles/:id', rbac('warehouse','super_admin'), async(req,res)=>{
   await ensureFleetCols();
   try{
-    const {plat_no, type, brand, model, year, capacity_ton, capacity_volume_m3, capacity_weight_kg, ownership, kir_expiry, tax_expiry, driver_id, status, photo_url, area, tarif_dalam_flat, tarif_dalam_per_ton, tarif_luar_flat, tarif_luar_per_ton} = req.body;
+    const {plat_no, type, brand, model, year, capacity_ton, capacity_volume_m3, capacity_weight_kg, ownership, kir_expiry, tax_expiry, driver_id, status, photo_url, area, tarif_dalam_flat, tarif_dalam_per_ton, tarif_luar_flat, tarif_luar_per_ton, acquisition_date, acquisition_cost, residual_value, useful_life_years} = req.body;
     const v=await pool.query('SELECT * FROM vehicles WHERE id=$1',[req.params.id]);
     if(!v.rows[0]) return res.status(404).json({error:'Armada tidak ditemukan'});
     const plat=(plat_no||v.rows[0].plat_no).trim().toUpperCase();
@@ -137,32 +152,64 @@ router.put('/vehicles/:id', async(req,res)=>{
     const tLuarFlat = tarif_luar_flat!=null && tarif_luar_flat!=='' ? parseFloat(tarif_luar_flat) : v.rows[0].tarif_luar_flat;
     const tLuarTon  = tarif_luar_per_ton!=null && tarif_luar_per_ton!=='' ? parseFloat(tarif_luar_per_ton) : v.rows[0].tarif_luar_per_ton;
     await pool.query(
-      `UPDATE vehicles SET plat_no=$1, plate_number=$1, type=$2, brand=$3, model=$4, year=$5, capacity_ton=$6, capacity_weight_kg=$7, capacity_volume_m3=$8, ownership=$9, kir_expiry=$10, tax_expiry=$11, driver_id=$12, status=COALESCE($13,status), photo_url=$14, area=$15, tarif_dalam_flat=$16, tarif_dalam_per_ton=$17, tarif_luar_flat=$18, tarif_luar_per_ton=$19 WHERE id=$20`,
-      [plat, type||v.rows[0].type, brand||v.rows[0].brand, model||v.rows[0].model, year?parseInt(year):v.rows[0].year, capacity_ton?parseFloat(capacity_ton):v.rows[0].capacity_ton, capacity_weight_kg?parseFloat(capacity_weight_kg):v.rows[0].capacity_weight_kg, capacity_volume_m3?parseFloat(capacity_volume_m3):v.rows[0].capacity_volume_m3, ownership||v.rows[0].ownership, kir_expiry||v.rows[0].kir_expiry, tax_expiry||v.rows[0].tax_expiry, driver_id!==undefined?driver_id:v.rows[0].driver_id, status||null, photo_url!==undefined?photo_url:v.rows[0].photo_url, areaVal, tDalamFlat, tDalamTon, tLuarFlat, tLuarTon, req.params.id]
+      `UPDATE vehicles SET plat_no=$1, plate_number=$1, type=$2, brand=$3, model=$4, year=$5, capacity_ton=$6, capacity_weight_kg=$7, capacity_volume_m3=$8, ownership=$9, kir_expiry=$10, tax_expiry=$11, driver_id=$12, status=COALESCE($13,status), photo_url=$14, area=$15, tarif_dalam_flat=$16, tarif_dalam_per_ton=$17, tarif_luar_flat=$18, tarif_luar_per_ton=$19,
+              acquisition_date=COALESCE($21,acquisition_date), acquisition_cost=COALESCE($22,acquisition_cost), residual_value=COALESCE($23,residual_value), useful_life_years=COALESCE($24,useful_life_years)
+       WHERE id=$20`,
+      [plat, type||v.rows[0].type, brand||v.rows[0].brand, model||v.rows[0].model, year?parseInt(year):v.rows[0].year, capacity_ton?parseFloat(capacity_ton):v.rows[0].capacity_ton, capacity_weight_kg?parseFloat(capacity_weight_kg):v.rows[0].capacity_weight_kg, capacity_volume_m3?parseFloat(capacity_volume_m3):v.rows[0].capacity_volume_m3, ownership||v.rows[0].ownership, kir_expiry||v.rows[0].kir_expiry, tax_expiry||v.rows[0].tax_expiry, driver_id!==undefined?driver_id:v.rows[0].driver_id, status||null, photo_url!==undefined?photo_url:v.rows[0].photo_url, areaVal, tDalamFlat, tDalamTon, tLuarFlat, tLuarTon, req.params.id,
+       acquisition_date||null, acquisition_cost!=null && acquisition_cost!==''?parseFloat(acquisition_cost):null,
+       residual_value!=null && residual_value!==''?parseFloat(residual_value):null,
+       useful_life_years!=null && useful_life_years!==''?parseInt(useful_life_years):null]
     );
+    // Data perolehan yang diisi di Armada langsung dipakai baris Aset Tetap-nya.
+    // (Di halaman Aset, tombol "Tarik Armada" tidak menimpa angka yang sudah ada.)
+    try{
+      const fa=await pool.query('SELECT id FROM fixed_assets WHERE vehicle_id=$1',[req.params.id]);
+      if(fa.rows[0]){
+        await pool.query(
+          `UPDATE fixed_assets SET
+             name = COALESCE($1, name), photo_url = COALESCE($2, photo_url),
+             acquisition_date = COALESCE($3, acquisition_date),
+             acquisition_cost = COALESCE($4, acquisition_cost),
+             book_value = CASE WHEN $4::numeric IS NOT NULL AND COALESCE(accumulated_depreciation,0)=0 THEN $4::numeric ELSE book_value END,
+             residual_value = COALESCE($5, residual_value),
+             useful_life_years = COALESCE($6, useful_life_years)
+           WHERE id = $7`,
+          [`${type||v.rows[0].type||'Armada'} - ${plat}`, photo_url!==undefined?photo_url:null,
+           acquisition_date||null, acquisition_cost!=null && acquisition_cost!==''?parseFloat(acquisition_cost):null,
+           residual_value!=null && residual_value!==''?parseFloat(residual_value):null,
+           useful_life_years!=null && useful_life_years!==''?parseInt(useful_life_years):null, fa.rows[0].id]);
+      }
+    }catch(e){ console.error('[fleet sync asset on PUT]', e.message); }
     res.json({ok:true});
   }catch(e){ console.error('[fleet PUT vehicles]',e); res.status(500).json({error:e.message}); }
 });
 
-router.get('/drivers', async(req,res)=>{
+router.get('/drivers', rbac('warehouse','super_admin'), async(req,res)=>{
   await ensureFleetCols();
   const r=await pool.query('SELECT d.*, e.name, e.phone, e.position FROM drivers d JOIN employees e ON e.id=d.employee_id ORDER BY e.name');
   res.json(r.rows);
 });
-router.post('/drivers', async(req,res)=>{
+router.post('/drivers', rbac('warehouse','super_admin'), async(req,res)=>{
   const {employee_id,sim_number,sim_expiry, sim_type}=req.body;
   const ins=await pool.query('INSERT INTO drivers (employee_id,sim_number,sim_expiry,sim_type) VALUES ($1,$2,$3,$4) RETURNING id',[employee_id,sim_number,sim_expiry, sim_type||'B1']);
   res.json(ins.rows[0]);
 });
 
 // employees for driver select (vehicles.driver_id -> employees)
-router.get('/employees', async(req,res)=>{
+router.get('/employees', rbac('warehouse','super_admin'), async(req,res)=>{
   const r=await pool.query(`SELECT id, employee_code, name, phone, position FROM employees WHERE is_active=true ORDER BY name LIMIT 100`);
   res.json(r.rows);
 });
 
-router.get('/trips', async(req,res)=>{
+router.get('/trips', rbac('warehouse','driver','super_admin'), async(req,res)=>{
   await ensureFleetCols();
+  const mine = String(req.query.mine||'')==='1' || isDriverOnly(req.user);
+  let where=''; const params=[];
+  if(mine){
+    const mid = await myDriverId(req.user);
+    if(!mid) return res.json([]);
+    params.push(mid); where='WHERE t.driver_id=$1';
+  }
   const r=await pool.query(`
     SELECT t.*, v.plat_no, v.type as vehicle_type, v.capacity_ton, v.area as vehicle_area,
            e.name as driver_name, e.phone as driver_phone,
@@ -177,7 +224,8 @@ router.get('/trips', async(req,res)=>{
     LEFT JOIN drivers d ON d.employee_id=e.id
     LEFT JOIN delivery_orders del ON del.id=t.do_id
     LEFT JOIN customers c ON c.id=del.customer_id
-    ORDER BY t.id DESC LIMIT 80`);
+    ${where}
+    ORDER BY t.id DESC LIMIT 80`, params);
   // enrich with cost/km & km/l + variance vs DO estimasi
   for(const t of r.rows){
     const dist=parseFloat(t.distance_km)||0;
@@ -201,23 +249,28 @@ router.get('/trips', async(req,res)=>{
   res.json(r.rows);
 });
 
-router.post('/trips', async(req,res)=>{
+router.post('/trips', rbac('warehouse','driver','super_admin'), async(req,res)=>{
   await ensureFleetCols();
   try{
-    const {vehicle_id,driver_id,do_id,route,distance_km,fuel_cost,toll_cost,other_cost,fuel_liters, odometer_start, notes} = req.body;
+    let {vehicle_id,driver_id,do_id,route,distance_km,fuel_cost,toll_cost,other_cost,fuel_liters, odometer_start, notes} = req.body;
+    if(isDriverOnly(req.user)){
+      const mid=await myDriverId(req.user);
+      if(!mid) return res.status(400).json({error:'Akun driver belum tertaut ke data driver (SIM). Hubungi admin.'});
+      driver_id=mid;
+    }
     if(!vehicle_id) return res.status(400).json({error:'Pilih armada'});
     const vRes=await pool.query('SELECT v.*, e.name as driver_name FROM vehicles v LEFT JOIN employees e ON e.id=v.driver_id WHERE v.id=$1',[vehicle_id]);
     if(!vRes.rows[0]) return res.status(404).json({error:'Armada tidak ditemukan'});
     const v=vRes.rows[0];
-    if(v.status!=='AVAILABLE') return res.status(400).json({error:`Armada ${v.plat_no} tidak AVAILABLE (status: ${v.status}) — selesaikan DO/Trip aktif dulu`});
+    if(v.status!=='AVAILABLE') return res.status(400).json({error:`Armada ${v.plat_no} tidak AVAILABLE (status: ${v.status}) - selesaikan DO/Trip aktif dulu`});
     // KIR & Pajak guard
     if(v.kir_expiry){
       const kir=new Date(v.kir_expiry); const now=new Date(); kir.setHours(0,0,0,0); now.setHours(0,0,0,0);
-      if(kir < now) return res.status(400).json({error:`KIR ${v.plat_no} sudah habis (${v.kir_expiry.toISOString? v.kir_expiry.toISOString().slice(0,10): v.kir_expiry}) — perpanjang sebelum jalan (tilang)`});
+      if(kir < now) return res.status(400).json({error:`KIR ${v.plat_no} sudah habis (${v.kir_expiry.toISOString? v.kir_expiry.toISOString().slice(0,10): v.kir_expiry}) - perpanjang sebelum jalan (tilang)`});
     }
     if(v.tax_expiry){
       const tax=new Date(v.tax_expiry); const now=new Date(); tax.setHours(0,0,0,0); now.setHours(0,0,0,0);
-      if(tax < now) return res.status(400).json({error:`Pajak STNK ${v.plat_no} sudah habis — perpanjang sebelum jalan`});
+      if(tax < now) return res.status(400).json({error:`Pajak STNK ${v.plat_no} sudah habis - perpanjang sebelum jalan`});
     }
     // SIM expiry guard + resolve drivers.id (FK trips.driver_id -> drivers.id)
     let driverIdToUse = driver_id ? parseInt(driver_id) : null;
@@ -240,7 +293,7 @@ router.post('/trips', async(req,res)=>{
         driverIdToUse=dr.rows[0].id;
         if(dr.rows[0].sim_expiry){
           const sim=new Date(dr.rows[0].sim_expiry); const now=new Date(); sim.setHours(0,0,0,0); now.setHours(0,0,0,0);
-          if(sim < now) return res.status(400).json({error:`SIM driver ${v.driver_name||v.driver_id} sudah habis (${String(dr.rows[0].sim_expiry).slice(0,10)}) — ganti driver`});
+          if(sim < now) return res.status(400).json({error:`SIM driver ${v.driver_name||v.driver_id} sudah habis (${String(dr.rows[0].sim_expiry).slice(0,10)}) - ganti driver`});
         }
       } else {
         const ins=await pool.query(`INSERT INTO drivers (employee_id, sim_number, sim_type, sim_expiry) VALUES ($1,$2,'B1',CURRENT_DATE + INTERVAL '2 year') RETURNING id`,[v.driver_id]);
@@ -263,11 +316,11 @@ router.post('/trips', async(req,res)=>{
       const doRow=await pool.query('SELECT id, so_id FROM delivery_orders WHERE id=$1',[do_id]);
       if(doRow.rows[0]){
         const items=await pool.query('SELECT qty FROM do_details WHERE do_id=$1',[do_id]);
-        // heuristic: 1 qty unit ≈ 50kg (1 sak semen 50kg) — for mixed, conservative
+        // heuristic: 1 qty unit ≈ 50kg (1 sak semen 50kg) - for mixed, conservative
         let totalQty=0; for(const it of items.rows) totalQty+=parseFloat(it.qty||0);
         const estTon = totalQty * 0.05; // 50kg per qty
         const capTon = parseFloat(v.capacity_ton||8);
-        // if product cat pasir m3, still approximate — use ton as main
+        // if product cat pasir m3, still approximate - use ton as main
         if(estTon > capTon + 0.01){
           return res.status(400).json({error:`OVERLOAD: muatan estimasi ${estTon.toFixed(2)} ton > kapasitas ${capTon} ton (${v.plat_no}). Ganti armada lebih besar atau bagi DO.`});
         }
@@ -291,12 +344,13 @@ router.post('/trips', async(req,res)=>{
   }catch(e){ console.error('[fleet POST trips]',e); res.status(500).json({error:e.message}); }
 });
 
-router.post('/trips/:id/complete', async(req,res)=>{
+router.post('/trips/:id/complete', rbac('warehouse','driver','super_admin'), async(req,res)=>{
   await ensureFleetCols();
   try{
     const {odometer_end, fuel_liters, fuel_cost, distance_km, notes} = req.body;
     const t=await pool.query('SELECT * FROM trips WHERE id=$1',[req.params.id]);
     if(!t.rows[0]) return res.status(404).json({error:'Trip tidak ditemukan'});
+    if(isDriverOnly(req.user)){ const mid=await myDriverId(req.user); if(t.rows[0].driver_id!==mid) return res.status(403).json({error:'Trip ini bukan milik Anda'}); }
     if(t.rows[0].status==='COMPLETED') return res.json({ok:true, already:true});
     if(t.rows[0].status==='CANCELLED') return res.status(400).json({error:'Trip sudah dibatalkan'});
     const startOdo=t.rows[0].odometer_start;
@@ -321,8 +375,9 @@ router.post('/trips/:id/complete', async(req,res)=>{
   }catch(e){ console.error('[fleet complete]',e); res.status(500).json({error:e.message}); }
 });
 
-router.post('/trips/:id/cancel', async(req,res)=>{
-  const t=await pool.query('SELECT vehicle_id, status FROM trips WHERE id=$1',[req.params.id]);
+router.post('/trips/:id/cancel', rbac('warehouse','driver','super_admin'), async(req,res)=>{
+  const t=await pool.query('SELECT vehicle_id, status, driver_id FROM trips WHERE id=$1',[req.params.id]);
+  if(isDriverOnly(req.user)){ const mid=await myDriverId(req.user); if(t.rows[0] && t.rows[0].driver_id!==mid) return res.status(403).json({error:'Trip ini bukan milik Anda'}); }
   if(!t.rows[0]) return res.status(404).json({error:'Trip tidak ditemukan'});
   if(t.rows[0].status==='COMPLETED') return res.status(400).json({error:'Trip sudah selesai'});
   await pool.query("UPDATE trips SET status='CANCELLED' WHERE id=$1",[req.params.id]);
@@ -330,18 +385,18 @@ router.post('/trips/:id/cancel', async(req,res)=>{
   res.json({ok:true});
 });
 
-router.get('/maintenance', async(req,res)=>{
+router.get('/maintenance', rbac('warehouse','super_admin'), async(req,res)=>{
   const r=await pool.query('SELECT vm.*, v.plat_no, v.type as vehicle_type FROM vehicle_maintenance vm JOIN vehicles v ON v.id=vm.vehicle_id ORDER BY vm.service_date DESC LIMIT 80');
   res.json(r.rows);
 });
-router.post('/maintenance', async(req,res)=>{
+router.post('/maintenance', rbac('warehouse','super_admin'), async(req,res)=>{
   const {vehicle_id,maintenance_type,service_date,next_service_date,description,cost, workshop} = req.body;
   if(!vehicle_id) return res.status(400).json({error:'Pilih armada'});
   await pool.query('INSERT INTO vehicle_maintenance (vehicle_id,maintenance_type,service_date,next_service_date,description,cost,workshop) VALUES ($1,$2,$3,$4,$5,$6,$7)',[vehicle_id,maintenance_type||'PREVENTIVE',service_date||new Date().toISOString().slice(0,10),next_service_date||null,description||null,cost?parseFloat(cost):0, workshop||null]);
   res.json({ok:true});
 });
 
-router.get('/stats', async(req,res)=>{
+router.get('/stats', rbac('warehouse','super_admin'), async(req,res)=>{
   await ensureFleetCols();
   const tot=await pool.query('SELECT COUNT(*) FROM vehicles');
   const avail=await pool.query("SELECT COUNT(*) FROM vehicles WHERE status='AVAILABLE'");
@@ -361,7 +416,7 @@ router.get('/stats', async(req,res)=>{
   const totalKm=parseFloat(cost.rows[0].km||0);
   const totalCost=parseFloat(cost.rows[0].total||0);
   const avgCostPerKm = totalKm>0 ? totalCost/totalKm : 0;
-  // Plan B: est vs actual variance 30 hari — 2 kolom Dalam vs Luar (sesuai tarif per-armada)
+  // Plan B: est vs actual variance 30 hari - 2 kolom Dalam vs Luar (sesuai tarif per-armada)
   let est30=0, estDalam30=0, estLuar30=0, variance30=0, varianceDalam30=0, varianceLuar30=0;
   try{
     const estQ=await pool.query("SELECT COALESCE(SUM(est_cost),0) as est, COALESCE(SUM(est_cost_dalam),0) as est_dalam, COALESCE(SUM(est_cost_luar),0) as est_luar FROM delivery_orders WHERE created_at >= NOW() - INTERVAL '30 days' AND est_cost IS NOT NULL");
@@ -399,12 +454,25 @@ router.get('/stats', async(req,res)=>{
   });
 });
 
-router.get('/zones', async(req,res)=>{
+router.get('/zones', rbac('warehouse','super_admin'), async(req,res)=>{
   res.json([
     {zone:'Dalam Kota Bekasi', tarif_per_ton:120000, tarif_flat:150000, jangkauan:'0-15km'},
     {zone:'Jakarta', tarif_per_ton:180000, tarif_flat:250000, jangkauan:'15-40km'},
     {zone:'Bandung/Luar Kota', tarif_per_ton:350000, tarif_flat:600000, jangkauan:'>40km'},
   ]);
+});
+
+// DO yang ditugaskan ke driver yang login (halaman Trip Saya)
+router.get('/my-deliveries', rbac('driver','warehouse','super_admin'), async(req,res)=>{
+  try{
+    const emp=await myEmployeeId(req.user);
+    if(!emp) return res.json([]);
+    const r=await pool.query(`SELECT d.id, d.do_number, d.status, d.delivery_date, d.shipping_address, d.vehicle_no,
+        c.name AS customer_name, c.phone AS customer_phone
+      FROM delivery_orders d LEFT JOIN customers c ON c.id=d.customer_id
+      WHERE d.driver_id=$1 AND d.status NOT IN ('COMPLETED','CANCELLED') ORDER BY d.id DESC LIMIT 30`,[emp]);
+    res.json(r.rows);
+  }catch(e){ res.status(500).json({error:e.message}); }
 });
 
 export default router;

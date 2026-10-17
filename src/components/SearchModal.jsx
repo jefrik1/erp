@@ -1,59 +1,62 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../lib/api';
 import { Search, X } from 'lucide-react';
 
+const TYPE_TONE = {
+  SO: 'bg-sky-50 text-sky-700 border-sky-200',
+  PO: 'bg-[#F1F5F9] text-[#475569] border-[#E2E8F0]',
+  PROJECT: 'bg-amber-50 text-amber-700 border-amber-200',
+  CONSIGNMENT: 'bg-teal-50 text-teal-700 border-teal-200',
+  PRODUCT: 'bg-[#F1F5F9] text-[#475569] border-[#E2E8F0]',
+  CUSTOMER: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+};
+
 export default function SearchModal({ open, onClose }) {
+  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef(null);
 
   useEffect(() => {
-    if (open) inputRef.current?.focus();
+    if (open) { setQuery(''); setResults([]); setTimeout(()=>inputRef.current?.focus(), 10); }
   }, [open]);
 
+  // ESC global (dulu hanya jalan saat input fokus)
   useEffect(() => {
-    if (!query.trim()) {
-      setResults([]);
-      return;
-    }
+    if (!open) return;
+    const h = (e)=>{ if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [open, onClose]);
 
+  useEffect(() => {
+    if (!query.trim()) { setResults([]); return; }
     const timer = setTimeout(async () => {
       try {
         setLoading(true);
-        const resp = await api.get('/search', {
-          params: { q: query },
-        });
-        setResults(resp.data);
+        const resp = await api.get('/search', { params: { q: query } });
+        setResults(Array.isArray(resp.data) ? resp.data : []);
       } catch (e) {
-        console.error('Search error:', e.message);
+        setResults([]);
       } finally {
         setLoading(false);
       }
     }, 300);
-
     return () => clearTimeout(timer);
   }, [query]);
 
   const handleSelect = (result) => {
-    if (result.url) window.location.href = result.url;
     onClose();
-  };
-
-  const typeColor = {
-    SO: 'bg-blue-50 text-blue-700',
-    PO: 'bg-purple-50 text-purple-700',
-    PROJECT: 'bg-amber-50 text-amber-700',
-    CONSIGNMENT: 'bg-green-50 text-green-700',
-    PRODUCT: 'bg-gray-50 text-gray-700',
-    CUSTOMER: 'bg-pink-50 text-pink-700'
+    if (result.url) navigate(result.url);
   };
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center pt-20">
-      <div className="bg-white rounded-2xl shadow-2xl w-[600px] max-h-[500px] flex flex-col">
+    <div className="fixed inset-0 z-[60] bg-black/50 flex items-start justify-center pt-20 px-4" onClick={onClose}>
+      <div className="bg-white rounded-[20px] shadow-2xl w-full max-w-[600px] max-h-[500px] flex flex-col animate-pop overflow-hidden" onClick={e=>e.stopPropagation()}>
         <div className="p-4 border-b flex items-center gap-2">
           <Search size={20} className="text-gray-400" />
           <input
@@ -63,9 +66,6 @@ export default function SearchModal({ open, onClose }) {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Cari Sales Order, PO, Project, Konsinyasi, Produk..."
             className="flex-1 outline-none text-sm"
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') onClose();
-            }}
           />
           <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded">
             <X size={18} />
@@ -91,7 +91,7 @@ export default function SearchModal({ open, onClose }) {
               onClick={() => handleSelect(r)}
               className="w-full px-4 py-3 hover:bg-gray-50 text-left flex items-center gap-3 transition"
             >
-              <div className={`px-2 py-1 rounded text-xs font-bold ${typeColor[r.type] || 'bg-gray-100'}`}>
+              <div className={`px-2 py-1 rounded-full border text-xs font-bold ${TYPE_TONE[r.type] || 'bg-gray-100 border-gray-200'}`}>
                 {r.type}
               </div>
               <div className="flex-1 min-w-0">

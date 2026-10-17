@@ -1,6 +1,8 @@
 import { useEffect, useState, useMemo } from 'react';
 import { FileText, Search, Truck, Wrench, Plus, AlertTriangle, Calendar, Fuel, Gauge, MapPin, X, Pencil, History, BarChart3, Ban } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import api from '../lib/api';
+import { PosPageHeader } from '../components/PosUI';
 import { Badge } from '../components/Layout';
 import { useDialog } from '../components/DialogProvider';
 
@@ -15,7 +17,7 @@ function kirBadge(dateStr){
   const d=daysLeft(dateStr);
   if(d===null) return null;
   if(d < 0) return {label:`KIR HABIS ${Math.abs(d)} hari`, cls:'bg-red-600 text-white border-red-700', dot:'●'};
-  if(d <= 7) return {label:`KIR ${d} hari lagi`, cls:'bg-red-50 text-red-700 border-red-200', dot:'⚠️'};
+  if(d <= 7) return {label:`KIR ${d} hari lagi`, cls:'bg-red-50 text-red-700 border-red-200', dot:'●'};
   if(d <= 30) return {label:`KIR ${d} hari`, cls:'bg-amber-50 text-amber-800 border-amber-200', dot:'●'};
   return {label:`KIR ${d} hari`, cls:'bg-emerald-50 text-emerald-700 border-emerald-200', dot:'●'};
 }
@@ -114,7 +116,7 @@ export default function Fleet(){
 
   const openAddVehicle=()=>{
     setEditingVehicle(null);
-    setVehicleForm({plat_no:'', type:'Colt Diesel 8 Ton', brand:'Mitsubishi', model:'', year:'', capacity_ton:'8', capacity_volume_m3:'20', ownership:'OWNED', kir_expiry:'', tax_expiry:'', driver_id:'', photo_url:'', area:'DALAM_KOTA', tarif_dalam_flat:'150000', tarif_dalam_per_ton:'120000', tarif_luar_flat:'600000', tarif_luar_per_ton:'350000'});
+    setVehicleForm({plat_no:'', type:'Colt Diesel 8 Ton', brand:'Mitsubishi', model:'', year:'', capacity_ton:'8', capacity_volume_m3:'20', ownership:'OWNED', kir_expiry:'', tax_expiry:'', driver_id:'', photo_url:'', area:'DALAM_KOTA', tarif_dalam_flat:'150000', tarif_dalam_per_ton:'120000', tarif_luar_flat:'600000', tarif_luar_per_ton:'350000', acquisition_date:'', acquisition_cost:'', residual_value:'0', useful_life_years:'8'});
     setShowVehicle(true);
   };
   const openEditVehicle=(v)=>{
@@ -124,7 +126,11 @@ export default function Fleet(){
       capacity_ton: String(v.capacity_ton||''), capacity_volume_m3: String(v.capacity_volume_m3||''),
       ownership: v.ownership||'OWNED', kir_expiry: v.kir_expiry? String(v.kir_expiry).slice(0,10):'', tax_expiry: v.tax_expiry? String(v.tax_expiry).slice(0,10):'',
       driver_id: v.driver_id? String(v.driver_id):'', photo_url: v.photo_url||'',
-      area: v.area||'DALAM_KOTA', tarif_dalam_flat: String(v.tarif_dalam_flat ?? 150000), tarif_dalam_per_ton: String(v.tarif_dalam_per_ton ?? 120000), tarif_luar_flat: String(v.tarif_luar_flat ?? 600000), tarif_luar_per_ton: String(v.tarif_luar_per_ton ?? 350000)
+      area: v.area||'DALAM_KOTA', tarif_dalam_flat: String(v.tarif_dalam_flat ?? 150000), tarif_dalam_per_ton: String(v.tarif_dalam_per_ton ?? 120000), tarif_luar_flat: String(v.tarif_luar_flat ?? 600000), tarif_luar_per_ton: String(v.tarif_luar_per_ton ?? 350000),
+      acquisition_date: v.acquisition_date? String(v.acquisition_date).slice(0,10):'',
+      acquisition_cost: v.acquisition_cost!=null? String(v.acquisition_cost):'',
+      residual_value: v.residual_value!=null? String(v.residual_value):'0',
+      useful_life_years: v.useful_life_years!=null? String(v.useful_life_years):'8'
     });
     setShowVehicle(true);
   };
@@ -146,7 +152,11 @@ export default function Fleet(){
           tarif_dalam_flat: parseFloat(vehicleForm.tarif_dalam_flat)||150000,
           tarif_dalam_per_ton: parseFloat(vehicleForm.tarif_dalam_per_ton)||120000,
           tarif_luar_flat: parseFloat(vehicleForm.tarif_luar_flat)||600000,
-          tarif_luar_per_ton: parseFloat(vehicleForm.tarif_luar_per_ton)||350000
+          tarif_luar_per_ton: parseFloat(vehicleForm.tarif_luar_per_ton)||350000,
+          acquisition_date: vehicleForm.acquisition_date||null,
+          acquisition_cost: vehicleForm.acquisition_cost!==''? parseFloat(vehicleForm.acquisition_cost)||0 : null,
+          residual_value: vehicleForm.residual_value!==''? parseFloat(vehicleForm.residual_value)||0 : null,
+          useful_life_years: vehicleForm.useful_life_years!==''? parseInt(vehicleForm.useful_life_years)||8 : null
         });
         setMsg('Armada '+vehicleForm.plat_no+' diperbarui');
       }else{
@@ -164,7 +174,11 @@ export default function Fleet(){
           tarif_dalam_flat: parseFloat(vehicleForm.tarif_dalam_flat)||150000,
           tarif_dalam_per_ton: parseFloat(vehicleForm.tarif_dalam_per_ton)||120000,
           tarif_luar_flat: parseFloat(vehicleForm.tarif_luar_flat)||600000,
-          tarif_luar_per_ton: parseFloat(vehicleForm.tarif_luar_per_ton)||350000
+          tarif_luar_per_ton: parseFloat(vehicleForm.tarif_luar_per_ton)||350000,
+          acquisition_date: vehicleForm.acquisition_date||null,
+          acquisition_cost: parseFloat(vehicleForm.acquisition_cost)||0,
+          residual_value: parseFloat(vehicleForm.residual_value)||0,
+          useful_life_years: parseInt(vehicleForm.useful_life_years)||8
         });
         setMsg('Armada '+vehicleForm.plat_no+' ditambahkan');
       }
@@ -191,7 +205,7 @@ export default function Fleet(){
       });
       setShowTrip(false);
       setTripForm({vehicle_id:'', driver_id:'', do_id:'', route:'', distance_km:'', fuel_cost:'', toll_cost:'', other_cost:'', fuel_liters:'', odometer_start:'', notes:''});
-      setMsg('Trip dibuat — armada jadi IN_TRANSIT');
+      setMsg('Trip dibuat - armada jadi IN_TRANSIT');
       load();
       setTimeout(()=>setMsg(''),3000);
     }catch(e){ await dialog.alert(e.response?.data?.error||e.message, {title:'Gagal buat trip'}); }
@@ -210,7 +224,7 @@ export default function Fleet(){
       setCompleteId(null);
       const cpk=r.data.cost_per_km? ` • Rp ${Math.round(r.data.cost_per_km).toLocaleString('id-ID')}/km`: '';
       const kml=r.data.km_per_l? ` • ${r.data.km_per_l.toFixed(1)} km/l`: '';
-      setMsg(`Trip selesai ✓ ${r.data.distance_km||''} km${cpk}${kml} — armada AVAILABLE`);
+      setMsg(`Trip selesai ${r.data.distance_km||''} km${cpk}${kml} - armada AVAILABLE`);
       load();
       setTimeout(()=>setMsg(''),4000);
     }catch(e){ await dialog.alert(e.response?.data?.error||e.message, {title:'Gagal selesaikan trip'}); }
@@ -249,59 +263,52 @@ export default function Fleet(){
   return (
     <div className="space-y-3">
       {/* Header POS */}
-      <div className="flex items-start gap-3">
-        <div className="w-9 h-9 rounded-xl bg-[#2563EB] text-white grid place-items-center shrink-0 shadow-sm"><FileText size={18} strokeWidth={2.2}/></div>
-        <div className="min-w-0 flex-1">
-          <h1 className="text-[18px] sm:text-[20px] font-black tracking-tight text-[#0F172A] leading-none">Armada & Trip</h1>
-          <p className="text-xs text-[#64748B] mt-1">Kelola armada toko bangunan • KIR/Pajak/SIM guard • Kapasitas vs muatan • Biaya/km • Preventive servis</p>
-        </div>
-        <div className="hidden sm:flex items-center gap-2">
-          <button onClick={openAddVehicle} className="h-[42px] px-5 bg-[#1E40AF] text-white rounded-xl inline-flex items-center gap-1.5 text-sm font-bold shadow-sm hover:bg-[#1E3A8A] active:scale-[0.98] transition"><Plus size={16}/> Armada</button>
-          <button onClick={()=>setShowTrip(true)} className="h-[42px] px-5 bg-white border border-[#E2E8F0] rounded-xl text-sm font-bold text-[#334155] hover:bg-[#F8FAFC]">+ Trip</button>
-        </div>
-      </div>
+      <PosPageHeader icon={FileText} title="Armada & Trip" subtitle="Kelola armada toko bangunan • KIR/Pajak/SIM guard • Kapasitas vs muatan • Biaya/km • Preventive servis" actions={<>
+        <button onClick={openAddVehicle} className="h-[42px] px-5 bg-[#1E40AF] text-white rounded-xl inline-flex items-center gap-1.5 text-sm font-bold shadow-sm hover:bg-[#1E3A8A] active:scale-[0.98] transition"><Plus size={16}/> Armada</button>
+        <button onClick={()=>setShowTrip(true)} className="h-[42px] px-5 bg-white border border-[#E2E8F0] rounded-xl text-sm font-bold text-[#334155] hover:bg-[#F8FAFC]">+ Trip</button>
+      </>}/>
 
-      {msg && <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 p-3 rounded-xl text-sm flex justify-between gap-2"><span>{msg}</span><button onClick={()=>setMsg('')} className="font-bold">✕</button></div>}
-      {err && <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-xl text-sm flex justify-between gap-2"><span className="break-all">{err}</span><button onClick={()=>setErr('')} className="font-bold">✕</button></div>}
+      {msg && <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 p-3 rounded-xl text-sm flex justify-between gap-2"><span>{msg}</span><button onClick={()=>setMsg('')} className="font-bold"><X size={14}/></button></div>}
+      {err && <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-xl text-sm flex justify-between gap-2"><span className="break-all">{err}</span><button onClick={()=>setErr('')} className="font-bold"><X size={14}/></button></div>}
 
       {/* Stats POS 6-col with KIR/Pajak/SIM + area breakdown */}
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-          <div className="bg-white rounded-[16px] border border-[#E2E8F0] p-3 text-center shadow-sm">
+          <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-3 text-center shadow-sm">
             <div className="text-[11px] font-bold tracking-widest text-[#64748B]">ARMADA</div>
             <div className="text-xl font-black text-[#0F172A]">{stats.total}</div>
             <div className="text-[11px] text-[#64748B]">{stats.available} available • {stats.in_transit} jalan ({utilization}%)</div>
-            <div className="mt-1 h-1.5 bg-[#F1F5F9] rounded-full overflow-hidden"><div className="h-full bg-[#2563EB]" style={{width: utilization+'%'}}/></div>
+            <div className="mt-1 h-1.5 bg-[#F1F5F9] rounded-full overflow-hidden"><div className="h-full bg-[#1E40AF]" style={{width: utilization+'%'}}/></div>
             <div className="mt-1 flex justify-center gap-1 flex-wrap text-[10px] font-bold">
               {(stats.by_area||[]).map(a=> <span key={a.area} className={"px-1.5 py-0.5 rounded-full border "+(a.area==='LUAR_KOTA'?'bg-amber-50 text-amber-800 border-amber-200':'bg-sky-50 text-sky-700 border-sky-200')}>{a.area==='LUAR_KOTA'?'Luar Kota':'Dalam Kota'} {a.cnt}</span>)}
             </div>
           </div>
-          <div className="bg-emerald-50 border border-emerald-200 rounded-[16px] p-3 text-center">
+          <div className="bg-emerald-50 border border-emerald-200 rounded-[20px] p-3 text-center">
             <div className="text-[11px] font-bold tracking-widest text-emerald-700">AVAILABLE</div>
             <div className="text-xl font-black text-emerald-700">{stats.available}</div>
             <div className="text-[11px] text-emerald-700/70">Siap jalan</div>
           </div>
-          <div className="bg-sky-50 border border-sky-200 rounded-[16px] p-3 text-center">
+          <div className="bg-sky-50 border border-sky-200 rounded-[20px] p-3 text-center">
             <div className="text-[11px] font-bold tracking-widest text-sky-700">IN_TRANSIT</div>
             <div className="text-xl font-black text-sky-700">{stats.in_transit ?? stats.in_transit}</div>
             <div className="text-[11px] text-sky-700/70">Sedang kirim</div>
           </div>
-          <div className={"rounded-[16px] border p-3 text-center "+( (stats.kir_overdue||0)>0 ? 'bg-red-50 border-red-200':'bg-white border-[#E2E8F0]')}>
+          <div className={"rounded-[20px] border p-3 text-center "+( (stats.kir_overdue||0)>0 ? 'bg-red-50 border-red-200':'bg-white border-[#E2E8F0]')}>
             <div className="text-[11px] font-bold tracking-widest flex items-center justify-center gap-1" style={{color:(stats.kir_overdue||0)>0?'#B91C1C':'#64748B'}}><AlertTriangle size={12}/> KIR</div>
             <div className={"text-xl font-black "+((stats.kir_overdue||0)>0?'text-red-600':'text-[#0F172A]')}>{stats.kir_overdue||0} <span className="text-xs font-bold text-[#94A3B8]">habis</span></div>
             <div className="text-[11px] text-[#64748B]">{stats.kir_soon||0} &lt;30 hari</div>
           </div>
-          <div className="bg-white rounded-[16px] border border-[#E2E8F0] p-3 text-center shadow-sm">
+          <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-3 text-center shadow-sm">
             <div className="text-[11px] font-bold tracking-widest text-[#64748B]">BIAYA 30H</div>
             <div className="text-[15px] font-black text-[#0F172A]">{compact(stats.cost_30||0)}</div>
             <div className="text-[11px] text-[#64748B]">{stats.trips_30||0} trip • {compact(stats.km_30||0)} km</div>
-            {stats.avg_cost_per_km ? <div className="text-[11px] font-bold text-[#2563EB]">Rp {Math.round(stats.avg_cost_per_km).toLocaleString('id-ID')}/km</div> : null}
+            {stats.avg_cost_per_km ? <div className="text-[11px] font-bold text-[#1E40AF]">Rp {Math.round(stats.avg_cost_per_km).toLocaleString('id-ID')}/km</div> : null}
             <div className="mt-1.5 flex flex-col gap-1 text-[10px] font-bold">
               <span className={"px-1.5 py-0.5 rounded-full border "+((stats.variance_dalam_30||0)>0?'bg-red-50 text-red-700 border-red-200':(stats.variance_dalam_30||0)<0?'bg-emerald-50 text-emerald-700 border-emerald-200':'bg-[#F8FAFC] text-[#64748B] border-[#E2E8F0]')}>Dalam {compact(stats.est_dalam_30||0)} • {(stats.variance_dalam_30>0?'+':'')+compact(stats.variance_dalam_30||0)}</span>
               <span className={"px-1.5 py-0.5 rounded-full border "+((stats.variance_luar_30||0)>0?'bg-red-50 text-red-700 border-red-200':(stats.variance_luar_30||0)<0?'bg-emerald-50 text-emerald-700 border-emerald-200':'bg-[#F8FAFC] text-[#64748B] border-[#E2E8F0]')}>Luar {compact(stats.est_luar_30||0)} • {(stats.variance_luar_30>0?'+':'')+compact(stats.variance_luar_30||0)}</span>
             </div>
           </div>
-          <div className={"rounded-[16px] border p-3 text-center "+( (stats.tax_overdue||0)+(stats.sim_overdue||0)>0 ? 'bg-amber-50 border-amber-200':'bg-white border-[#E2E8F0]')}>
+          <div className={"rounded-[20px] border p-3 text-center "+( (stats.tax_overdue||0)+(stats.sim_overdue||0)>0 ? 'bg-amber-50 border-amber-200':'bg-white border-[#E2E8F0]')}>
             <div className="text-[11px] font-bold tracking-widest text-[#64748B]">PAJAK • SIM</div>
             <div className="text-sm font-black text-[#0F172A]">{stats.tax_overdue||0} pajak • {stats.sim_overdue||0} SIM habis</div>
             <div className="text-[11px] text-[#64748B]">Perlu perpanjang</div>
@@ -344,7 +351,7 @@ export default function Fleet(){
               </div>
               <div className="flex gap-2 flex-wrap">
                 <button onClick={()=>{setSearchArmada(qArmada);}} className="h-[42px] px-5 bg-white border border-[#E2E8F0] rounded-xl text-sm font-semibold text-[#334155] hover:bg-[#F8FAFC]">Cari</button>
-                {searchArmada && <button onClick={()=>{setQArmada(''); setSearchArmada('');}} className="h-[42px] w-[42px] grid place-items-center bg-white border rounded-xl">✕</button>}
+                {searchArmada && <button onClick={()=>{setQArmada(''); setSearchArmada('');}} className="h-[42px] w-[42px] grid place-items-center bg-white border rounded-xl"><X size={14}/></button>}
                 <select value={statusArmada} onChange={e=>setStatusArmada(e.target.value)} className="h-[42px] px-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-xs font-bold">
                   <option value="">Semua status</option><option value="AVAILABLE">AVAILABLE</option><option value="IN_TRANSIT">IN_TRANSIT</option><option value="MAINTENANCE">MAINTENANCE</option>
                 </select>
@@ -393,7 +400,7 @@ export default function Fleet(){
                       <div className="min-w-0">
                         <div className="font-mono font-black text-sm text-[#0F172A] tracking-tight flex items-center gap-1.5 flex-wrap">{v.plat_no}<span className={"px-1.5 py-0.5 rounded-full text-[10px] font-bold border tracking-wide "+( (v.area||'DALAM_KOTA')==='LUAR_KOTA' ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-sky-50 text-sky-700 border-sky-200')}>{(v.area||'DALAM_KOTA')==='LUAR_KOTA'?'Luar Kota':'Dalam Kota'}</span></div>
                         <div className="text-xs text-[#334155] font-semibold">{v.type} • {v.brand||'-'} {v.model? '· '+v.model:''} {v.year? '· '+v.year:''}</div>
-                        <div className="text-[11px] text-[#64748B]">{v.capacity_weight_kg? (v.capacity_weight_kg/1000)+' ton' : (v.capacity_ton||'-')+' ton'} • {v.capacity_volume_m3||'-'} m³ • <span className="font-bold">{OWNERSHIP_LABEL[v.ownership]||v.ownership}</span> • {v.driver_name||'—'} {v.driver_phone? '· '+v.driver_phone:''}</div>
+                        <div className="text-[11px] text-[#64748B]">{v.capacity_weight_kg? (v.capacity_weight_kg/1000)+' ton' : (v.capacity_ton||'-')+' ton'} • {v.capacity_volume_m3||'-'} m³ • <span className="font-bold">{OWNERSHIP_LABEL[v.ownership]||v.ownership}</span> • {v.driver_name||'-'} {v.driver_phone? '· '+v.driver_phone:''}</div>
                         <div className="text-[11px] text-[#64748B]">Tarif Dalam {new Intl.NumberFormat('id-ID').format(v.tarif_dalam_flat??150000)}+{new Intl.NumberFormat('id-ID').format(v.tarif_dalam_per_ton??120000)}/ton • Luar {new Intl.NumberFormat('id-ID').format(v.tarif_luar_flat??600000)}+{new Intl.NumberFormat('id-ID').format(v.tarif_luar_per_ton??350000)}/ton</div>
                       </div>
                       <span className={"shrink-0 px-2.5 py-1 rounded-full text-[11px] font-bold border "+(v.status==='AVAILABLE'?'bg-emerald-50 text-emerald-700 border-emerald-200': v.status==='IN_TRANSIT'?'bg-sky-50 text-sky-700 border-sky-200':'bg-amber-50 text-amber-700 border-amber-200')}>{v.status}</span>
@@ -401,17 +408,17 @@ export default function Fleet(){
 
                     {isTransit && v.active_do_number && (
                       <div className="flex items-center gap-1.5 text-xs font-bold text-sky-700 bg-sky-50 border border-sky-200 rounded-xl px-3 py-2">
-                        <Truck size={14}/> IN_TRANSIT • <a href="/logistics" className="underline underline-offset-2">{v.active_do_number}</a> <span className="font-normal text-sky-700/70">klik Logistik</span>
+                        <Truck size={14}/> IN_TRANSIT • <Link to="/logistics" className="underline underline-offset-2">{v.active_do_number}</Link> <span className="font-normal text-sky-700/70">klik Logistik</span>
                       </div>
                     )}
 
                     <div className="flex flex-wrap gap-1.5">
                       {k && <span className={"inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border "+k.cls}>{k.dot} {k.label} {v.kir_expiry? '· '+String(v.kir_expiry).slice(0,10):''}</span>}
                       {!k && v.kir_expiry && <span className="px-2.5 py-1 rounded-full text-[11px] font-bold border bg-white text-[#64748B]">KIR {String(v.kir_expiry).slice(0,10)}</span>}
-                      {!k && !v.kir_expiry && <span className="px-2.5 py-1 rounded-full text-[11px] text-[#94A3B8] border border-dashed">KIR —</span>}
+                      {!k && !v.kir_expiry && <span className="px-2.5 py-1 rounded-full text-[11px] text-[#94A3B8] border border-dashed">KIR -</span>}
                       {tx && <span className={"px-2.5 py-1 rounded-full text-[11px] font-bold border "+tx.cls}>{tx.label}</span>}
                       {!tx && v.tax_expiry && <span className="px-2.5 py-1 rounded-full text-[11px] border bg-white text-[#64748B]">Pajak {String(v.tax_expiry).slice(0,10)}</span>}
-                      {!tx && !v.tax_expiry && <span className="px-2.5 py-1 rounded-full text-[11px] text-[#94A3B8] border border-dashed">Pajak —</span>}
+                      {!tx && !v.tax_expiry && <span className="px-2.5 py-1 rounded-full text-[11px] text-[#94A3B8] border border-dashed">Pajak -</span>}
                       {simWarn && <span className={"px-2.5 py-1 rounded-full text-[11px] font-bold border "+simWarn.cls}>{simWarn.label}</span>}
                     </div>
 
@@ -432,7 +439,7 @@ export default function Fleet(){
                       </div>
                       <div className={"border rounded-xl p-2 "+(v.next_service_date && daysLeft(v.next_service_date)!==null && daysLeft(v.next_service_date)<=7 ? 'bg-amber-50 border-amber-200':'bg-[#F8FAFC] border-[#E2E8F0]')}>
                         <div className="text-[10px] font-bold tracking-widest text-[#94A3B8]">SERVIS</div>
-                        <div className="text-[11px] font-bold">{v.next_service_date? String(v.next_service_date).slice(0,10):'—'}</div>
+                        <div className="text-[11px] font-bold">{v.next_service_date? String(v.next_service_date).slice(0,10):'-'}</div>
                         <div className="text-[11px]">{v.next_service_date && daysLeft(v.next_service_date)!==null ? (daysLeft(v.next_service_date)<0? 'Terlambat '+Math.abs(daysLeft(v.next_service_date))+' hari' : daysLeft(v.next_service_date)<=7 ? `Jatuh tempo ${daysLeft(v.next_service_date)} hari` : `${daysLeft(v.next_service_date)} hari lagi`) : (v.last_service_date? 'Last '+String(v.last_service_date).slice(0,10):'Belum')}</div>
                       </div>
                     </div>
@@ -457,7 +464,7 @@ export default function Fleet(){
               )
             })}
           </div>
-          {filteredVehicles.length===0 && <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-10 text-center text-sm text-[#94A3B8]">{loading?'Memuat...':'Tidak ada armada — tambah dengan + Armada'}</div>}
+          {filteredVehicles.length===0 && <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-10 text-center text-sm text-[#94A3B8]">{loading?'Memuat...':'Tidak ada armada - tambah dengan + Armada'}</div>}
         </div>
       )}
 
@@ -472,7 +479,7 @@ export default function Fleet(){
               </div>
               <div className="flex gap-2 flex-wrap">
                 <button onClick={()=>setSearchTrip(qTrip)} className="h-[42px] px-5 bg-white border border-[#E2E8F0] rounded-xl text-sm font-semibold">Cari</button>
-                {searchTrip && <button onClick={()=>{setQTrip(''); setSearchTrip('');}} className="h-[42px] w-[42px] grid place-items-center bg-white border rounded-xl">✕</button>}
+                {searchTrip && <button onClick={()=>{setQTrip(''); setSearchTrip('');}} className="h-[42px] w-[42px] grid place-items-center bg-white border rounded-xl"><X size={14}/></button>}
                 <select value={tripStatusFilter} onChange={e=>setTripStatusFilter(e.target.value)} className="h-[42px] px-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-xs font-bold">
                   <option value="">Semua status</option><option value="IN_PROGRESS">IN_PROGRESS</option><option value="COMPLETED">COMPLETED</option><option value="CANCELLED">CANCELLED</option>
                 </select>
@@ -497,11 +504,11 @@ export default function Fleet(){
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-mono text-xs font-black bg-[#F1F5F9] border px-2 py-1 rounded-full">{t.trip_number}</span>
                       <Badge status={t.status}/>
-                      <span className="text-xs font-bold text-[#0F172A]">{t.plat_no||'—'} • {t.vehicle_type||''}</span>
+                      <span className="text-xs font-bold text-[#0F172A]">{t.plat_no||'-'} • {t.vehicle_type||''}</span>
                       <span className="text-xs text-[#64748B]">kap {t.capacity_ton||'-'} ton</span>
                     </div>
                     <div className="text-xs text-[#334155] flex flex-wrap gap-2">
-                      <span className="inline-flex items-center gap-1"><MapPin size={12} className="text-[#94A3B8]"/> {t.route||'—'}</span>
+                      <span className="inline-flex items-center gap-1"><MapPin size={12} className="text-[#94A3B8]"/> {t.route||'-'}</span>
                       <span className="inline-flex items-center gap-1"><Gauge size={12}/> {dist} km {t.odometer_start? `• odo ${t.odometer_start}→${t.odometer_end||'?'}`:''}</span>
                       <span className="inline-flex items-center gap-1"><Fuel size={12}/> {t.fuel_liters? t.fuel_liters+' L':''} {t.km_per_liter? `• ${t.km_per_liter.toFixed(1)} km/L`:''}</span>
                     </div>
@@ -512,7 +519,7 @@ export default function Fleet(){
                   </div>
                   <div className="flex sm:flex-col gap-2 shrink-0">
                     {isActive && <>
-                      <button onClick={()=>{setCompleteId(t.id); setCompleteForm({odometer_end:'', fuel_liters:'', fuel_cost:'', notes:''});}} className="h-9 px-4 bg-emerald-600 text-white rounded-full text-xs font-bold hover:bg-emerald-700">Selesai ✓</button>
+                      <button onClick={()=>{setCompleteId(t.id); setCompleteForm({odometer_end:'', fuel_liters:'', fuel_cost:'', notes:''});}} className="h-9 px-4 bg-emerald-600 text-white rounded-full text-xs font-bold hover:bg-emerald-700">Selesai</button>
                       <button onClick={()=>cancelTrip(t.id)} className="h-9 px-4 bg-white border border-[#E2E8F0] rounded-full text-xs font-bold hover:bg-[#F8FAFC]"><Ban size={12} className="inline mr-1"/> Batal</button>
                     </>}
                     {!isActive && <span className="text-xs text-[#94A3B8] px-3 py-2">{t.status}</span>}
@@ -520,7 +527,7 @@ export default function Fleet(){
                 </div>
               )
             })}
-            {filteredTrips.length===0 && <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-10 text-center text-sm text-[#94A3B8]">{loading?'Memuat...':'Belum ada trip — klik + Trip'}</div>}
+            {filteredTrips.length===0 && <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-10 text-center text-sm text-[#94A3B8]">{loading?'Memuat...':'Belum ada trip - klik + Trip'}</div>}
           </div>
         </div>
       )}
@@ -529,10 +536,10 @@ export default function Fleet(){
       {tab==='maintenance' && (
         <div className="space-y-3">
           <div className="bg-white rounded-[20px] border border-[#E2E8F0] shadow-sm p-4 flex justify-between items-center">
-            <h3 className="font-black text-sm flex items-center gap-2"><Wrench size={16} className="text-[#2563EB]"/> Servis & Preventive</h3>
+            <h3 className="font-black text-sm flex items-center gap-2"><Wrench size={16} className="text-[#1E40AF]"/> Servis & Preventive</h3>
             <button onClick={()=>setShowMaint(true)} className="h-8 px-4 bg-[#1E40AF] text-white rounded-full text-xs font-bold">+ Servis</button>
           </div>
-          <div className="bg-amber-50 border border-amber-200 rounded-[16px] p-3 text-xs leading-relaxed">
+          <div className="bg-amber-50 border border-amber-200 rounded-[20px] p-3 text-xs leading-relaxed">
             <b>Preventive:</b> cek <b>next_service_date</b> tiap armada. Jika <b className="text-red-600">Terlambat</b> atau &lt;7 hari jangan jalan jauh. Atur <b>Jatuh tempo</b> saat catat servis.
           </div>
           <div className="bg-white rounded-[20px] border border-[#E2E8F0] shadow-sm overflow-hidden">
@@ -542,14 +549,14 @@ export default function Fleet(){
                 <tbody>
                   {(Array.isArray(maint)?maint:[]).map(m=>{
                     const dl=daysLeft(m.next_service_date);
-                    const jatuh = !m.next_service_date ? '—' : dl===null? String(m.next_service_date).slice(0,10) : dl<0? `Terlambat ${Math.abs(dl)} hari` : dl<=7? `Jatuh tempo ${dl} hari` : `${dl} hari lagi`;
+                    const jatuh = !m.next_service_date ? '-' : dl===null? String(m.next_service_date).slice(0,10) : dl<0? `Terlambat ${Math.abs(dl)} hari` : dl<=7? `Jatuh tempo ${dl} hari` : `${dl} hari lagi`;
                     const jatuhCls = dl!==null && dl<0? 'bg-red-50 text-red-700 border-red-200' : dl!==null && dl<=7? 'bg-amber-50 text-amber-800 border-amber-200':'bg-white text-[#64748B] border-[#E2E8F0]';
                     return (
                       <tr key={m.id} className="border-b border-[#F1F5F9] hover:bg-[#F8FAFC] bg-white">
                         <td className="px-4 py-3.5 whitespace-nowrap">{String(m.service_date).slice(0,10)}</td>
                         <td className="px-4 py-3.5 font-mono font-bold">{m.plat_no}</td>
                         <td className="px-4 py-3.5">{m.maintenance_type}</td>
-                        <td className="px-4 py-3.5"><span className={"px-2 py-1 rounded-full border text-[11px] font-bold "+jatuhCls}>{m.next_service_date? String(m.next_service_date).slice(0,10):'—'} • {jatuh}</span></td>
+                        <td className="px-4 py-3.5"><span className={"px-2 py-1 rounded-full border text-[11px] font-bold "+jatuhCls}>{m.next_service_date? String(m.next_service_date).slice(0,10):'-'} • {jatuh}</span></td>
                         <td className="px-4 py-3.5">{m.workshop||'-'}</td>
                         <td className="px-4 py-3.5 text-right font-bold">{new Intl.NumberFormat('id-ID').format(m.cost)}</td>
                         <td className="px-4 py-3.5"><span className={"px-2 py-0.5 rounded-full border text-[11px] font-bold "+(dl!==null && dl<0?'bg-red-600 text-white border-red-600': dl!==null && dl<=7?'bg-amber-100 text-amber-800':'bg-emerald-50 text-emerald-700')}>{dl!==null && dl<0? 'OVERDUE': dl!==null && dl<=7? 'SOON':'OK'}</span></td>
@@ -575,7 +582,7 @@ export default function Fleet(){
                   </div>
                 )
               })}
-              {vehicles.filter(v=>v.next_service_date).length===0 && <div className="text-xs text-[#94A3B8] text-center py-4">Belum ada jadwal — catat servis dengan next_service_date</div>}
+              {vehicles.filter(v=>v.next_service_date).length===0 && <div className="text-xs text-[#94A3B8] text-center py-4">Belum ada jadwal - catat servis dengan next_service_date</div>}
             </div>
           </div>
         </div>
@@ -605,7 +612,7 @@ export default function Fleet(){
               </div>
             </div>
             <div className="bg-white rounded-[20px] border border-[#E2E8F0] shadow-sm p-4">
-              <h4 className="font-bold text-sm">Biaya 30 hari — Est vs Aktual</h4>
+              <h4 className="font-bold text-sm">Biaya 30 hari - Est vs Aktual</h4>
               <div className="mt-3 space-y-1 text-xs">
                 <div className="flex justify-between"><span>Aktual (trip)</span><span className="font-black">{rupiah(stats?.cost_30||0)}</span></div>
                 <div className="flex justify-between"><span>Est total</span><span className="font-bold">{rupiah(stats?.est_30||0)}</span></div>
@@ -619,7 +626,7 @@ export default function Fleet(){
                 <div className="flex justify-between"><span>Total liter</span><span className="font-bold">{(stats?.liters_30||0).toLocaleString('id-ID')} L</span></div>
                 <div className="flex justify-between border-t pt-2 mt-2"><span>Rp / km (avg)</span><span className="font-black text-[#1E40AF]">Rp {Math.round(stats?.avg_cost_per_km||0).toLocaleString('id-ID')}/km</span></div>
                 <div className="flex justify-between"><span>km / liter</span><span className="font-bold">{stats?.km_30 && stats?.liters_30? (stats.km_30/stats.liters_30).toFixed(1):'-'} km/L</span></div>
-                <div className="text-[11px] text-[#64748B] mt-2">Kolom Dalam/Luar pakai <b>tarif per-armada</b> (edit di Armada) — hijau hemat vs est kolom tsb, merah boros.</div>
+                <div className="text-[11px] text-[#64748B] mt-2">Kolom Dalam/Luar pakai <b>tarif per-armada</b> (edit di Armada) - hijau hemat vs est kolom tsb, merah boros.</div>
               </div>
             </div>
             <div className="bg-white rounded-[20px] border border-[#E2E8F0] shadow-sm p-4">
@@ -668,8 +675,8 @@ export default function Fleet(){
       {/* Modal Armada */}
       {showVehicle && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50 overflow-auto">
-          <form onSubmit={submitVehicle} className="bg-white rounded-[20px] w-full max-w-[560px] shadow-xl border border-[#E2E8F0] overflow-hidden max-h-[92vh] flex flex-col">
-            <div className="p-4 border-b flex justify-between items-center bg-[#F8FAFC]"><h3 className="font-black text-sm flex items-center gap-2"><Truck size={16} className="text-[#2563EB]"/> {editingVehicle? 'Edit Armada — '+editingVehicle.plat_no : 'Tambah Armada'}</h3><button type="button" onClick={()=>setShowVehicle(false)} className="w-8 h-8 grid place-items-center rounded-full border bg-white">✕</button></div>
+          <form onSubmit={submitVehicle} className="bg-white rounded-[20px] w-full max-w-[560px] shadow-xl border border-[#E2E8F0] overflow-hidden max-h-[92vh] flex flex-col animate-pop">
+            <div className="p-4 border-b flex justify-between items-center bg-[#F8FAFC]"><h3 className="font-black text-sm flex items-center gap-2"><Truck size={16} className="text-[#1E40AF]"/> {editingVehicle? 'Edit Armada - '+editingVehicle.plat_no : 'Tambah Armada'}</h3><button type="button" onClick={()=>setShowVehicle(false)} className="w-8 h-8 grid place-items-center rounded-full border bg-white"><X size={14}/></button></div>
             <div className="flex-1 overflow-auto p-4 space-y-3">
               <div className="grid grid-cols-2 gap-2">
                 <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">PLAT *</span><input required value={vehicleForm.plat_no} onChange={e=>setVehicleForm({...vehicleForm, plat_no:e.target.value})} placeholder="B 9004 JKT" className="w-full h-[42px] px-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm outline-none focus:bg-white focus:border-[#1E40AF]"/></label>
@@ -699,16 +706,16 @@ export default function Fleet(){
               </div>
               <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">DRIVER</span>
                 <select value={vehicleForm.driver_id} onChange={e=>setVehicleForm({...vehicleForm, driver_id:e.target.value})} className="w-full h-[42px] px-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm">
-                  <option value="">— Tanpa driver —</option>
+                  <option value="">- Tanpa driver -</option>
                   {employees.map(emp=> <option key={emp.id} value={emp.id}>{emp.name} • {emp.employee_code} • {emp.position}</option>)}
                 </select>
               </label>
-              <div className="rounded-[16px] border border-[#E2E8F0] bg-[#F8FAFC] p-3 space-y-3">
+              <div className="rounded-[20px] border border-[#E2E8F0] bg-[#F8FAFC] p-3 space-y-3">
                 <div className="flex items-center justify-between"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">JENIS ARMADA</span><span className="text-[11px] text-[#94A3B8]">2 kolom tarif terpisah</span></div>
                 <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">AREA *</span>
                   <select value={vehicleForm.area} onChange={e=>setVehicleForm({...vehicleForm, area:e.target.value})} className="w-full h-[42px] px-3 bg-white border border-[#E2E8F0] rounded-xl text-sm font-bold">
-                    <option value="DALAM_KOTA">Dalam Kota — Bekasi/Jakarta (≤40km)</option>
-                    <option value="LUAR_KOTA">Luar Kota — &gt;40 km</option>
+                    <option value="DALAM_KOTA">Dalam Kota - Bekasi/Jakarta (≤40km)</option>
+                    <option value="LUAR_KOTA">Luar Kota - &gt;40 km</option>
                   </select>
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -719,10 +726,29 @@ export default function Fleet(){
                   <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-amber-700">LUAR FLAT Rp</span><input type="number" value={vehicleForm.tarif_luar_flat} onChange={e=>setVehicleForm({...vehicleForm, tarif_luar_flat:e.target.value})} placeholder="600000" className="w-full h-[42px] px-3 bg-white border border-[#E2E8F0] rounded-xl text-sm outline-none focus:border-[#1E40AF]"/></label>
                   <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-amber-700">LUAR /TON Rp</span><input type="number" value={vehicleForm.tarif_luar_per_ton} onChange={e=>setVehicleForm({...vehicleForm, tarif_luar_per_ton:e.target.value})} placeholder="350000" className="w-full h-[42px] px-3 bg-white border border-[#E2E8F0] rounded-xl text-sm outline-none focus:border-[#1E40AF]"/></label>
                 </div>
-                <div className="text-[11px] text-[#64748B] leading-relaxed">Dalam = flat zona Bekasi/Jakarta + ton×tarif Dalam. Luar = flat Luar Kota + ton×tarif Luar. <b>2 kolom sendiri</b> per armada — DO pakai tarif armada terpilih, Analitik bandingkan kolom terpisah.</div>
+                <div className="text-[11px] text-[#64748B] leading-relaxed">Dalam = flat zona Bekasi/Jakarta + ton×tarif Dalam. Luar = flat Luar Kota + ton×tarif Luar. <b>2 kolom sendiri</b> per armada - DO pakai tarif armada terpilih, Analitik bandingkan kolom terpisah.</div>
+              </div>
+              <div className="rounded-[20px] border border-sky-200 bg-sky-50 p-3 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[11px] font-bold tracking-widest text-sky-800">NILAI ASET TETAP</span>
+                  <span className="text-[11px] text-sky-700">{vehicleForm.ownership==='OWNED' ? 'Masuk Aset Tetap (depresiasi aktif)' : 'Sewa/Vendor - tidak masuk Aset Tetap'}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-sky-800">TGL PEROLEHAN</span>
+                    <input type="date" value={vehicleForm.acquisition_date} onChange={e=>setVehicleForm({...vehicleForm, acquisition_date:e.target.value})} className="w-full h-[42px] px-3 bg-white border border-[#E2E8F0] rounded-xl text-sm"/></label>
+                  <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-sky-800">HARGA PEROLEHAN Rp</span>
+                    <input type="number" value={vehicleForm.acquisition_cost} onChange={e=>setVehicleForm({...vehicleForm, acquisition_cost:e.target.value})} placeholder="mis. 350000000" className="w-full h-[42px] px-3 bg-white border border-[#E2E8F0] rounded-xl text-sm"/></label>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-sky-800">UMUR EKONOMIS (TH)</span>
+                    <input type="number" value={vehicleForm.useful_life_years} onChange={e=>setVehicleForm({...vehicleForm, useful_life_years:e.target.value})} placeholder="8" className="w-full h-[42px] px-3 bg-white border border-[#E2E8F0] rounded-xl text-sm"/></label>
+                  <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-sky-800">NILAI RESIDU Rp</span>
+                    <input type="number" value={vehicleForm.residual_value} onChange={e=>setVehicleForm({...vehicleForm, residual_value:e.target.value})} placeholder="0" className="w-full h-[42px] px-3 bg-white border border-[#E2E8F0] rounded-xl text-sm"/></label>
+                </div>
+                <div className="text-[11px] text-sky-800 leading-relaxed">Depresiasi garis lurus = (harga perolehan − residu) ÷ (umur × 12) per bulan. Harga perolehan yang diisi di sini <b>langsung dipakai</b> baris asetnya; kalau armada sudah punya baris aset, angkanya ikut diperbarui.</div>
               </div>
               <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">FOTO URL (opsional)</span><input value={vehicleForm.photo_url} onChange={e=>setVehicleForm({...vehicleForm, photo_url:e.target.value})} placeholder="https://..." className="w-full h-[42px] px-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm"/></label>
-              <div className="text-[11px] text-[#64748B] bg-amber-50 border border-amber-200 rounded-xl p-2">KIR & Pajak akan jadi <b>guard</b> saat buat Trip — jika habis, backend block (tilang). Isi tanggal dengan benar.</div>
+              <div className="text-[11px] text-[#64748B] bg-amber-50 border border-amber-200 rounded-xl p-2">KIR & Pajak akan jadi <b>guard</b> saat buat Trip - jika habis, backend block (tilang). Isi tanggal dengan benar.</div>
             </div>
             <div className="p-3 border-t bg-white flex justify-end gap-2 sticky bottom-0"><button type="button" onClick={()=>setShowVehicle(false)} className="h-10 px-5 rounded-xl border bg-white text-sm font-semibold">Batal</button><button className="h-10 px-5 rounded-xl bg-[#1E40AF] text-white text-sm font-bold hover:bg-[#1E3A8A]">{editingVehicle? 'Simpan':'Tambah Armada'}</button></div>
           </form>
@@ -732,22 +758,22 @@ export default function Fleet(){
       {/* Modal Trip */}
       {showTrip && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50 overflow-auto">
-          <form onSubmit={submitTrip} className="bg-white rounded-[20px] w-full max-w-[560px] shadow-xl border border-[#E2E8F0] overflow-hidden max-h-[92vh] flex flex-col">
-            <div className="p-4 border-b flex justify-between items-center bg-[#F8FAFC]"><h3 className="font-black text-sm flex items-center gap-2"><MapPin size={16} className="text-[#2563EB]"/> Buat Trip</h3><button type="button" onClick={()=>setShowTrip(false)} className="w-8 h-8 grid place-items-center rounded-full border bg-white">✕</button></div>
+          <form onSubmit={submitTrip} className="bg-white rounded-[20px] w-full max-w-[560px] shadow-xl border border-[#E2E8F0] overflow-hidden max-h-[92vh] flex flex-col animate-pop">
+            <div className="p-4 border-b flex justify-between items-center bg-[#F8FAFC]"><h3 className="font-black text-sm flex items-center gap-2"><MapPin size={16} className="text-[#1E40AF]"/> Buat Trip</h3><button type="button" onClick={()=>setShowTrip(false)} className="w-8 h-8 grid place-items-center rounded-full border bg-white"><X size={14}/></button></div>
             <div className="flex-1 overflow-auto p-4 space-y-3">
               <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">ARMADA *</span>
                 <select required value={tripForm.vehicle_id} onChange={e=>setTripForm({...tripForm,vehicle_id:e.target.value})} className="w-full h-[42px] px-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm">
-                  <option value="">— Pilih armada AVAILABLE —</option>
+                  <option value="">- Pilih armada AVAILABLE -</option>
                   {vehicles.filter(v=>v.status==='AVAILABLE').map(v=>{
                     const k=kirBadge(v.kir_expiry); const tax=taxBadge(v.tax_expiry);
                     const block = (k && k.label.includes('HABIS')) || (tax && tax.label.includes('HABIS'));
-                    return <option key={v.id} value={v.id} disabled={!!block}>{v.plat_no} • {v.type} • {v.capacity_ton} ton {k? '• '+k.label:''} {block?' — BLOCK':''}</option>
+                    return <option key={v.id} value={v.id} disabled={!!block}>{v.plat_no} • {v.type} • {v.capacity_ton} ton {k? '• '+k.label:''} {block?' - BLOCK':''}</option>
                   })}
                 </select>
               </label>
-              {vehicles.filter(v=>v.status==='AVAILABLE').length===0 && <div className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-2">Tidak ada armada AVAILABLE — selesaikan trip/DO aktif dulu.</div>}
+              {vehicles.filter(v=>v.status==='AVAILABLE').length===0 && <div className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-2">Tidak ada armada AVAILABLE - selesaikan trip/DO aktif dulu.</div>}
               <label className="space-y-1.5"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">RUTE</span><input placeholder="Bekasi → Jakarta • 42 km" value={tripForm.route} onChange={e=>setTripForm({...tripForm,route:e.target.value})} className="w-full h-[42px] px-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm outline-none focus:bg-white focus:border-[#1E40AF] focus:ring-2 focus:ring-[#1E40AF]/10 transition"/></label>
-              <div className="rounded-[16px] border border-[#E2E8F0] bg-[#F8FAFC] p-3 space-y-3">
+              <div className="rounded-[20px] border border-[#E2E8F0] bg-[#F8FAFC] p-3 space-y-3">
                 <div className="text-[11px] font-bold tracking-widest text-[#64748B]">JARAK & BBM</div>
                 <div className="grid grid-cols-3 gap-3">
                   <label className="space-y-1.5"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">Jarak km</span><input type="number" step="0.1" inputMode="decimal" placeholder="42" value={tripForm.distance_km} onChange={e=>setTripForm({...tripForm,distance_km:e.target.value})} className="w-full h-[42px] px-3 bg-white border border-[#E2E8F0] rounded-xl text-sm outline-none focus:border-[#1E40AF] focus:ring-2 focus:ring-[#1E40AF]/10 transition"/></label>
@@ -771,8 +797,8 @@ export default function Fleet(){
       {/* Complete Trip modal */}
       {completeId && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50">
-          <form onSubmit={submitComplete} className="bg-white rounded-[20px] w-full max-w-[420px] p-5 space-y-3 border shadow-xl">
-            <h3 className="font-black text-sm flex items-center gap-2"><Gauge size={16} className="text-emerald-600"/> Selesaikan Trip — catat odo akhir</h3>
+          <form onSubmit={submitComplete} className="bg-white rounded-[20px] w-full max-w-[420px] p-5 space-y-3 border shadow-xl animate-pop">
+            <h3 className="font-black text-sm flex items-center gap-2"><Gauge size={16} className="text-emerald-600"/> Selesaikan Trip - catat odo akhir</h3>
             <p className="text-xs text-[#64748B]">Isi odometer akhir untuk hitung jarak otomatis. Armada akan AVAILABLE kembali.</p>
             <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">ODOMETER AKHIR</span><input required type="number" value={completeForm.odometer_end} onChange={e=>setCompleteForm({...completeForm, odometer_end:e.target.value})} placeholder="120542" className="w-full h-[42px] px-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm"/></label>
             <div className="grid grid-cols-2 gap-2">
@@ -780,7 +806,7 @@ export default function Fleet(){
               <label className="space-y-1"><span className="text-[11px] font-bold text-[#64748B]">BBM Rp (koreksi)</span><input type="number" value={completeForm.fuel_cost} onChange={e=>setCompleteForm({...completeForm, fuel_cost:e.target.value})} placeholder="260000" className="w-full h-[42px] px-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm"/></label>
             </div>
             <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">CATATAN</span><input value={completeForm.notes} onChange={e=>setCompleteForm({...completeForm, notes:e.target.value})} placeholder="Sampai lokasi, macet 1 jam..." className="w-full h-[42px] px-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm"/></label>
-            <div className="flex justify-end gap-2"><button type="button" onClick={()=>setCompleteId(null)} className="h-10 px-5 rounded-xl border bg-white text-sm font-semibold">Batal</button><button className="h-10 px-5 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700">Selesai ✓</button></div>
+            <div className="flex justify-end gap-2"><button type="button" onClick={()=>setCompleteId(null)} className="h-10 px-5 rounded-xl border bg-white text-sm font-semibold">Batal</button><button className="h-10 px-5 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700">Selesai</button></div>
           </form>
         </div>
       )}
@@ -788,14 +814,14 @@ export default function Fleet(){
       {/* History modal */}
       {historyOpen && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50 overflow-auto">
-          <div className="bg-white rounded-[20px] w-full max-w-[640px] shadow-xl border border-[#E2E8F0] overflow-hidden max-h-[85vh] flex flex-col">
-            <div className="p-4 border-b flex justify-between items-center bg-[#F8FAFC]"><h3 className="font-black text-sm">History Armada</h3><button onClick={()=>setHistoryOpen(false)} className="w-8 h-8 grid place-items-center rounded-full border bg-white">✕</button></div>
+          <div className="bg-white rounded-[20px] w-full max-w-[640px] shadow-xl border border-[#E2E8F0] overflow-hidden max-h-[85vh] flex flex-col animate-pop">
+            <div className="p-4 border-b flex justify-between items-center bg-[#F8FAFC]"><h3 className="font-black text-sm">History Armada</h3><button onClick={()=>setHistoryOpen(false)} className="w-8 h-8 grid place-items-center rounded-full border bg-white"><X size={14}/></button></div>
             <div className="flex-1 overflow-auto p-4 space-y-4">
               {historyLoading && <div className="text-sm text-[#94A3B8] text-center py-8">Memuat...</div>}
               {historyData?.error && <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl p-3">{historyData.error}</div>}
               {historyData && !historyLoading && !historyData.error && (
                 <>
-                  <div className="text-xs font-bold text-[#334155]">Plat {historyData.plat_no} — {historyData.deliveries?.length||0} DO • {historyData.trips?.length||0} trip • {historyData.maintenance?.length||0} servis</div>
+                  <div className="text-xs font-bold text-[#334155]">Plat {historyData.plat_no} - {historyData.deliveries?.length||0} DO • {historyData.trips?.length||0} trip • {historyData.maintenance?.length||0} servis</div>
                   <div>
                     <div className="text-[11px] font-bold tracking-widest text-[#64748B] mb-2">DELIVERY (10 terakhir)</div>
                     <div className="space-y-1">
@@ -809,7 +835,7 @@ export default function Fleet(){
                     <div className="text-[11px] font-bold tracking-widest text-[#64748B] mb-2">TRIP</div>
                     <div className="space-y-1">
                       {(historyData.trips||[]).slice(0,10).map(t=>(
-                        <div key={t.id} className="flex justify-between p-2 border rounded-xl text-xs"><span className="font-mono font-bold">{t.trip_number}</span><span>{t.route||'—'} • {t.distance_km} km</span><span className="font-bold">{rupiah(parseFloat(t.fuel_cost||0)+parseFloat(t.toll_cost||0))}</span></div>
+                        <div key={t.id} className="flex justify-between p-2 border rounded-xl text-xs"><span className="font-mono font-bold">{t.trip_number}</span><span>{t.route||'-'} • {t.distance_km} km</span><span className="font-bold">{rupiah(parseFloat(t.fuel_cost||0)+parseFloat(t.toll_cost||0))}</span></div>
                       ))}
                       {(historyData.trips||[]).length===0 && <div className="text-xs text-[#94A3B8]">Belum ada trip</div>}
                     </div>
@@ -833,7 +859,7 @@ export default function Fleet(){
       {/* Maintenance modal */}
       {showMaint && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50">
-          <form onSubmit={submitMaint} className="bg-white rounded-[20px] p-6 w-full max-w-md space-y-3 border shadow-xl">
+          <form onSubmit={submitMaint} className="bg-white rounded-[20px] p-6 w-full max-w-md space-y-3 border shadow-xl animate-pop">
             <h3 className="font-black text-sm">Catat Servis</h3>
             <select name="vehicle_id" required className="w-full h-[42px] px-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm"><option value="">Pilih armada</option>{vehicles.map(v=> <option key={v.id} value={v.id}>{v.plat_no} • {v.type}</option>)}</select>
             <select name="maintenance_type" className="w-full h-[42px] px-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm"><option value="PREVENTIVE">PREVENTIVE</option><option value="CORRECTIVE">CORRECTIVE</option><option value="EMERGENCY">EMERGENCY</option></select>

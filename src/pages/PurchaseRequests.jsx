@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Search, Plus, Trash2 } from 'lucide-react';
+import { FileText, Search, Plus, Trash2, X, Check } from 'lucide-react';
 import api from '../lib/api';
 import { useDialog } from '../components/DialogProvider';
+import { PosPageHeader, PosSkeleton, PosError, PosEmpty, posBtnPrimary } from '../components/PosUI';
 
 function emptyRow(){ return { product_id:'', q:'', qty:0, needed_date:'', notes:'' }; }
 
@@ -14,7 +15,8 @@ export default function PurchaseRequests(){
   const [saving,setSaving]=useState(false);
   const [openIdx,setOpenIdx]=useState(null);
 
-  const load=()=> api.get('/purchase/requests').then(r=>setData(r.data?.data ?? r.data ?? [])).catch(()=>setData([]));
+  const [err,setErr]=useState(''); const [loading,setLoading]=useState(true);
+  const load=async()=>{ setErr(''); try{ const r=await api.get('/purchase/requests'); setData(r.data?.data ?? r.data ?? []); }catch(e){ setErr(e.response?.data?.error||e.message||'Gagal memuat PR'); } finally{ setLoading(false); } };
   useEffect(()=>{ load(); api.get('/master/products',{params:{limit:100}}).then(r=>setProducts(r.data.data||[])); },[]);
 
   const resetForm=()=>{ setRows([emptyRow()]); setOpenIdx(null); };
@@ -58,7 +60,7 @@ export default function PurchaseRequests(){
     <div className="space-y-3">
       <div className="flex flex-wrap justify-between items-start gap-4">
         <div>
-          <div className="flex items-center gap-3"><div className="w-9 h-9 rounded-xl bg-[#2563EB] text-white grid place-items-center shrink-0 shadow-sm"><FileText size={18} strokeWidth={2.2}/></div><div><h1 className="text-[18px] sm:text-[20px] font-black tracking-tight text-[#0F172A] leading-none">Purchase Request</h1><p className="text-xs text-[#64748B] mt-1">Ketik produk • qty default 0 (tidak bisa minus) • + untuk bulk PR</p></div></div>
+          <PosPageHeader icon={FileText} title="Purchase Request" subtitle="Ketik produk • qty default 0 (tidak bisa minus) • + untuk bulk PR"/>
           <nav className="mt-2 flex flex-wrap items-center gap-1 p-1 bg-[#F1F5F9] border rounded-full w-fit shadow-sm">
             {[
               {label:'PR',sub:'Purchase Request',to:'/purchase/requests',active:true},
@@ -78,38 +80,38 @@ export default function PurchaseRequests(){
             ))}
           </nav>
         </div>
-        <button onClick={()=>{ resetForm(); setShow(true); }} className="h-[42px] px-5 bg-[#1E40AF] text-white rounded-xl text-sm font-bold hover:bg-[#1E3A8A]">+ Buat PR</button>
+        <button onClick={()=>{ resetForm(); setShow(true); }} className={posBtnPrimary}><Plus size={15}/> Buat PR</button>
       </div>
 
       <div className="bg-white rounded-[20px] border border-[#E2E8F0] shadow-sm overflow-hidden">
         <div className="overflow-auto"><table className="w-full text-sm">
           <thead><tr className="bg-[#F1F5F9] border-y text-[11px] font-bold tracking-widest text-[#64748B]"><th className="text-left px-4 py-3">PR</th><th className="text-left px-4 py-3">PRODUK</th><th className="text-right px-4 py-3">QTY</th><th className="text-left px-4 py-3">TGL BUTUH</th><th className="text-left px-4 py-3">STATUS</th><th className="text-right px-4 py-3">AKSI</th></tr></thead>
-          <tbody>{data.map(r=>(
+          <tbody>{loading && <tr><td colSpan={6} className="p-0"><PosSkeleton rows={5} cols={4}/></td></tr>}{err && !loading && <tr><td colSpan={6} className="p-0"><PosError message={err} onRetry={load}/></td></tr>}{!loading && !err && data.length===0 && <tr><td colSpan={6} className="p-0"><PosEmpty text="Belum ada PR - buat PR lalu approve lalu RFQ"/></td></tr>}{data.map(r=>(
             <tr key={r.id} className="border-b hover:bg-[#F8FAFC]"><td className="px-4 py-3 font-mono text-xs font-bold">{r.pr_number}</td><td className="px-4 py-3">{r.product_name} <span className="text-xs text-[#64748B]">{r.sku}</span></td><td className="px-4 py-3 text-right">{r.qty}</td><td className="px-4 py-3 text-xs">{r.needed_date?.slice(0,10)||'-'}</td><td className="px-4 py-3"><span className="text-xs px-2 py-1 rounded-full border bg-white font-bold">{r.status}</span></td><td className="px-4 py-3 text-right space-x-1">
               {r.status==='DRAFT' && <button onClick={()=>approve(r.id)} className="text-xs px-3 py-1 rounded-full bg-amber-500 text-white font-bold hover:bg-amber-600">Approve</button>}
               {r.status==='APPROVED' && <button onClick={()=>toRfq(r.id)} className="text-xs px-3 py-1 rounded-full bg-[#1E40AF] text-white font-bold hover:bg-blue-800">Buat RFQ</button>}
             </td></tr>
-          ))}{data.length===0 && <tr><td colSpan={6} className="p-8 text-center text-sm text-[#94A3B8]">Belum ada PR — buat PR lalu approve → RFQ</td></tr>}</tbody>
+          ))}</tbody>
         </table></div>
       </div>
 
       {show && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-3 z-50 overflow-auto">
-          <form onSubmit={submit} className="bg-white rounded-[20px] w-full max-w-3xl shadow-xl border border-[#E2E8F0] flex flex-col max-h-[92vh]">
+          <form onSubmit={submit} className="bg-white rounded-[20px] w-full max-w-3xl shadow-xl border border-[#E2E8F0] flex flex-col max-h-[92vh] animate-pop">
             <div className="p-5 border-b flex justify-between items-start gap-3">
               <div>
-                <h3 className="font-black text-[15px] text-[#0F172A]">Buat Purchase Request — bisa bulk</h3>
+                <h3 className="font-black text-[15px] text-[#0F172A]">Buat Purchase Request - bisa bulk</h3>
                 <p className="text-xs text-[#64748B] mt-1">Tiap baris = 1 PR tersendiri. Ketik produk untuk cari, qty default 0 tidak bisa minus.</p>
               </div>
-              <button type="button" onClick={()=>{ setShow(false); resetForm(); }} className="w-8 h-8 grid place-items-center rounded-full border bg-white shrink-0">✕</button>
+              <button type="button" onClick={()=>{ setShow(false); resetForm(); }} aria-label="Tutup" className="w-8 h-8 grid place-items-center rounded-full border bg-white shrink-0 hover:bg-[#F8FAFC]"><X size={15}/></button>
             </div>
 
             <div className="flex-1 overflow-auto p-4 space-y-3">
               <div className="hidden sm:grid grid-cols-[1.7fr_0.7fr_1fr_1.4fr_36px] gap-2 text-[10px] font-bold tracking-widest text-[#64748B]">
-                <span>PRODUK * <span className="font-normal normal-case tracking-normal">— ketik nama/SKU, pilih dari dropdown</span></span>
-                <span>JUMLAH * <span className="font-normal normal-case">— &gt;0, min 0</span></span>
-                <span>TGL BUTUH <span className="font-normal normal-case">— kapan dibutuhkan</span></span>
-                <span>CATATAN <span className="font-normal normal-case">— alasan/kebutuhan</span></span>
+                <span>PRODUK * <span className="font-normal normal-case tracking-normal">- ketik nama/SKU, pilih dari dropdown</span></span>
+                <span>JUMLAH * <span className="font-normal normal-case">- &gt;0, min 0</span></span>
+                <span>TGL BUTUH <span className="font-normal normal-case">- kapan dibutuhkan</span></span>
+                <span>CATATAN <span className="font-normal normal-case">- alasan/kebutuhan</span></span>
                 <span></span>
               </div>
 
@@ -117,7 +119,7 @@ export default function PurchaseRequests(){
                 const filtered = (row.q||'').trim()===''? products.slice(0,20) : products.filter(p=> p.name.toLowerCase().includes(row.q.toLowerCase()) || p.sku.toLowerCase().includes(row.q.toLowerCase())).slice(0,20);
                 const selectedProd = products.find(p=> String(p.id)===String(row.product_id));
                 return (
-                  <div key={idx} className="border border-[#E2E8F0] rounded-[16px] p-3 bg-[#F8FAFC]/60 space-y-2">
+                  <div key={idx} className="border border-[#E2E8F0] rounded-[20px] p-3 bg-[#F8FAFC]/60 space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="text-xs font-black text-[#334155]">Baris {idx+1} {selectedProd && <span className="ml-2 text-[11px] font-normal text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">{selectedProd.sku}</span>}</span>
                       <button type="button" onClick={()=>removeRow(idx)} disabled={rows.length===1} className="w-7 h-7 grid place-items-center rounded-full border bg-white text-[#94A3B8] hover:text-red-600 disabled:opacity-30" title="Hapus baris"><Trash2 size={14}/></button>
@@ -125,7 +127,7 @@ export default function PurchaseRequests(){
 
                     <div className="grid sm:grid-cols-[1.7fr_0.7fr_1fr_1.4fr] gap-2">
                       <label className="space-y-1 relative">
-                        <span className="text-[11px] font-bold tracking-widest text-[#64748B] sm:hidden">PRODUK * — ketik & pilih</span>
+                        <span className="text-[11px] font-bold tracking-widest text-[#64748B] sm:hidden">PRODUK * - ketik & pilih</span>
                         <div className="relative">
                           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8] pointer-events-none"/>
                           <input
@@ -133,14 +135,14 @@ export default function PurchaseRequests(){
                             onChange={e=>{ const v=e.target.value; updateRow(idx,{q:v, product_id:''}); setOpenIdx(idx); }}
                             onFocus={()=>setOpenIdx(idx)}
                             onBlur={()=>setTimeout(()=>setOpenIdx(o=>o===idx?null:o),180)}
-                            placeholder="Ketik nama / SKU — pilih dari daftar"
+                            placeholder="Ketik nama / SKU - pilih dari daftar"
                             className={"w-full h-[42px] pl-9 pr-3 bg-white border rounded-xl text-sm outline-none focus:border-[#1E40AF] focus:ring-2 focus:ring-[#1E40AF]/10 "+(row.product_id?'border-emerald-200 bg-emerald-50/30':'border-[#E2E8F0]')}
                           />
                         </div>
                         {row.product_id && selectedProd ? (
-                          <div className="text-[11px] text-emerald-700 font-semibold truncate">✓ {selectedProd.name}</div>
+                          <div className="text-[11px] text-emerald-700 font-semibold truncate inline-flex items-center gap-1"><Check size={12}/> {selectedProd.name}</div>
                         ) : (
-                          <div className="text-[11px] text-amber-700">Wajib pilih dari daftar — jangan isi bebas</div>
+                          <div className="text-[11px] text-amber-700">Wajib pilih dari daftar - jangan isi bebas</div>
                         )}
                         {openIdx===idx && (
                           <div className="absolute z-10 left-0 right-0 mt-1 bg-white border border-[#E2E8F0] rounded-xl shadow-xl max-h-[200px] overflow-auto">
@@ -155,7 +157,7 @@ export default function PurchaseRequests(){
                       </label>
 
                       <label className="space-y-1">
-                        <span className="text-[11px] font-bold tracking-widest text-[#64748B] sm:hidden">JUMLAH * — satuan produk</span>
+                        <span className="text-[11px] font-bold tracking-widest text-[#64748B] sm:hidden">JUMLAH * - satuan produk</span>
                         <input
                           type="number" min={0} step={1}
                           value={row.qty}
@@ -178,15 +180,15 @@ export default function PurchaseRequests(){
                       </label>
 
                       <label className="space-y-1">
-                        <span className="text-[11px] font-bold tracking-widest text-[#64748B] sm:hidden">TGL BUTUH — estimasi datang</span>
+                        <span className="text-[11px] font-bold tracking-widest text-[#64748B] sm:hidden">TGL BUTUH - estimasi datang</span>
                         <input type="date" value={row.needed_date} onChange={e=>updateRow(idx,{needed_date:e.target.value})} className="w-full h-[42px] px-3 bg-white border border-[#E2E8F0] rounded-xl text-sm outline-none focus:border-[#1E40AF]"/>
                         <div className="text-[11px] text-[#64748B]">Kapan stok harus tersedia</div>
                       </label>
 
                       <label className="space-y-1">
-                        <span className="text-[11px] font-bold tracking-widest text-[#64748B] sm:hidden">CATATAN — alasan</span>
+                        <span className="text-[11px] font-bold tracking-widest text-[#64748B] sm:hidden">CATATAN - alasan</span>
                         <input value={row.notes} onChange={e=>updateRow(idx,{notes:e.target.value})} placeholder="ex: stok menipis / proyek X" className="w-full h-[42px] px-3 bg-white border border-[#E2E8F0] rounded-xl text-sm outline-none focus:border-[#1E40AF]"/>
-                        <div className="text-[11px] text-[#64748B]">Opsional — penjelasan kebutuhan</div>
+                        <div className="text-[11px] text-[#64748B]">Opsional - penjelasan kebutuhan</div>
                       </label>
                     </div>
                   </div>
@@ -194,7 +196,7 @@ export default function PurchaseRequests(){
               })}
 
               <button type="button" onClick={addRow} className="w-full h-10 rounded-xl border-2 border-dashed border-[#CBD5E1] bg-white text-sm font-bold text-[#334155] hover:bg-[#F8FAFC] hover:border-[#1E40AF]/30 flex items-center justify-center gap-1.5">
-                <Plus size={16}/> + Tambah Produk (baris baru — jadi PR terpisah)
+                <Plus size={16}/> + Tambah Produk (baris baru - jadi PR terpisah)
               </button>
               <div className="text-[11px] text-[#64748B] bg-[#EFF6FF] border border-[#DBEAFE] rounded-xl p-3 leading-relaxed">
                 <b>Bulk PR:</b> {rows.length} baris = {rows.length} PR tersendiri (masing-masing <b>PR-xxxx</b>). Tiap baris wajib isi <b>Produk</b> + <b>Jumlah &gt;0</b>. Tanggal & catatan boleh beda per produk. Simpan sekali langsung buat semua.

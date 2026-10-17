@@ -1,5 +1,6 @@
 import express from 'express';
 import { pool } from '../../config/db.js';
+import { sendReport } from '../../lib/exporters.js';
 import { paginate } from '../../utils/helpers.js';
 const router=express.Router();
 router.get('/', async(req,res)=>{
@@ -9,6 +10,20 @@ router.get('/', async(req,res)=>{
   const data=await pool.query('SELECT pr.*, c.name as customer_name, (SELECT COALESCE(SUM(amount),0) FROM project_terms WHERE project_id=pr.id AND status=\'PAID\') as paid_amount, (SELECT COALESCE(SUM(amount),0) FROM project_terms WHERE project_id=pr.id) as total_terms FROM projects pr LEFT JOIN customers c ON c.id=pr.customer_id '+where+' ORDER BY pr.id DESC',p);
   res.json(data.rows);
 });
+
+router.get('/export', async (req,res)=>{
+  const format=String(req.query.format||'xlsx').toLowerCase();
+  if(!['csv','xlsx','pdf'].includes(format)) return res.status(400).json({error:'Format tidak didukung: '+format});
+  const money=(n)=>new Intl.NumberFormat('id-ID').format(Math.round(Number(n)||0));
+  try{
+    const r=await pool.query('SELECT pr.*, c.name as customer_name FROM projects pr LEFT JOIN customers c ON c.id=pr.customer_id ORDER BY pr.id DESC LIMIT 2000');
+    const columns=[{label:'Kode'},{label:'Nama Proyek'},{label:'Customer'},{label:'Lokasi'},{label:'Nilai Kontrak',numeric:true,total:true},{label:'Status'},{label:'Periode'}];
+    const rows=r.rows.map(p=>[p.project_code, p.name, p.customer_name||'-', p.location||'-', parseFloat(p.contract_value||0), p.status||'DRAFT', (String(p.start_date||'').slice(0,10)+' s/d '+String(p.end_date||'').slice(0,10))]);
+    const totals=columns.map((c,i)=>c.total?rows.reduce((a,x)=>a+(parseFloat(x[i])||0),0):'');
+    return sendReport(res,{format,filename:'daftar-proyek',payload:{title:'Daftar Proyek & Tender',subtitle:`${rows.length} proyek  |  Total kontrak ${money(totals[4]||0)}`,columns,rows,totals,sheetName:'Proyek'}});
+  }catch(e){ res.status(500).json({error:e.message}); }
+});
+
 router.get('/:id', async(req,res)=>{
   const pr=await pool.query('SELECT pr.*, c.name as customer_name FROM projects pr LEFT JOIN customers c ON c.id=pr.customer_id WHERE pr.id=$1',[req.params.id]);
   if(!pr.rows[0]) return res.status(404).json({error:'Not found'});
