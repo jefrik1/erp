@@ -116,13 +116,13 @@ export default function Settings(){
 
       {/* Satu lokasi operasional: ditampilkan dari konfigurasi pin peta yang sudah ada,
           bukan dari daftar cabang. Tidak ada pengelolaan cabang di UI. */}
-      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-[#e7ecf7] bg-white px-4 py-3 shadow-card">
-        <span className="w-9 h-9 rounded-lg grid place-items-center bg-[#0051d5]/10 text-[#0051d5] shrink-0"><MapPin size={18}/></span>
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-line bg-white px-4 py-3 shadow-card">
+        <span className="w-9 h-9 rounded-lg grid place-items-center bg-brand/10 text-brand shrink-0"><MapPin size={18}/></span>
         <div className="min-w-0">
-          <div className="text-[11px] font-bold tracking-wider text-[#45464d]">LOKASI OPERASIONAL (SATU TITIK)</div>
-          <div className="text-sm font-bold text-[#0b1c30] truncate">{LOCATION.name}</div>
+          <div className="text-[11px] font-bold tracking-wider text-ink-2">LOKASI OPERASIONAL (SATU TITIK)</div>
+          <div className="text-sm font-bold text-ink truncate">{LOCATION.name}</div>
         </div>
-        <span className="text-xs text-[#45464d] num px-2 py-1 rounded-lg bg-[#eff4ff]">{LOCATION_COORDINATES}</span>
+        <span className="text-xs text-ink-2 num px-2 py-1 rounded-lg bg-surface-2">{LOCATION_COORDINATES}</span>
         <div className="flex-1"/>
         <a href={LOCATION_MAP_URL} target="_blank" rel="noreferrer" className={posBtnSecondary+' h-9 px-4 text-xs'}><MapPin size={13}/> Lihat di Peta</a>
       </div>
@@ -130,7 +130,7 @@ export default function Settings(){
       {tab==='PENGGUNA & ROLE' && (
         <div className="space-y-3">
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-            <PosStat icon={Users} tone="bg-[#0051d5]/10 text-[#0051d5]" label="TOTAL PENGGUNA" value={users.length} sub={users.filter(u=>u.is_active!==false).length+' aktif'} />
+            <PosStat icon={Users} tone="bg-brand/10 text-brand" label="TOTAL PENGGUNA" value={users.length} sub={users.filter(u=>u.is_active!==false).length+' aktif'} />
             <PosStat icon={Shield} tone="bg-emerald-50 text-emerald-700" label="PERAN (ROLES)" value={roles.length} sub="definisi hak akses" />
             <PosStat icon={Lock} tone="bg-amber-50 text-amber-700" label="SUPERADMIN" value={users.filter(u=>(u.roles||[]).includes('admin')||(u.roles||[]).includes('direktur')).length} sub="akses penuh" />
           </div>
@@ -139,7 +139,7 @@ export default function Settings(){
             <PosCardBody className="space-y-3">
               <PosToolbar actions={<button onClick={load} className={posBtnSecondary+' h-9 px-4 text-xs'}><RefreshCw size={13} className={loading?'animate-spin':''}/> Muat Ulang</button>}>
                 <div className={posSearchWrap}>
-                  <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#76777d]"/>
+                  <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3"/>
                   <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Cari username / email..." className={posInput+' pl-9'} />
                 </div>
               </PosToolbar>
@@ -148,14 +148,14 @@ export default function Settings(){
             {loading ? <PosSkeleton rows={5} cols={4}/> : err ? <PosError message={err} onRetry={load}/> : !filteredUsers.length ? <PosEmpty text="Tidak ada pengguna ditemukan"/> : (
               <div className="overflow-auto">
                 <table className="w-full text-sm">
-                  <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                  <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                     <PosTh>USER</PosTh><PosTh>ROLE (RBAC)</PosTh><PosTh align="center">STATUS</PosTh><PosTh align="right">AKSI</PosTh>
                   </tr></thead>
                   <tbody>
                     {filteredUsers.map(u=>(
                       <tr key={u.id} className={posTr}>
-                        <td className={posTd}><div className="font-bold text-[#0b1c30]">{u.username}</div><div className="text-xs text-[#45464d]">{u.email}</div></td>
-                        <td className={posTd}><div className="flex flex-wrap gap-1">{(u.roles||[]).filter(Boolean).map(r=><span key={r} className="text-xs px-2 py-0.5 rounded-full bg-[#0051d5]/10 text-[#0051d5] font-bold">{r}</span>)}{!u.roles?.length && <span className="text-xs text-[#76777d]">-</span>}</div></td>
+                        <td className={posTd}><div className="font-bold text-ink">{u.username}</div><div className="text-xs text-ink-2">{u.email}</div></td>
+                        <td className={posTd}><div className="flex flex-wrap gap-1">{(u.roles||[]).filter(Boolean).map(r=><span key={r} className="text-xs px-2 py-0.5 rounded-full bg-brand/10 text-brand font-bold">{r}</span>)}{!u.roles?.length && <span className="text-xs text-ink-3">-</span>}</div></td>
                         <td className={posTd+' text-center'}><PosBadge tone={u.is_active!==false?'emerald':'red'}>{u.is_active!==false?'AKTIF':'NONAKTIF'}</PosBadge></td>
                         <td className={posTd}>
                           <div className="flex justify-end gap-1.5">
@@ -175,34 +175,34 @@ export default function Settings(){
 
       {tab==='WORKFLOW APPROVAL' && (
         <PosCard>
-          <div className="p-4 border-b"><h3 className="font-bold text-sm text-[#0b1c30]">Aturan Approval Workflow Matrix</h3><p className="text-xs text-[#45464d] mt-0.5">Threshold otomatis menentukan tingkat otorisasi yang dibutuhkan sebelum dokumen lanjut status</p></div>
+          <div className="p-4 border-b"><h3 className="font-bold text-sm text-ink">Aturan Approval Workflow Matrix</h3><p className="text-xs text-ink-2 mt-0.5">Threshold otomatis menentukan tingkat otorisasi yang dibutuhkan sebelum dokumen lanjut status</p></div>
           <div className="p-4 grid md:grid-cols-2 gap-3 text-sm">
-            <div className="p-4 border rounded-xl bg-[#eff4ff] space-y-1">
-              <div className="font-bold text-[#0b1c30] flex items-center justify-between"><span>Purchase Order (PO)</span><PosBadge tone="sky">Pembelian</PosBadge></div>
-              <div className="text-xs text-[#45464d] pt-2 space-y-1">
+            <div className="p-4 border rounded-xl bg-surface-2 space-y-1">
+              <div className="font-bold text-ink flex items-center justify-between"><span>Purchase Order (PO)</span><PosBadge tone="sky">Pembelian</PosBadge></div>
+              <div className="text-xs text-ink-2 pt-2 space-y-1">
                 <div>• &lt; Rp 10.000.000 → <b>Supervisor Gudang</b></div>
                 <div>• Rp 10.000.000 - Rp 50.000.000 → <b>Manager Pembelian</b></div>
                 <div>• &gt; Rp 50.000.000 → <b>Direktur Utama</b> (Wajib di halaman Approval)</div>
               </div>
             </div>
-            <div className="p-4 border rounded-xl bg-[#eff4ff] space-y-1">
-              <div className="font-bold text-[#0b1c30] flex items-center justify-between"><span>Diskon Sales Order (SO)</span><PosBadge tone="emerald">Penjualan</PosBadge></div>
-              <div className="text-xs text-[#45464d] pt-2 space-y-1">
+            <div className="p-4 border rounded-xl bg-surface-2 space-y-1">
+              <div className="font-bold text-ink flex items-center justify-between"><span>Diskon Sales Order (SO)</span><PosBadge tone="emerald">Penjualan</PosBadge></div>
+              <div className="text-xs text-ink-2 pt-2 space-y-1">
                 <div>• Diskon 0 - 5% → Otomatis (Sales Staff)</div>
                 <div>• Diskon 5% - 10% → <b>Sales Manager</b></div>
                 <div>• Diskon &gt; 10% → <b>Sales Manager + Direktur</b></div>
               </div>
             </div>
-            <div className="p-4 border rounded-xl bg-[#eff4ff] space-y-1">
-              <div className="font-bold text-[#0b1c30] flex items-center justify-between"><span>Penyesuaian Stok (Stock In / Opname)</span><PosBadge tone="amber">Persediaan</PosBadge></div>
-              <div className="text-xs text-[#45464d] pt-2 space-y-1">
+            <div className="p-4 border rounded-xl bg-surface-2 space-y-1">
+              <div className="font-bold text-ink flex items-center justify-between"><span>Penyesuaian Stok (Stock In / Opname)</span><PosBadge tone="amber">Persediaan</PosBadge></div>
+              <div className="text-xs text-ink-2 pt-2 space-y-1">
                 <div>• Selisih &lt; Rp 1.000.000 → Kepala Gudang</div>
                 <div>• Selisih &gt; Rp 1.000.000 → <b>Manager Gudang + Finance</b></div>
               </div>
             </div>
-            <div className="p-4 border rounded-xl bg-[#eff4ff] space-y-1">
-              <div className="font-bold text-[#0b1c30] flex items-center justify-between"><span>Pengeluaran Kas & Bank</span><PosBadge tone="teal">Keuangan</PosBadge></div>
-              <div className="text-xs text-[#45464d] pt-2 space-y-1">
+            <div className="p-4 border rounded-xl bg-surface-2 space-y-1">
+              <div className="font-bold text-ink flex items-center justify-between"><span>Pengeluaran Kas & Bank</span><PosBadge tone="teal">Keuangan</PosBadge></div>
+              <div className="text-xs text-ink-2 pt-2 space-y-1">
                 <div>• Payment &lt; Rp 25.000.000 → Finance Manager</div>
                 <div>• Payment &gt; Rp 25.000.000 → <b>Direktur Keuangan</b></div>
                 <div>• Payment &gt; Rp 100.000.000 → <b>Direktur Utama</b></div>
@@ -220,7 +220,7 @@ export default function Settings(){
               <div className="flex justify-between gap-3 py-1 border-b"><span>Nama Lokasi</span><b className="text-right">{LOCATION.name}</b></div>
               <div className="flex justify-between gap-3 py-1 border-b"><span>Koordinat Pin</span><b className="num text-right">{LOCATION_COORDINATES}</b></div>
               <div className="flex justify-between gap-3 py-1 border-b"><span>Model Lokasi</span><b>Tunggal (single-location)</b></div>
-              <a href={LOCATION_MAP_URL} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-1.5 mt-1 h-8 rounded-lg border border-[#e7ecf7] text-[#0051d5] font-bold hover:bg-[#eff4ff]"><MapPin size={13}/> Buka Peta</a>
+              <a href={LOCATION_MAP_URL} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-1.5 mt-1 h-8 rounded-lg border border-line text-brand font-bold hover:bg-surface-2"><MapPin size={13}/> Buka Peta</a>
             </div>
           </PosCard>
           <PosCard>
@@ -257,29 +257,29 @@ export default function Settings(){
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50">
           <form onSubmit={submitUser} className="bg-white rounded-xl p-5 w-full max-w-lg space-y-3 border shadow-raised animate-pop">
             <div className="flex items-start justify-between gap-3">
-              <div><h3 className="font-bold text-[16px] text-[#0b1c30]">{editing? 'Edit Pengguna':'Pengguna Baru'}</h3><div className="text-xs text-[#45464d] mt-0.5">Kelola kredensial dan hak akses RBAC</div></div>
+              <div><h3 className="font-bold text-[16px] text-ink">{editing? 'Edit Pengguna':'Pengguna Baru'}</h3><div className="text-xs text-ink-2 mt-0.5">Kelola kredensial dan hak akses RBAC</div></div>
               <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border grid place-items-center"><X size={16}/></button>
             </div>
             {formErr && <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{formErr}</div>}
             <div className="grid sm:grid-cols-2 gap-2">
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">USERNAME *</span><input required value={form.username} onChange={e=>setForm({...form,username:e.target.value})} className={posInput} /></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">EMAIL *</span><input required type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} className={posInput} /></label>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">USERNAME *</span><input required value={form.username} onChange={e=>setForm({...form,username:e.target.value})} className={posInput} /></label>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">EMAIL *</span><input required type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} className={posInput} /></label>
             </div>
-            <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">PASSWORD {editing && '(kosongkan jika tidak diganti)'}</span><input type="password" value={form.password} onChange={e=>setForm({...form,password:e.target.value})} placeholder={editing?'••••••••':''} className={posInput} /></label>
+            <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">PASSWORD {editing && '(kosongkan jika tidak diganti)'}</span><input type="password" value={form.password} onChange={e=>setForm({...form,password:e.target.value})} placeholder={editing?'••••••••':''} className={posInput} /></label>
             <div className="space-y-1.5">
-              <span className="text-[11px] font-bold tracking-wider text-[#45464d]">PERAN (ROLES)</span>
+              <span className="text-[11px] font-bold tracking-wider text-ink-2">PERAN (ROLES)</span>
               <div className="flex flex-wrap gap-1.5">
                 {roles.map(r=>{
                   const sel=form.role_ids.includes(r.id);
                   return (
-                    <button type="button" key={r.id} onClick={()=>toggleRole(r.id)} className={'px-3 py-1 rounded-full text-xs font-bold border transition '+(sel?'bg-[#0051d5] text-white border-[#0051d5]':'bg-white text-[#45464d] border-[#e7ecf7]')}>
+                    <button type="button" key={r.id} onClick={()=>toggleRole(r.id)} className={'px-3 py-1 rounded-full text-xs font-bold border transition '+(sel?'bg-brand text-white border-brand':'bg-white text-ink-2 border-line')}>
                       {r.name}
                     </button>
                   );
                 })}
               </div>
             </div>
-            <label className="flex items-center gap-2 pt-2 cursor-pointer"><input type="checkbox" checked={form.is_active} onChange={e=>setForm({...form,is_active:e.target.checked})} className="rounded" /><span className="text-xs font-bold text-[#0b1c30]">Akun Aktif (dapat login)</span></label>
+            <label className="flex items-center gap-2 pt-2 cursor-pointer"><input type="checkbox" checked={form.is_active} onChange={e=>setForm({...form,is_active:e.target.checked})} className="rounded" /><span className="text-xs font-bold text-ink">Akun Aktif (dapat login)</span></label>
             <div className="flex justify-end gap-2 pt-2"><button type="button" onClick={()=>setModal('')} className={posBtnSecondary+' h-9 px-5 text-xs'}>Batal</button><button disabled={saving} className={posBtnPrimary+' h-9 px-6 text-xs'}>{saving?'Menyimpan...':'Simpan Pengguna'}</button></div>
           </form>
         </div>

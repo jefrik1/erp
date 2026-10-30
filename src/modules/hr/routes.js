@@ -843,7 +843,7 @@ async function ensurePayrollJournal(){
     { code:'6-1000', name:'Beban Gaji', type:'EXPENSE' },
     { code:'2-1200', name:'Hutang BPJS', type:'LIABILITY' },
     { code:'2-1300', name:'Hutang Gaji', type:'LIABILITY' },
-    { code:'2-1100', name:'Hutang Pajak', type:'LIABILITY' },
+    { code:'2-1210', name:'Hutang PPh 21', type:'LIABILITY' },
   ]);
   payrollEnsured = true;
 }
@@ -868,7 +868,7 @@ async function postPayrollPeriod(period, { payNow=false, createdBy }){
     refType:'PAYROLL', refId:null, description:`Gaji periode ${period} (${rows.rows.length} karyawan)`,
     lines:[
       { code:'6-1000', debit:gross, description:'Beban gaji & BPJS perusahaan' },
-      ...(pph>0.5 ? [{ code:'2-1100', credit:pph, description:'PPh 21 dipotong' }] : []),
+      ...(pph>0.5 ? [{ code:'2-1210', credit:pph, description:'PPh 21 dipotong' }] : []),
       ...(bpjs>0.5 ? [{ code:'2-1200', credit:bpjs, description:'BPJS karyawan + perusahaan' }] : []),
       payNow
         ? { code:'1-1020', credit:creditTarget, description:'Gaji dibayar via bank' }

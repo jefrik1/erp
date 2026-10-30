@@ -144,7 +144,7 @@ export default function CreditControl(){
         actions={<button onClick={load} className={posBtnSecondary+' h-9 px-4 text-xs'}><RefreshCw size={13} className={loading?'animate-spin':''}/> Muat Ulang</button>}/>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <PosStat icon={Wallet} tone="bg-[#0051d5]/10 text-[#0051d5]" label="PIUTANG TERBUKA" value={rupiah(totalOpen)} sub={open.length+' invoice'}/>
+        <PosStat icon={Wallet} tone="bg-brand/10 text-brand" label="PIUTANG TERBUKA" value={rupiah(totalOpen)} sub={open.length+' invoice'}/>
         <PosStat icon={AlertTriangle} tone="bg-amber-50 text-amber-700" label="LEWAT JATUH TEMPO" value={rupiah(totalOverdue)} sub={overdue.length+' invoice'}/>
         <PosStat icon={ShieldOff} tone="bg-red-50 text-red-700" label="PELANGGAN HOLD" value={nf(holds.length)} sub="order diblokir"/>
         <PosStat icon={Handshake} tone="bg-emerald-50 text-emerald-700" label="JANJI BAYAR" value={nf((ptp||[]).filter(p=>String(p.status||'PENDING').toUpperCase()==='PENDING').length)} sub="menunggu realisasi"/>
@@ -158,7 +158,7 @@ export default function CreditControl(){
             <PosChip active={tab==='ptp'} onClick={()=>setTab('ptp')}>Janji Bayar{ptp.length? ' ('+ptp.length+')':''}</PosChip>
             <PosChip active={tab==='dunning'} onClick={()=>setTab('dunning')}>Surat Penagihan{dunning.length? ' ('+dunning.length+')':''}</PosChip>
           </PosChipRow>
-          <div className="flex flex-wrap items-center gap-2 text-[11px] text-[#45464d]">
+          <div className="flex flex-wrap items-center gap-2 text-[11px] text-ink-2">
             <span className="px-2 py-0.5 rounded-full bg-white border font-bold">Reminder H-7 / H-3 / H-1 / H+ (jatuh tempo)</span>
             {reminders.length>0 && <span className="px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 font-bold text-amber-800">{reminders.length} invoice masuk jadwal pengingat</span>}
             <span className="ml-auto">Sumber: invoice AR + limit kredit pelanggan</span>
@@ -170,7 +170,7 @@ export default function CreditControl(){
             {tab==='prioritas' && (
               <div className="overflow-auto">
                 <table className="w-full text-sm">
-                  <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                  <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                     <PosTh>PELANGGAN</PosTh><PosTh align="right">PIUTANG</PosTh><PosTh align="center">INVOICE</PosTh>
                     <PosTh align="center">OVERDUE</PosTh><PosTh align="center">STATUS</PosTh><PosTh align="center">AKSI</PosTh>
                   </tr></thead>
@@ -180,8 +180,8 @@ export default function CreditControl(){
                       return (
                         <tr key={c.customer_id} className={posTr}>
                           <td className={posTd}>
-                            <div className="font-bold text-[#0b1c30]">{c.name||'-'}</div>
-                            <div className="text-[11px] font-mono text-[#45464d]">{c.code||''}</div>
+                            <div className="font-bold text-ink">{c.name||'-'}</div>
+                            <div className="text-[11px] font-mono text-ink-2">{c.code||''}</div>
                           </td>
                           <td className={posTd+' text-right font-bold tabular-nums'}>{rupiah(c.outstanding)}</td>
                           <td className={posTd+' text-center tabular-nums'}>{c.invoices}</td>
@@ -193,7 +193,7 @@ export default function CreditControl(){
                             <button onClick={()=>{ setHoldOpen({customer_id:c.customer_id, name:c.name}); setHoldReason(''); }}
                               className="text-[11px] font-bold text-red-600 hover:underline mr-2">Blokir</button>
                             <button onClick={()=>{ setPtpOpen(true); setPtpInv(''); setPtpDate(new Date(Date.now()+7*86400000).toISOString().slice(0,10)); setPtpAmt(''); setPtpNote(''); }}
-                              className="text-[11px] font-bold text-[#0051d5] hover:underline">Janji</button>
+                              className="text-[11px] font-bold text-brand hover:underline">Janji</button>
                           </td>
                         </tr>
                       );
@@ -207,7 +207,7 @@ export default function CreditControl(){
             {tab==='hold' && (
               <div className="overflow-auto">
                 <table className="w-full text-sm">
-                  <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                  <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                     <PosTh>PELANGGAN</PosTh><PosTh>ALASAN BLOKIR</PosTh><PosTh align="center">AKSI</PosTh>
                   </tr></thead>
                   <tbody>
@@ -215,13 +215,13 @@ export default function CreditControl(){
                       <tr key={h.id} className={posTr}>
                         <td className={posTd}>
                           <div className="font-bold">{h.name}</div>
-                          <div className="text-[11px] font-mono text-[#45464d]">{h.code||''} {h.phone? '• '+h.phone:''}</div>
+                          <div className="text-[11px] font-mono text-ink-2">{h.code||''} {h.phone? '• '+h.phone:''}</div>
                         </td>
-                        <td className={posTd+' text-xs text-[#45464d]'}>{h.hold_reason||'-'}</td>
+                        <td className={posTd+' text-xs text-ink-2'}>{h.hold_reason||'-'}</td>
                         <td className={posTd+' text-center'}>
                           {isDirector
                             ? <button onClick={()=>doUnhold(h)} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-600 text-white text-[11px] font-bold"><ShieldCheck size={11}/> Buka blokir</button>
-                            : <span className="text-[11px] text-[#76777d]">Hanya Direktur</span>}
+                            : <span className="text-[11px] text-ink-3">Hanya Direktur</span>}
                         </td>
                       </tr>
                     ))}
@@ -238,7 +238,7 @@ export default function CreditControl(){
                 </PosCardBody>
                 <div className="overflow-auto">
                   <table className="w-full text-sm">
-                    <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                    <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                       <PosTh>PELANGGAN</PosTh><PosTh>INVOICE</PosTh><PosTh align="center">TANGGAL JANJI</PosTh>
                       <PosTh align="right">NOMINAL</PosTh><PosTh align="center">STATUS</PosTh><PosTh align="center">AKSI</PosTh>
                     </tr></thead>
@@ -262,7 +262,7 @@ export default function CreditControl(){
                                 <button onClick={()=>setPtpStatus(p,'FULFILLED')} className="text-[11px] font-bold text-emerald-700 hover:underline mr-2">Lunas</button>
                                 <button onClick={()=>setPtpStatus(p,'BROKEN')} className="text-[11px] font-bold text-red-600 hover:underline">Ingkar</button>
                               </>)}
-                              {st!=='PENDING' && <span className="text-[11px] text-[#76777d]">-</span>}
+                              {st!=='PENDING' && <span className="text-[11px] text-ink-3">-</span>}
                             </td>
                           </tr>
                         );
@@ -281,7 +281,7 @@ export default function CreditControl(){
                 </PosCardBody>
                 <div className="overflow-auto">
                   <table className="w-full text-sm">
-                    <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                    <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                       <PosTh>TANGGAL</PosTh><PosTh>PELANGGAN</PosTh><PosTh>INVOICE</PosTh>
                       <PosTh align="center">LEVEL</PosTh><PosTh align="center">VIA</PosTh><PosTh>ISI</PosTh>
                     </tr></thead>
@@ -293,7 +293,7 @@ export default function CreditControl(){
                           <td className={posTd+' font-mono text-[11px]'}>{d.invoice_number||'-'}</td>
                           <td className={posTd+' text-center'}><PosBadge tone={Number(d.level)>=3?'red':Number(d.level)===2?'amber':'sky'}>L{d.level}</PosBadge></td>
                           <td className={posTd+' text-center text-[11px]'}>{d.sent_via||'-'}</td>
-                          <td className={posTd+' text-[11px] text-[#45464d]'}>{d.content||'-'}</td>
+                          <td className={posTd+' text-[11px] text-ink-2'}>{d.content||'-'}</td>
                         </tr>
                       ))}
                       {!dunning.length && <PosEmpty colSpan={6} text="Belum ada surat penagihan"/>}
@@ -309,14 +309,14 @@ export default function CreditControl(){
       {/* Modal blokir pelanggan */}
       {holdOpen && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-[#0b1c30]/60 backdrop-blur-sm" onClick={()=>!holdBusy&&setHoldOpen(null)}/>
-          <div className="relative z-10 w-full max-w-md bg-white rounded-2xl border border-[#e7ecf7] p-5 space-y-3">
+          <div className="absolute inset-0 bg-navy/60 backdrop-blur-sm" onClick={()=>!holdBusy&&setHoldOpen(null)}/>
+          <div className="relative z-10 w-full max-w-md bg-white rounded-2xl border border-line p-5 space-y-3">
             <div className="flex items-start justify-between">
               <h3 className="font-bold text-sm flex items-center gap-1.5"><ShieldOff size={15} className="text-red-600"/> Blokir Pelanggan</h3>
               <button onClick={()=>!holdBusy&&setHoldOpen(null)} className="h-7 w-7 grid place-items-center rounded-full border"><X size={13}/></button>
             </div>
-            <p className="text-xs text-[#45464d]">Pelanggan <b>{holdOpen.name}</b> tidak bisa membuat order baru sampai blokir dibuka Direktur. Tindakan ini tercatat di audit.</p>
-            <label className="block space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Alasan</span>
+            <p className="text-xs text-ink-2">Pelanggan <b>{holdOpen.name}</b> tidak bisa membuat order baru sampai blokir dibuka Direktur. Tindakan ini tercatat di audit.</p>
+            <label className="block space-y-1"><span className="text-[11px] font-bold text-ink-2">Alasan</span>
               <input value={holdReason} onChange={e=>setHoldReason(e.target.value)} placeholder="mis. tunggakan 2 invoice > 60 hari" className={posInput}/>
             </label>
             <div className="flex justify-end gap-2">
@@ -330,27 +330,27 @@ export default function CreditControl(){
       {/* Modal janji bayar */}
       {ptpOpen && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-[#0b1c30]/60 backdrop-blur-sm" onClick={()=>!ptpBusy&&setPtpOpen(false)}/>
-          <div className="relative z-10 w-full max-w-md bg-white rounded-2xl border border-[#e7ecf7] p-5 space-y-3">
+          <div className="absolute inset-0 bg-navy/60 backdrop-blur-sm" onClick={()=>!ptpBusy&&setPtpOpen(false)}/>
+          <div className="relative z-10 w-full max-w-md bg-white rounded-2xl border border-line p-5 space-y-3">
             <div className="flex items-start justify-between">
               <h3 className="font-bold text-sm flex items-center gap-1.5"><Handshake size={15} className="text-emerald-600"/> Catat Janji Bayar</h3>
               <button onClick={()=>!ptpBusy&&setPtpOpen(false)} className="h-7 w-7 grid place-items-center rounded-full border"><X size={13}/></button>
             </div>
-            <label className="block space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Invoice</span>
+            <label className="block space-y-1"><span className="text-[11px] font-bold text-ink-2">Invoice</span>
               <select value={ptpInv} onChange={e=>{ const v=e.target.value; setPtpInv(v); const inv=open.find(a=>String(a.id)===String(v)); if(inv) setPtpAmt(String(Math.round(Number(inv.outstanding||0)))); }} className={posInput}>
                 <option value="">Pilih invoice terbuka...</option>
                 {open.map(a=> <option key={a.id} value={a.id}>{a.invoice_number} • {a.customer_name} • {rupiah(a.outstanding)}</option>)}
               </select>
             </label>
             <div className="grid grid-cols-2 gap-2">
-              <label className="block space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Tanggal janji</span>
+              <label className="block space-y-1"><span className="text-[11px] font-bold text-ink-2">Tanggal janji</span>
                 <input type="date" value={ptpDate} onChange={e=>setPtpDate(e.target.value)} className={posInput}/>
               </label>
-              <label className="block space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Nominal</span>
+              <label className="block space-y-1"><span className="text-[11px] font-bold text-ink-2">Nominal</span>
                 <input type="number" value={ptpAmt} onChange={e=>setPtpAmt(e.target.value)} className={posInput}/>
               </label>
             </div>
-            <label className="block space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Catatan</span>
+            <label className="block space-y-1"><span className="text-[11px] font-bold text-ink-2">Catatan</span>
               <input value={ptpNote} onChange={e=>setPtpNote(e.target.value)} placeholder="mis. transfer setelah termin proyek cair" className={posInput}/>
             </label>
             <div className="flex justify-end gap-2">
@@ -364,31 +364,31 @@ export default function CreditControl(){
       {/* Modal surat penagihan */}
       {dunOpen && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-[#0b1c30]/60 backdrop-blur-sm" onClick={()=>!dunBusy&&setDunOpen(false)}/>
-          <div className="relative z-10 w-full max-w-md bg-white rounded-2xl border border-[#e7ecf7] p-5 space-y-3">
+          <div className="absolute inset-0 bg-navy/60 backdrop-blur-sm" onClick={()=>!dunBusy&&setDunOpen(false)}/>
+          <div className="relative z-10 w-full max-w-md bg-white rounded-2xl border border-line p-5 space-y-3">
             <div className="flex items-start justify-between">
-              <h3 className="font-bold text-sm flex items-center gap-1.5"><Mail size={15} className="text-[#0051d5]"/> Surat Penagihan</h3>
+              <h3 className="font-bold text-sm flex items-center gap-1.5"><Mail size={15} className="text-brand"/> Surat Penagihan</h3>
               <button onClick={()=>!dunBusy&&setDunOpen(false)} className="h-7 w-7 grid place-items-center rounded-full border"><X size={13}/></button>
             </div>
-            <label className="block space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Invoice</span>
+            <label className="block space-y-1"><span className="text-[11px] font-bold text-ink-2">Invoice</span>
               <select value={dunInv} onChange={e=>{ setDunInv(e.target.value); const inv=open.find(a=>String(a.id)===String(e.target.value)); if(inv) setDunContent(`Penagihan untuk ${inv.invoice_number} (${inv.customer_name}) sebesar ${rupiah(inv.outstanding)}, jatuh tempo ${tgl(inv.due_date)}.`); }} className={posInput}>
                 <option value="">Pilih invoice...</option>
                 {open.map(a=> <option key={a.id} value={a.id}>{a.invoice_number} • {a.customer_name} • {rupiah(a.outstanding)}</option>)}
               </select>
             </label>
             <div className="grid grid-cols-2 gap-2">
-              <label className="block space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Level</span>
+              <label className="block space-y-1"><span className="text-[11px] font-bold text-ink-2">Level</span>
                 <select value={dunLevel} onChange={e=>setDunLevel(e.target.value)} className={posInput}>
                   <option value="1">1 - Pengingat</option><option value="2">2 - Teguran</option><option value="3">3 - Peringatan akhir</option>
                 </select>
               </label>
-              <label className="block space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Kirim via</span>
+              <label className="block space-y-1"><span className="text-[11px] font-bold text-ink-2">Kirim via</span>
                 <select value={dunVia} onChange={e=>setDunVia(e.target.value)} className={posInput}>
                   <option value="WA">WhatsApp</option><option value="EMAIL">Email</option><option value="SURAT">Surat</option>
                 </select>
               </label>
             </div>
-            <label className="block space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Isi penagihan</span>
+            <label className="block space-y-1"><span className="text-[11px] font-bold text-ink-2">Isi penagihan</span>
               <textarea value={dunContent} onChange={e=>setDunContent(e.target.value)} rows={3} className={posInput+' h-auto py-2'} placeholder="Isi pesan penagihan..."/>
             </label>
             <div className="flex justify-end gap-2">

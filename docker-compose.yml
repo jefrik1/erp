@@ -46,6 +46,8 @@ services:
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:5174}
       TRUST_PROXY: "1"
       APP_VERSION: ${APP_VERSION:-1.0.0}
+      # Dev/test: matikan pembatas laju agar login berulang tidak 429 (diabaikan bila NODE_ENV=production)
+      RATE_LIMIT_DISABLED: ${RATE_LIMIT_DISABLED:-1}
       RATE_LIMIT_PER_MIN: ${RATE_LIMIT_PER_MIN:-600}
       LOGIN_MAX_FAILS: ${LOGIN_MAX_FAILS:-5}
       LOGIN_LOCK_MINUTES: ${LOGIN_LOCK_MINUTES:-15}

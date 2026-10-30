@@ -2,6 +2,8 @@ import express from 'express';
 import { pool } from '../../config/db.js';
 import { paginate } from '../../utils/helpers.js';
 import { getRule, createApproval } from '../approvals/rules-routes.js';
+import { postJournal } from '../../lib/journal.js';
+import { mutateStock, BusinessError, sendBusinessError } from '../../lib/stock-service.js';
 const router = express.Router();
 let prRfqEnsured=false;
 async function ensurePrRfq(){
@@ -106,36 +108,85 @@ router.get('/receipts/:id', async (req,res)=>{
 });
 router.post('/receipts', async (req,res)=>{
   await ensurePinv();
-  const {po_id, warehouse_id, items} = req.body;
+  const { po_id, warehouse_id, items, is_dropship, override_reason } = req.body;
+  const dropship = is_dropship === true;
   const chk=await pool.query('SELECT status FROM purchase_orders WHERE id=$1',[po_id]);
   if(!chk.rows[0]) return res.status(404).json({error:'PO not found'});
   if(!['APPROVED','PARTIAL'].includes(chk.rows[0].status)) return res.status(400).json({error:'PO harus APPROVED/PARTIAL dulu (lewat Approval jika >50jt)'});
-  const grn_number='GRN-'+Date.now();
-  const ins=await pool.query("INSERT INTO goods_receipts (grn_number, po_id, warehouse_id, receipt_date, status) VALUES ($1,$2,$3,CURRENT_DATE,'COMPLETED') RETURNING id",[grn_number, po_id, warehouse_id||1]);
-  const grnId=ins.rows[0].id;
+  if(!Array.isArray(items) || !items.length) return res.status(400).json({error:'items wajib diisi'});
+
+  // ── Catch-weight (dual UOM): bandingkan berat timbangan dengan berat teoretis.
+  // Baja/semen ditimbang di jembatan timbang; selisih di luar toleransi SNI → HOLD.
+  const weights = await pool.query(
+    `SELECT p.id, COALESCE(p.weight_kg,0)::numeric AS weight_kg,
+            COALESCE((SELECT MAX(tolerance_pct) FROM product_steel_specs s WHERE s.product_id=p.id),3.5)::numeric AS tolerance_pct
+       FROM products p WHERE p.id = ANY($1)`, [items.map(i=>i.product_id)]);
+  const wmap = new Map(weights.rows.map(r=>[Number(r.id), r]));
+  const roles = (req.user?.roles||[]).map(r=>String(r).toLowerCase());
+  const privileged = roles.includes('direktur') || roles.includes('super_admin');
+  const varianceIssues = [];
   for(const it of items){
-    await pool.query('INSERT INTO grn_details (grn_id, product_id, qty_ordered, qty_received, unit_cost, batch_no) VALUES ($1,$2,$3,$4,$5,$6)',[grnId, it.product_id, it.qty_ordered||it.qty_received, it.qty_received, it.unit_cost, it.batch_no||null]);
-    // Update-atau-insert: batch NULL harus dianggap satu baris (ON CONFLICT dengan
-    // batch_no NULL tidak pernah konflik di Postgres -> dulu bikin baris baru tiap GRN).
-    const ex = await pool.query('SELECT id, qty_on_hand, avg_cost FROM stocks WHERE product_id=$1 AND warehouse_id=$2 AND batch_no IS NULL ORDER BY id LIMIT 1',[it.product_id, warehouse_id||1]);
-    if (ex.rows[0]){
-      const before = parseFloat(ex.rows[0].qty_on_hand)||0;
-      const avgBefore = parseFloat(ex.rows[0].avg_cost)||0;
-      const recv = parseFloat(it.qty_received)||0;
-      const cost = parseFloat(it.unit_cost)||0;
-      const after = before + recv;
-      const newAvg = (after>0 && cost>0) ? ((before*avgBefore) + (recv*cost))/after : (cost||avgBefore);
-      await pool.query('UPDATE stocks SET qty_on_hand=$1, avg_cost=$2, last_updated=NOW() WHERE id=$3',[after, newAvg, ex.rows[0].id]);
-    } else {
-      await pool.query('INSERT INTO stocks (product_id, warehouse_id, qty_on_hand, avg_cost, batch_no) VALUES ($1,$2,$3,$4,$5)',
-        [it.product_id, warehouse_id||1, it.qty_received, it.unit_cost||0, it.batch_no||null]);
+    const meta = wmap.get(Number(it.product_id)) || { weight_kg:0, tolerance_pct:3.5 };
+    const theo = (parseFloat(it.qty_received)||0) * Number(meta.weight_kg||0);
+    const actual = it.secondary_qty_actual != null ? Number(it.secondary_qty_actual) : null;
+    if(actual != null && theo > 0){
+      const pct = ((actual - theo) / theo) * 100;
+      it._theo = theo; it._pct = pct;
+      if(Math.abs(pct) > Number(meta.tolerance_pct||3.5)) varianceIssues.push({ product_id: it.product_id, variance_pct: pct, tolerance_pct: Number(meta.tolerance_pct||3.5), net_kg: actual, theoretical_kg: theo });
     }
-    await pool.query("INSERT INTO stock_movements (product_id, warehouse_id, movement_type, reference_type, reference_id, qty_in, balance_qty, created_by) VALUES ($1,$2,'IN','GRN',$3,$4,0,$5)",[it.product_id, warehouse_id||1, grnId, it.qty_received, req.user.id]);
+  }
+  if(varianceIssues.length && !privileged && !override_reason){
+    return res.status(422).json({ error:'Selisih berat melewati toleransi SNI — perlu persetujuan supervisor (kirim override_reason).',
+      code:'WEIGHT_VARIANCE_HOLD', detail:varianceIssues });
+  }
+
+  const grn_number='GRN-'+Date.now();
+  const ins=await pool.query(
+    `INSERT INTO goods_receipts (grn_number, po_id, warehouse_id, receipt_date, status, is_dropship)
+     VALUES ($1,$2,$3,CURRENT_DATE,'COMPLETED',$4) RETURNING id`,
+    [grn_number, po_id, warehouse_id||1, dropship]);
+  const grnId=ins.rows[0].id;
+  let grnValue=0;
+  for(const it of items){
+    grnValue += (parseFloat(it.qty_received)||0) * (parseFloat(it.unit_cost)||0);
+    const hold = (it._pct != null && Math.abs(it._pct) > Number(wmap.get(Number(it.product_id))?.tolerance_pct||3.5)) ? 'WEIGHT_VARIANCE_HOLD' : null;
+    await pool.query(
+      `INSERT INTO grn_details (grn_id, product_id, qty_ordered, qty_received, unit_cost, batch_no,
+                                expired_date, manufactured_date, secondary_qty_actual, secondary_qty_theoretical,
+                                weight_variance_pct, hold_status)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+      [grnId, it.product_id, it.qty_ordered||it.qty_received, it.qty_received, it.unit_cost, it.batch_no||null,
+       it.expired_date||it.expiredDate||null, it.manufactured_date||null,
+       it.secondary_qty_actual != null ? Number(it.secondary_qty_actual) : null,
+       it._theo != null ? it._theo : null, it._pct != null ? it._pct : null, hold]);
+
+    // Drop-ship: barang langsung dikirim pemasok ke pelanggan → stok gudang TIDAK bertambah.
+    if(!dropship){
+      await mutateStock(pool, {
+        productId: it.product_id, warehouseId: warehouse_id||1, batchNo: it.batch_no||null,
+        expiryDate: it.expired_date||it.expiredDate||null,
+        qtyDelta: Math.abs(parseFloat(it.qty_received)||0), unitCost: parseFloat(it.unit_cost)||0,
+        refType: 'GRN', refId: grnId, userId: req.user.id, notes: 'Penerimaan '+grn_number,
+      });
+    }
     await pool.query('UPDATE po_details SET qty_received = qty_received + $1 WHERE po_id=$2 AND product_id=$3',[it.qty_received, po_id, it.product_id]);
   }
   const pending = await pool.query('SELECT COUNT(*) as cnt FROM po_details WHERE po_id=$1 AND qty_received < qty',[po_id]);
   if(parseInt(pending.rows[0].cnt)===0) await pool.query("UPDATE purchase_orders SET status='RECEIVED' WHERE id=$1",[po_id]); else await pool.query("UPDATE purchase_orders SET status='PARTIAL' WHERE id=$1",[po_id]);
-  res.json({id:grnId, grn_number});
+  // Jurnal penerimaan barang:
+  //   normal    → Dr Persediaan / Cr GR/IR (barang diterima belum ditagih)
+  //   drop-ship → Dr HPP / Cr GR/IR (barang tidak pernah singgah di gudang)
+  if(grnValue > 0.5){
+    try{
+      const debitCode = dropship ? '5-1000' : '1-1200';
+      await postJournal({ refType:'GRN', refId:grnId, description:(dropship?'Drop-ship ':'Penerimaan barang ')+grn_number,
+        lines:[ { code:debitCode, debit:grnValue, description:(dropship?'HPP drop-ship ':'Persediaan masuk ')+grn_number },
+                { code:'2-1150', credit:grnValue, description:'GR/IR '+grn_number } ],
+        createdBy:req.user.id });
+    }catch(e){ console.error('[grn journal]', e.message); }
+  }
+  res.json({id:grnId, grn_number, value:grnValue, dropship,
+    weight_hold: varianceIssues.length ? varianceIssues : undefined});
 });
 
 // - 3-way matching: PO ↔ GRN ↔ Invoice supplier -
@@ -222,11 +273,35 @@ router.post('/invoices/:id/approve', async (req,res)=>{
   await ensurePinv();
   const pi=await pool.query('SELECT * FROM purchase_invoices WHERE id=$1',[req.params.id]);
   if(!pi.rows[0]) return res.status(404).json({error:'Invoice not found'});
+  const inv = pi.rows[0];
   // force approve: bayar sesuai INV/GRN, bukan PO - simpan total apa adanya, status APPROVED agar finance bisa Bayar
   await pool.query("UPDATE purchase_invoices SET status='APPROVED' WHERE id=$1",[req.params.id]);
   // hitung info selisih untuk audit
-  const grnQty=await pool.query('SELECT COALESCE(SUM(qty_received),0) as s FROM grn_details gd JOIN goods_receipts gr ON gr.id=gd.grn_id WHERE gr.po_id=$1',[pi.rows[0].po_id]);
-  res.json({ok:true, note:`Approved - bayar sesuai diterima: ${parseFloat(grnQty.rows[0].s)} qty, total ${pi.rows[0].total} (bukan PO)`});
+  const grnQty=await pool.query('SELECT COALESCE(SUM(qty_received),0) as s FROM grn_details gd JOIN goods_receipts gr ON gr.id=gd.grn_id WHERE gr.po_id=$1',[inv.po_id]);
+  // Jurnal kliring GR/IR saat invoice pemasok disetujui:
+  //   Dr GR/IR (nilai barang diterima) + Dr PPN Masukan + Dr/Cr PPV  =  Cr Hutang Usaha (total invoice)
+  let journalId = null;
+  try{
+    const dup = await pool.query("SELECT id FROM journal_entries WHERE reference_type='PINV' AND reference_id=$1 LIMIT 1",[req.params.id]);
+    if(!dup.rows[0]){
+      const grn = await pool.query(
+        `SELECT COALESCE(SUM(gd.qty_received * gd.unit_cost),0)::numeric AS value
+           FROM grn_details gd JOIN goods_receipts gr ON gr.id=gd.grn_id WHERE gr.po_id=$1`, [inv.po_id]);
+      const grir = Number(grn.rows[0].value) || 0;
+      const ppn = Number(inv.tax) || 0;
+      const ap = Number(inv.total) || 0;
+      const ppv = ap - ppn - grir; // selisih harga beli (positif = lebih mahal dari GRN)
+      const lines = [
+        { code:'2-1150', debit:grir, description:'Kliring GR/IR '+inv.inv_number },
+        { code:'2-1000', credit:ap, description:'Hutang usaha '+inv.inv_number },
+      ];
+      if(ppn > 0) lines.push({ code:'1-1410', debit:ppn, description:'PPN Masukan '+inv.inv_number });
+      if(ppv > 0.5) lines.push({ code:'5-1200', debit:ppv, description:'Selisih harga beli '+inv.inv_number });
+      else if(ppv < -0.5) lines.push({ code:'5-1200', credit:Math.abs(ppv), description:'Selisih harga beli '+inv.inv_number });
+      journalId = await postJournal({ refType:'PINV', refId:Number(req.params.id), description:'Invoice pemasok '+inv.inv_number, lines, createdBy:req.user.id });
+    }
+  }catch(e){ console.error('[pinv journal]', e.message); }
+  res.json({ok:true, journal_id:journalId, note:`Approved - bayar sesuai diterima: ${parseFloat(grnQty.rows[0].s)} qty, total ${inv.total} (bukan PO)`});
 });
 router.post('/invoices/:id/hold', async (req,res)=>{ await ensurePinv(); await pool.query("UPDATE purchase_invoices SET status='HOLD' WHERE id=$1",[req.params.id]); res.json({ok:true}); });
 export default router;

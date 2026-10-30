@@ -2,6 +2,8 @@ import express from 'express';
 import { pool } from '../../config/db.js';
 import { paginate } from '../../utils/helpers.js';
 import { sendReport } from '../../lib/exporters.js';
+import { postJournal } from '../../lib/journal.js';
+import { mutateStock, sendBusinessError } from '../../lib/stock-service.js';
 const router=express.Router();
 router.get('/', async (req,res)=>{
   const {limit,offset}=paginate(req);
@@ -19,16 +21,28 @@ router.get('/', async (req,res)=>{
 });
 router.post('/', async(req,res)=>{
   const {product_id,warehouse_id,qty,waste_type,reason}=req.body;
-  const prod=await pool.query('SELECT avg_cost FROM stocks WHERE product_id=$1 AND warehouse_id=$2 LIMIT 1',[product_id,warehouse_id||1]);
-  const cost = parseFloat(prod.rows[0]?.avg_cost||50000) * parseFloat(qty);
+  const wh = warehouse_id||1;
+  const prod=await pool.query('SELECT COALESCE(avg_cost,0) AS avg_cost FROM stocks WHERE product_id=$1 AND warehouse_id=$2 LIMIT 1',[product_id,wh]);
+  const unitCost = parseFloat(prod.rows[0]?.avg_cost||0);
+  const cost = unitCost * parseFloat(qty);
   const wtype = waste_type||'OTHER';
   // auto need approval if >500rb
   const status = cost > 500000 ? 'PENDING' : 'APPROVED';
-  const ins=await pool.query('INSERT INTO waste_logs (product_id,warehouse_id,qty,waste_type,reason,cost,status,created_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id',[product_id,warehouse_id||1,qty,wtype,reason,cost,status,req.user.id]);
+  const ins=await pool.query('INSERT INTO waste_logs (product_id,warehouse_id,qty,waste_type,reason,cost,status,created_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id',[product_id,wh,qty,wtype,reason,cost,status,req.user.id]);
   if(status==='APPROVED'){
-    await pool.query('UPDATE stocks SET qty_on_hand = qty_on_hand - $1 WHERE product_id=$2 AND warehouse_id=$3',[qty,product_id,warehouse_id||1]);
-    await pool.query("INSERT INTO stock_movements (product_id,warehouse_id,movement_type,reference_type,reference_id,qty_out,created_by) VALUES ($1,$2,'ADJ','WASTE',$3,$4,$5)",[product_id,warehouse_id||1,ins.rows[0].id,qty,req.user.id]);
-    await pool.query("INSERT INTO journal_entries (entry_number,entry_date,description,total_debit,total_credit,posted) VALUES ($1,CURRENT_DATE,$2,$3,$3,true)",['JE-WASTE-'+ins.rows[0].id,'Write-off waste '+wtype,cost]);
+    try{
+      await mutateStock(pool, { productId: product_id, warehouseId: wh, qtyDelta: -Math.abs(parseFloat(qty)),
+        refType: 'WASTE', refId: ins.rows[0].id, userId: req.user.id, notes: 'Write-off '+wtype });
+      if(cost > 0.5){
+        await postJournal({ refType:'WASTE', refId:ins.rows[0].id, description:'Write-off '+wtype,
+          lines:[ { code:'5-1300', debit:cost, description:'Susut/rusak '+wtype },
+                  { code:'1-1200', credit:cost, description:'Persediaan keluar (waste)' } ], createdBy:req.user.id });
+      }
+    }catch(e){
+      await pool.query('DELETE FROM waste_logs WHERE id=$1',[ins.rows[0].id]).catch(()=>{});
+      const sent = sendBusinessError(res, e); if(sent) return sent;
+      return res.status(500).json({error:e.message});
+    }
   }
   res.json({id:ins.rows[0].id, cost, status});
 });
@@ -43,8 +57,20 @@ router.post('/:id/approve', async(req,res)=>{
   }
   await pool.query('UPDATE waste_logs SET status=$1, approved_by=$2 WHERE id=$3',[status,req.user.id,req.params.id]);
   if(status==='APPROVED'){
-    await pool.query('UPDATE stocks SET qty_on_hand = qty_on_hand - $1 WHERE product_id=$2 AND warehouse_id=$3',[w.rows[0].qty,w.rows[0].product_id,w.rows[0].warehouse_id]);
-    await pool.query("INSERT INTO stock_movements (product_id,warehouse_id,movement_type,reference_type,reference_id,qty_out,created_by) VALUES ($1,$2,'ADJ','WASTE',$3,$4,$5)",[w.rows[0].product_id,w.rows[0].warehouse_id,req.params.id,w.rows[0].qty,req.user.id]);
+    const w0=w.rows[0];
+    try{
+      await mutateStock(pool, { productId: w0.product_id, warehouseId: w0.warehouse_id, qtyDelta: -Math.abs(Number(w0.qty)),
+        refType: 'WASTE', refId: Number(req.params.id), userId: req.user.id, notes: 'Write-off '+w0.waste_type });
+      if(Number(w0.cost) > 0.5){
+        await postJournal({ refType:'WASTE', refId:Number(req.params.id), description:'Write-off '+w0.waste_type,
+          lines:[ { code:'5-1300', debit:Number(w0.cost), description:'Susut/rusak '+w0.waste_type },
+                  { code:'1-1200', credit:Number(w0.cost), description:'Persediaan keluar (waste)' } ], createdBy:req.user.id });
+      }
+    }catch(e){
+      await pool.query("UPDATE waste_logs SET status='PENDING' WHERE id=$1",[req.params.id]).catch(()=>{});
+      const sent = sendBusinessError(res, e); if(sent) return sent;
+      return res.status(500).json({error:e.message});
+    }
   }
   res.json({ok:true});
 });

@@ -4,34 +4,36 @@
 
 /* ---------- token layer (Stitch: UI Redesign and Polish) ---------- */
 :root {
-  --bg: 248 249 255;
+  /* Palet: Stitch project 13568048731228673785 — "Markdown UI Refinement"
+     (console enterprise padat: kanvas #F7F8FA, tinta #141B2C, brand #00288E) */
+  --bg: 247 248 250;
   --surface: 255 255 255;
-  --surface-2: 239 244 255;
-  --surface-3: 229 238 255;
-  --surface-4: 220 233 255;
-  --line: 231 236 247;
-  --line-strong: 198 198 205;
-  --ink: 11 28 48;
-  --ink-2: 69 70 77;
-  --ink-3: 118 119 125;
-  --navy: 19 27 46;
-  --navy-2: 33 49 69;
-  --brand: 0 81 213;
-  --brand-strong: 0 65 171;
-  --brand-tint: 49 107 243;
-  --brand-soft: 219 225 255;
-  --success: 0 150 104;
-  --success-soft: 232 251 242;
-  --success-line: 168 235 196;
-  --warning: 180 83 9;
-  --warning-soft: 255 248 236;
-  --warning-line: 255 216 168;
-  --danger: 186 26 26;
-  --danger-soft: 255 218 214;
-  --danger-line: 255 180 171;
-  --info: 0 81 213;
-  --info-soft: 239 244 255;
-  --info-line: 180 197 255;
+  --surface-2: 247 248 250;
+  --surface-3: 241 243 245;
+  --surface-4: 228 231 236;
+  --line: 228 231 236;
+  --line-strong: 208 213 221;
+  --ink: 20 27 44;
+  --ink-2: 71 84 103;
+  --ink-3: 102 112 133;
+  --navy: 15 23 42;
+  --navy-2: 30 41 59;
+  --brand: 0 40 142;
+  --brand-strong: 27 58 156;
+  --brand-tint: 30 64 175;
+  --brand-soft: 238 243 255;
+  --success: 6 118 71;
+  --success-soft: 236 253 243;
+  --success-line: 171 239 198;
+  --warning: 181 71 8;
+  --warning-soft: 255 250 235;
+  --warning-line: 254 223 137;
+  --danger: 180 35 24;
+  --danger-soft: 254 243 242;
+  --danger-line: 254 205 202;
+  --info: 2 106 162;
+  --info-soft: 240 249 255;
+  --info-line: 185 230 254;
 }
 
 @layer base {
@@ -40,11 +42,16 @@
     background: rgb(var(--bg));
     color: rgb(var(--ink));
     font-family: 'Inter Variable', Inter, system-ui, sans-serif;
-    font-size: 14px;
-    line-height: 20px;
+    font-size: 13px;
+    line-height: 19px;
     font-feature-settings: 'cv05' 1, 'ss01' 1;
   }
-  h1, h2, h3, .font-display { font-family: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', 'Inter Variable', Inter, sans-serif; }
+  h1, h2, h3, .font-display { font-family: 'Inter Variable', Inter, system-ui, sans-serif; font-weight: 600; letter-spacing: -0.011em; }
+  /* Console padat ala Stitch: tabel & kartu memakai garis rambut, bukan bayangan tebal */
+  table { border-collapse: separate; border-spacing: 0; }
+  thead th { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: rgb(var(--ink-3)); font-weight: 600; }
+  .card, .panel { background: rgb(var(--surface)); border: 1px solid rgb(var(--line)); border-radius: 8px; box-shadow: 0 1px 2px rgba(16,24,40,.05); }
+  .hairline { border-color: rgb(var(--line)); }
   .num, td.num, input.num { font-variant-numeric: tabular-nums lining-nums; }
   .mono { font-family: ui-monospace, 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace; }
   :focus-visible { outline: 2px solid rgb(var(--brand-tint)); outline-offset: 2px; border-radius: 6px; }

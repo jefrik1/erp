@@ -104,7 +104,7 @@ export default function NotificationCenter(){
         <PosStat icon={Send} tone="bg-amber-50 text-amber-700" label="ANTRIAN" value={String(stats.QUEUED||0)} sub="belum diproses"/>
         <PosStat icon={MessageSquare} tone="bg-emerald-50 text-emerald-700" label="TERKIRIM" value={String(stats.SENT||0)} sub="diproses provider"/>
         <PosStat icon={X} tone="bg-red-50 text-red-700" label="GAGAL" value={String(stats.FAILED||0)} sub="perlu retry"/>
-        <PosStat icon={FileText} tone="bg-[#0051d5]/10 text-[#0051d5]" label="TEMPLATE" value={String(templates.length)} sub="aktif untuk pesan cepat"/>
+        <PosStat icon={FileText} tone="bg-brand/10 text-brand" label="TEMPLATE" value={String(templates.length)} sub="aktif untuk pesan cepat"/>
       </div>
 
       {consoleMode && (
@@ -134,7 +134,7 @@ export default function NotificationCenter(){
         {loading ? <PosSkeleton rows={6} cols={6}/> : err ? <PosError message={err} onRetry={load}/> : tab==='outbox' ? (
           <div className="overflow-auto">
             <table className="w-full text-sm">
-              <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+              <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                 <PosTh>TUJUAN</PosTh><PosTh align="center">CHANNEL</PosTh><PosTh>PESAN</PosTh><PosTh align="center">STATUS</PosTh>
                 <PosTh align="center">WAKTU</PosTh><PosTh align="center">AKSI</PosTh>
               </tr></thead>
@@ -145,21 +145,21 @@ export default function NotificationCenter(){
                     <tr key={o.id} className={posTr}>
                       <td className={posTd}>
                         <div className="font-mono text-xs font-bold">{o.recipient}</div>
-                        <div className="text-[10px] text-[#76777d]">{o.template_key||'manual'}{o.created_by_name? ' • '+o.created_by_name:''}</div>
+                        <div className="text-[10px] text-ink-3">{o.template_key||'manual'}{o.created_by_name? ' • '+o.created_by_name:''}</div>
                       </td>
                       <td className={posTd+' text-center'}><span className="inline-flex items-center gap-1 text-[11px] font-bold"><Icon size={12}/>{o.channel}</span></td>
                       <td className={posTd+' text-xs max-w-[380px]'}>
                         {o.subject && <div className="font-semibold">{o.subject}</div>}
-                        <div className="text-[#45464d] line-clamp-2">{o.body}</div>
+                        <div className="text-ink-2 line-clamp-2">{o.body}</div>
                         {o.last_error && <div className="text-[10px] text-amber-700 mt-0.5">{String(o.last_error).slice(0,120)}</div>}
                       </td>
                       <td className={posTd+' text-center'}>
                         <PosBadge tone={TONE[o.status]||'slate'}>{o.status}</PosBadge>
-                        {o.provider && <div className="text-[10px] text-[#76777d] mt-0.5">{o.provider}</div>}
+                        {o.provider && <div className="text-[10px] text-ink-3 mt-0.5">{o.provider}</div>}
                       </td>
-                      <td className={posTd+' text-center text-[10px] text-[#76777d]'}>{tgl(o.sent_at||o.created_at)}</td>
+                      <td className={posTd+' text-center text-[10px] text-ink-3'}>{tgl(o.sent_at||o.created_at)}</td>
                       <td className={posTd+' text-center whitespace-nowrap'}>
-                        {o.status==='QUEUED' && <button onClick={()=>sendOne(o)} className="text-[11px] font-bold text-[#0051d5] hover:underline mr-2">Kirim</button>}
+                        {o.status==='QUEUED' && <button onClick={()=>sendOne(o)} className="text-[11px] font-bold text-brand hover:underline mr-2">Kirim</button>}
                         {o.status==='FAILED' && <button onClick={()=>retry(o)} className="text-[11px] font-bold text-amber-700 hover:underline mr-2 inline-flex items-center gap-0.5"><RotateCcw size={10}/> Retry</button>}
                         <button onClick={()=>del(o)} className="text-red-600 hover:underline"><Trash2 size={12}/></button>
                       </td>
@@ -173,7 +173,7 @@ export default function NotificationCenter(){
         ) : (
           <div className="overflow-auto">
             <table className="w-full text-sm">
-              <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+              <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                 <PosTh>KEY</PosTh><PosTh>NAMA</PosTh><PosTh align="center">CHANNEL</PosTh><PosTh>SUBJEK</PosTh><PosTh align="center">AKSI</PosTh>
               </tr></thead>
               <tbody>
@@ -182,10 +182,10 @@ export default function NotificationCenter(){
                     <td className={posTd+' font-mono text-xs'}>{t.key}</td>
                     <td className={posTd+' text-xs font-semibold'}>{t.name}</td>
                     <td className={posTd+' text-center text-[11px]'}>{t.channel}</td>
-                    <td className={posTd+' text-xs text-[#45464d]'}>{t.subject||'-'}</td>
+                    <td className={posTd+' text-xs text-ink-2'}>{t.subject||'-'}</td>
                     <td className={posTd+' text-center'}>
                       <button onClick={()=>{ setTplEdit(t.key); setTplForm({ name:t.name||'', channel:t.channel||'WA', subject:t.subject||'', body:t.body||'' }); }}
-                        className="text-[11px] font-bold text-[#0051d5] hover:underline">Ubah</button>
+                        className="text-[11px] font-bold text-brand hover:underline">Ubah</button>
                     </td>
                   </tr>
                 ))}
@@ -198,26 +198,26 @@ export default function NotificationCenter(){
 
       {compose && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-[#0b1c30]/60 backdrop-blur-sm" onClick={()=>!busy&&setCompose(false)}/>
-          <div className="relative z-10 w-full max-w-lg bg-white rounded-2xl border border-[#e7ecf7] p-5 space-y-3">
+          <div className="absolute inset-0 bg-navy/60 backdrop-blur-sm" onClick={()=>!busy&&setCompose(false)}/>
+          <div className="relative z-10 w-full max-w-lg bg-white rounded-2xl border border-line p-5 space-y-3">
             <div className="flex items-start justify-between">
-              <h3 className="font-bold text-sm flex items-center gap-1.5"><Send size={15} className="text-[#0051d5]"/> Pesan Baru</h3>
+              <h3 className="font-bold text-sm flex items-center gap-1.5"><Send size={15} className="text-brand"/> Pesan Baru</h3>
               <button onClick={()=>!busy&&setCompose(false)} className="h-7 w-7 grid place-items-center rounded-full border"><X size={13}/></button>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <label className="block space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Channel</span>
+              <label className="block space-y-1"><span className="text-[11px] font-bold text-ink-2">Channel</span>
                 <PosSelect value={form.channel} onChange={v=>setForm(f=>({...f,channel:v}))}>
                   <option value="WA">WhatsApp</option><option value="EMAIL">Email</option><option value="SMS">SMS</option>
                 </PosSelect>
               </label>
-              <label className="block space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Tujuan</span>
+              <label className="block space-y-1"><span className="text-[11px] font-bold text-ink-2">Tujuan</span>
                 <input value={form.recipient} onChange={e=>setForm(f=>({...f,recipient:e.target.value}))} placeholder="0812... / email@domain" className={posInput}/>
               </label>
             </div>
-            <label className="block space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Subjek (opsional)</span>
+            <label className="block space-y-1"><span className="text-[11px] font-bold text-ink-2">Subjek (opsional)</span>
               <input value={form.subject} onChange={e=>setForm(f=>({...f,subject:e.target.value}))} className={posInput}/>
             </label>
-            <label className="block space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Isi pesan</span>
+            <label className="block space-y-1"><span className="text-[11px] font-bold text-ink-2">Isi pesan</span>
               <textarea value={form.body} onChange={e=>setForm(f=>({...f,body:e.target.value}))} rows={4} className={posInput+' h-auto py-2'}/>
             </label>
             <div className="flex justify-end gap-2">
@@ -230,27 +230,27 @@ export default function NotificationCenter(){
 
       {tplEdit && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-[#0b1c30]/60 backdrop-blur-sm" onClick={()=>setTplEdit(null)}/>
-          <div className="relative z-10 w-full max-w-lg bg-white rounded-2xl border border-[#e7ecf7] p-5 space-y-3">
+          <div className="absolute inset-0 bg-navy/60 backdrop-blur-sm" onClick={()=>setTplEdit(null)}/>
+          <div className="relative z-10 w-full max-w-lg bg-white rounded-2xl border border-line p-5 space-y-3">
             <div className="flex items-start justify-between">
-              <h3 className="font-bold text-sm">Template <span className="font-mono text-xs text-[#76777d]">{tplEdit}</span></h3>
+              <h3 className="font-bold text-sm">Template <span className="font-mono text-xs text-ink-3">{tplEdit}</span></h3>
               <button onClick={()=>setTplEdit(null)} className="h-7 w-7 grid place-items-center rounded-full border"><X size={13}/></button>
             </div>
-            <p className="text-[11px] text-[#45464d]">Pakai placeholder <span className="font-mono">{'{{nama}}'}</span>, mis. <span className="font-mono">{'{{customer}}'}</span>, <span className="font-mono">{'{{invoice}}'}</span>, <span className="font-mono">{'{{amount}}'}</span>.</p>
+            <p className="text-[11px] text-ink-2">Pakai placeholder <span className="font-mono">{'{{nama}}'}</span>, mis. <span className="font-mono">{'{{customer}}'}</span>, <span className="font-mono">{'{{invoice}}'}</span>, <span className="font-mono">{'{{amount}}'}</span>.</p>
             <div className="grid grid-cols-2 gap-2">
-              <label className="block space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Nama</span>
+              <label className="block space-y-1"><span className="text-[11px] font-bold text-ink-2">Nama</span>
                 <input value={tplForm.name} onChange={e=>setTplForm(f=>({...f,name:e.target.value}))} className={posInput}/>
               </label>
-              <label className="block space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Channel</span>
+              <label className="block space-y-1"><span className="text-[11px] font-bold text-ink-2">Channel</span>
                 <PosSelect value={tplForm.channel} onChange={v=>setTplForm(f=>({...f,channel:v}))}>
                   <option value="WA">WhatsApp</option><option value="EMAIL">Email</option><option value="SMS">SMS</option>
                 </PosSelect>
               </label>
             </div>
-            <label className="block space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Subjek</span>
+            <label className="block space-y-1"><span className="text-[11px] font-bold text-ink-2">Subjek</span>
               <input value={tplForm.subject} onChange={e=>setTplForm(f=>({...f,subject:e.target.value}))} className={posInput}/>
             </label>
-            <label className="block space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Isi</span>
+            <label className="block space-y-1"><span className="text-[11px] font-bold text-ink-2">Isi</span>
               <textarea value={tplForm.body} onChange={e=>setTplForm(f=>({...f,body:e.target.value}))} rows={4} className={posInput+' h-auto py-2'}/>
             </label>
             <div className="flex justify-end gap-2">

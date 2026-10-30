@@ -143,12 +143,12 @@ export default function Approvals(){
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <PosStat icon={Clock} tone="bg-amber-50 text-amber-700" label="TOTAL PENDING" value={stats.pending} sub="butuh tindakan" />
-        <PosStat icon={ShoppingCart} tone="bg-[#0051d5]/10 text-[#0051d5]" label="PO PENDING" value={poPending.length} sub={rupiah(stats.poTotalVal)} />
+        <PosStat icon={ShoppingCart} tone="bg-brand/10 text-brand" label="PO PENDING" value={poPending.length} sub={rupiah(stats.poTotalVal)} />
         <PosStat icon={AlertTriangle} tone="bg-red-50 text-red-700" label="PO > 50JT (DIREKTUR)" value={stats.poOver50jt} sub="wajib otorisasi level tinggi" />
         <PosStat icon={FileCheck} tone="bg-emerald-50 text-emerald-700" label="LOG APPROVAL" value={stats.historyCount} sub={'status: '+status} />
       </div>
 
-      <nav className="flex flex-wrap items-center gap-1 p-1 bg-[#e5eeff] border rounded-full w-fit shadow-card text-xs">
+      <nav className="flex flex-wrap items-center gap-1 p-1 bg-surface-3 border rounded-full w-fit shadow-card text-xs">
         {[
           {label:'PR Request',to:'/purchase/requests'},
           {label:'RFQ Penawaran',to:'/purchase/rfqs'},
@@ -156,7 +156,7 @@ export default function Approvals(){
           {label:'Approval Otorisasi',active:true,to:'/approvals'},
           {label:'GRN Penerimaan',to:'/purchase/receipts'},
         ].map(s=>(
-          <button key={s.label} onClick={()=>nav(s.to)} className={'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold border transition '+(s.active?'bg-[#0051d5] text-white border-[#0051d5]':'bg-white text-[#45464d] border-[#e7ecf7] hover:border-[#0051d5]/30')}>{s.label}</button>
+          <button key={s.label} onClick={()=>nav(s.to)} className={'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold border transition '+(s.active?'bg-brand text-white border-brand':'bg-white text-ink-2 border-line hover:border-brand/30')}>{s.label}</button>
         ))}
       </nav>
 
@@ -172,7 +172,7 @@ export default function Approvals(){
           </div>
           <div className="overflow-auto">
             <table className="w-full text-sm">
-              <thead><tr className="bg-[#eff4ff] border-b text-[11px] font-bold tracking-wider text-[#45464d]"><PosTh>NO. PO</PosTh><PosTh>SUPPLIER</PosTh><PosTh>TANGGAL</PosTh><PosTh align="right">TOTAL</PosTh><PosTh align="center">LEVEL</PosTh><PosTh align="right">AKSI</PosTh></tr></thead>
+              <thead><tr className="bg-surface-2 border-b text-[11px] font-bold tracking-wider text-ink-2"><PosTh>NO. PO</PosTh><PosTh>SUPPLIER</PosTh><PosTh>TANGGAL</PosTh><PosTh align="right">TOTAL</PosTh><PosTh align="center">LEVEL</PosTh><PosTh align="right">AKSI</PosTh></tr></thead>
               <tbody>
                 {poPending.map(po=>{
                   const val=Number(po.total||0);
@@ -182,7 +182,7 @@ export default function Approvals(){
                     <tr key={po.id} className={posTr}>
                       <td className={posTd+' font-mono font-bold'}>{po.po_number}</td>
                       <td className={posTd+' font-medium'}>{po.supplier_name||'-'}</td>
-                      <td className={posTd+' text-xs text-[#45464d]'}>{String(po.po_date||'').slice(0,10)}</td>
+                      <td className={posTd+' text-xs text-ink-2'}>{String(po.po_date||'').slice(0,10)}</td>
                       <td className={posTd+' text-right font-bold tabular-nums'}>{rupiah(po.total)}</td>
                       <td className={posTd+' text-center'}><PosBadge tone={tierTone}>{tier}</PosBadge></td>
                       <td className={posTd}>
@@ -249,7 +249,7 @@ export default function Approvals(){
         <PosCardBody className="space-y-3">
           <PosToolbar actions={<button onClick={load} className={posBtnSecondary+' h-9 px-4 text-xs'}><RefreshCw size={13} className={loading?'animate-spin':''}/> Muat Ulang</button>}>
             <div className={posSearchWrap}>
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#76777d]"/>
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3"/>
               <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Cari entitas / pemohon / approver..." className={posInput+' pl-9'} />
             </div>
             <div className={posSelectWrap}><PosSelect value={status} onChange={setStatus}>{STATUSES.map(s=> <option key={s} value={s}>{s}</option>)}</PosSelect></div>
@@ -263,18 +263,18 @@ export default function Approvals(){
           <>
             <div className="overflow-auto">
               <table className="w-full text-sm">
-                <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                   <PosTh>ID</PosTh><PosTh>TIPE ENTITAS</PosTh><PosTh>PEMOHON</PosTh><PosTh>APPROVER</PosTh><PosTh align="center">STATUS</PosTh><PosTh>TANGGAL</PosTh><PosTh align="right">AKSI</PosTh>
                 </tr></thead>
                 <tbody>
                   {pageRows.map(a=>(
                     <tr key={a.id} className={posTr}>
                       <td className={posTd+' font-mono font-bold'}>#{a.id}</td>
-                      <td className={posTd+' font-bold text-[#0b1c30]'}>{a.entity_type} <span className="font-mono text-xs text-[#45464d]">#{a.entity_id}</span></td>
+                      <td className={posTd+' font-bold text-ink'}>{a.entity_type} <span className="font-mono text-xs text-ink-2">#{a.entity_id}</span></td>
                       <td className={posTd+' text-xs'}>{a.requester_name||'-'}</td>
                       <td className={posTd+' text-xs'}>{a.approver_name||'-'}</td>
                       <td className={posTd+' text-center'}><PosBadge tone={a.status==='APPROVED'?'emerald':a.status==='REJECTED'?'red':a.status==='DELEGATED'?'sky':'amber'}>{a.status}</PosBadge></td>
-                      <td className={posTd+' text-xs text-[#45464d]'}>{String(a.created_at||'').slice(0,19).replace('T',' ')}</td>
+                      <td className={posTd+' text-xs text-ink-2'}>{String(a.created_at||'').slice(0,19).replace('T',' ')}</td>
                       <td className={posTd}>
                         {a.status==='PENDING' ? (
                           <div className="flex justify-end gap-1.5">
@@ -282,7 +282,7 @@ export default function Approvals(){
                             <button disabled={actingId===a.id} onClick={()=>decideRequest(a.id,'reject')} className={posBtnSm+' text-red-600 border-red-200 hover:bg-red-50'}><XCircle size={13}/> Tolak</button>
                           </div>
                         ) : (
-                          <div className="text-right text-xs text-[#76777d]">Selesai</div>
+                          <div className="text-right text-xs text-ink-3">Selesai</div>
                         )}
                       </td>
                     </tr>

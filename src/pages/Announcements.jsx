@@ -74,22 +74,22 @@ export default function Announcements(){
             <PosCard key={a.id}>
               <PosCardBody>
                 <div className="flex items-start gap-3">
-                  <span className="w-9 h-9 rounded-xl bg-[#0051d5]/10 text-[#0051d5] grid place-items-center shrink-0"><Megaphone size={16}/></span>
+                  <span className="w-9 h-9 rounded-xl bg-brand/10 text-brand grid place-items-center shrink-0"><Megaphone size={16}/></span>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-[15px] font-bold text-[#0b1c30] leading-snug">{a.title}</h2>
+                      <h2 className="text-[15px] font-bold text-ink leading-snug">{a.title}</h2>
                       <PosBadge tone={CATS[a.category]||'slate'}>{a.category||'UMUM'}</PosBadge>
                     </div>
-                    <div className="flex flex-wrap items-center gap-3 mt-1 text-[11px] text-[#76777d]">
+                    <div className="flex flex-wrap items-center gap-3 mt-1 text-[11px] text-ink-3">
                       <span className="inline-flex items-center gap-1"><CalendarDays size={11}/> {fmtDate(a.created_at)}</span>
                       {a.created_by_name && <span className="inline-flex items-center gap-1"><User size={11}/> {a.created_by_name}</span>}
                       {a.expires_at && <span>berlaku s/d {fmtDate(a.expires_at)}</span>}
                     </div>
-                    <p className="text-sm text-[#2b3445] mt-2 whitespace-pre-line leading-relaxed">{a.body}</p>
+                    <p className="text-sm text-ink-2 mt-2 whitespace-pre-line leading-relaxed">{a.body}</p>
                   </div>
                   {canManage && (
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <button onClick={()=>openEdit(a)} className="h-8 px-2.5 rounded-lg border border-[#e7ecf7] bg-white text-xs font-semibold text-[#2b3445] hover:bg-[#eff4ff] inline-flex items-center gap-1"><Pencil size={12}/> Edit</button>
+                      <button onClick={()=>openEdit(a)} className="h-8 px-2.5 rounded-lg border border-line bg-white text-xs font-semibold text-ink-2 hover:bg-surface-2 inline-flex items-center gap-1"><Pencil size={12}/> Edit</button>
                       <button onClick={()=>remove(a)} className="h-8 px-2.5 rounded-lg border border-red-200 bg-white text-xs font-semibold text-red-600 hover:bg-red-50 inline-flex items-center gap-1"><Trash2 size={12}/> Nonaktifkan</button>
                     </div>
                   )}
@@ -102,31 +102,31 @@ export default function Announcements(){
 
       {show && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
-          <div className="absolute inset-0 bg-[#131b2e]/60 backdrop-blur-sm" onClick={()=>setShow(false)}/>
+          <div className="absolute inset-0 bg-navy/60 backdrop-blur-sm" onClick={()=>setShow(false)}/>
           <form onSubmit={submit} className="relative bg-white rounded-xl shadow-modal w-full max-w-[560px] overflow-hidden animate-pop">
             <div className="px-6 pt-6 pb-4 flex items-start justify-between gap-4">
               <div>
-                <div className="text-[11px] tracking-[.14em] font-bold text-[#45464d]">{editId? 'UBAH PENGUMUMAN' : 'PENGUMUMAN BARU'}</div>
-                <h2 className="text-[18px] font-bold text-[#0b1c30] mt-1">{editId? 'Perbarui informasi' : 'Tulis untuk seluruh karyawan'}</h2>
+                <div className="text-[11px] tracking-[.14em] font-bold text-ink-2">{editId? 'UBAH PENGUMUMAN' : 'PENGUMUMAN BARU'}</div>
+                <h2 className="text-[18px] font-bold text-ink mt-1">{editId? 'Perbarui informasi' : 'Tulis untuk seluruh karyawan'}</h2>
               </div>
               <button type="button" onClick={()=>setShow(false)} className="shrink-0 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 grid place-items-center text-gray-500"><X size={16}/></button>
             </div>
             <div className="px-6 pb-2 space-y-3">
-              <label className="block space-y-1.5"><span className="text-[11px] font-bold tracking-wide text-[#45464d]">JUDUL</span>
+              <label className="block space-y-1.5"><span className="text-[11px] font-bold tracking-wide text-ink-2">JUDUL</span>
                 <input value={form.title} onChange={e=>setForm({...form, title:e.target.value})} className={posInput} placeholder="Contoh: Libur nasional 25 Oktober"/></label>
               <div className="grid grid-cols-2 gap-3">
-                <label className="block space-y-1.5"><span className="text-[11px] font-bold tracking-wide text-[#45464d]">KATEGORI</span>
+                <label className="block space-y-1.5"><span className="text-[11px] font-bold tracking-wide text-ink-2">KATEGORI</span>
                   <PosSelect value={form.category} onChange={v=>setForm({...form, category:v})} size="md">
                     {Object.keys(CATS).map(c=><option key={c} value={c}>{c}</option>)}
                   </PosSelect></label>
-                <label className="block space-y-1.5"><span className="text-[11px] font-bold tracking-wide text-[#45464d]">BERLAKU SAMPAI (OPSIONAL)</span>
+                <label className="block space-y-1.5"><span className="text-[11px] font-bold tracking-wide text-ink-2">BERLAKU SAMPAI (OPSIONAL)</span>
                   <input type="date" value={form.expires_at} onChange={e=>setForm({...form, expires_at:e.target.value})} className={posInput}/></label>
               </div>
-              <label className="block space-y-1.5"><span className="text-[11px] font-bold tracking-wide text-[#45464d]">ISI</span>
+              <label className="block space-y-1.5"><span className="text-[11px] font-bold tracking-wide text-ink-2">ISI</span>
                 <textarea value={form.body} onChange={e=>setForm({...form, body:e.target.value})} rows={5} className={posInput+' h-auto py-2.5'} placeholder="Tulis isi pengumuman..."/></label>
               {formErr && <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2">{formErr}</div>}
             </div>
-            <div className="px-6 py-4 bg-[#eff4ff] border-t border-[#e7ecf7] flex items-center justify-end gap-2">
+            <div className="px-6 py-4 bg-surface-2 border-t border-line flex items-center justify-end gap-2">
               <button type="button" onClick={()=>setShow(false)} className={posBtnSecondary+' h-10 px-4 text-sm'}>Batal</button>
               <button type="submit" disabled={saving} className={posBtnPrimary+' h-10 px-4 text-sm disabled:opacity-50'}>{saving? 'Menyimpan...' : (editId? 'Simpan Perubahan' : 'Terbitkan')}</button>
             </div>

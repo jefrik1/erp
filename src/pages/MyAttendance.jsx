@@ -57,10 +57,10 @@ function AttendanceSuccessModal({ open, onClose, onHistory, kind, row, late, dis
   const dist = distance ?? row?.check_in_distance_m ?? null;
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-6">
-      <div className="absolute inset-0 bg-[#0b1c30]/60 backdrop-blur-sm" onClick={onClose}/>
-      <div role="dialog" aria-modal="true" className="relative z-10 w-full max-w-[420px] max-h-[92vh] flex flex-col bg-white rounded-3xl shadow-[0_24px_60px_-12px_rgba(15,23,42,0.35)] overflow-hidden border border-[#e7ecf7] animate-pop">
+      <div className="absolute inset-0 bg-navy/60 backdrop-blur-sm" onClick={onClose}/>
+      <div role="dialog" aria-modal="true" className="relative z-10 w-full max-w-[420px] max-h-[92vh] flex flex-col bg-white rounded-3xl shadow-[0_24px_60px_-12px_rgba(15,23,42,0.35)] overflow-hidden border border-line animate-pop">
         <div className={'h-1.5 w-full bg-gradient-to-r '+accent}/>
-        <button onClick={onClose} aria-label="Tutup" className="absolute top-4 right-4 text-[#76777d] hover:text-[#0b1c30] p-2 rounded-full hover:bg-[#eff4ff]">
+        <button onClick={onClose} aria-label="Tutup" className="absolute top-4 right-4 text-ink-3 hover:text-ink p-2 rounded-full hover:bg-surface-2">
           <X size={18}/>
         </button>
         <div className="flex-1 overflow-y-auto px-6 pt-7 pb-4 sm:px-8 flex flex-col items-center text-center">
@@ -72,30 +72,30 @@ function AttendanceSuccessModal({ open, onClose, onHistory, kind, row, late, dis
             </div>
           </div>
 
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#eef6ff] border border-[#d9eaff] text-[#0051d5] text-[11px] font-bold tracking-wide uppercase">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#0051d5] animate-ping"/> Informasi Kehadiran
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#eef6ff] border border-[#d9eaff] text-brand text-[11px] font-bold tracking-wide uppercase">
+            <span className="w-1.5 h-1.5 rounded-full bg-brand animate-ping"/> Informasi Kehadiran
           </div>
-          <h2 className="text-[22px] font-bold text-[#0b1c30] tracking-tight mt-2">
+          <h2 className="text-[22px] font-bold text-ink tracking-tight mt-2">
             {isOut ? 'Absensi Pulang Berhasil' : isLate ? 'Absensi Tercatat - Terlambat' : 'Absensi Berhasil'}
           </h2>
-          <p className="text-sm text-[#45464d] leading-relaxed mt-1">
+          <p className="text-sm text-ink-2 leading-relaxed mt-1">
             {isOut
               ? <>Check-out Anda sudah tersimpan{jamKerja!=null? ' • total '+fmtJam(jamKerja)+' hari ini':''}.</>
-              : <>Check-in Anda sudah diverifikasi sistem.<br/><span className="text-[#0b1c30] font-semibold">{isLate? 'Absen tetap diterima, tercatat sebagai keterlambatan.' : 'Selamat bekerja dan semoga produktif!'}</span></>}
+              : <>Check-in Anda sudah diverifikasi sistem.<br/><span className="text-ink font-semibold">{isLate? 'Absen tetap diterima, tercatat sebagai keterlambatan.' : 'Selamat bekerja dan semoga produktif!'}</span></>}
           </p>
 
-          <div className="w-full mt-6 bg-[#f8fafc] border border-[#e7ecf7] rounded-2xl p-4 text-left divide-y divide-[#e7ecf7]">
+          <div className="w-full mt-6 bg-[#f8fafc] border border-line rounded-2xl p-4 text-left divide-y divide-[#e7ecf7]">
             <div className="pb-3 flex items-center justify-between gap-2">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-[#e5eeff] text-[#0051d5] flex items-center justify-center shrink-0"><Clock size={15}/></div>
+                <div className="w-8 h-8 rounded-lg bg-surface-3 text-brand flex items-center justify-center shrink-0"><Clock size={15}/></div>
                 <div className="min-w-0">
-                  <p className="text-[11px] text-[#76777d] font-medium">Waktu Presensi</p>
-                  <p className="text-[11px] font-semibold text-[#0b1c30] truncate">{dateLong(row.date)}</p>
+                  <p className="text-[11px] text-ink-3 font-medium">Waktu Presensi</p>
+                  <p className="text-[11px] font-semibold text-ink truncate">{dateLong(row.date)}</p>
                 </div>
               </div>
               <div className="text-right shrink-0">
-                <span className="text-[15px] font-bold text-[#0b1c30] tracking-tight font-mono">{fmtClock(isOut? row.check_out : row.check_in)}</span>
-                <span className="text-[10px] font-bold text-[#76777d] uppercase ml-0.5">WIB</span>
+                <span className="text-[15px] font-bold text-ink tracking-tight font-mono">{fmtClock(isOut? row.check_out : row.check_in)}</span>
+                <span className="text-[10px] font-bold text-ink-3 uppercase ml-0.5">WIB</span>
               </div>
             </div>
 
@@ -103,8 +103,8 @@ function AttendanceSuccessModal({ open, onClose, onHistory, kind, row, late, dis
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="w-8 h-8 rounded-lg bg-emerald-100/70 text-emerald-600 flex items-center justify-center shrink-0"><MapPin size={15}/></div>
                 <div className="min-w-0">
-                  <p className="text-[11px] text-[#76777d] font-medium">Lokasi Kerja</p>
-                  <p className="text-[11px] font-semibold text-[#0b1c30] truncate">{policy?.office?.name || DEFAULT_POLICY.office.name}</p>
+                  <p className="text-[11px] text-ink-3 font-medium">Lokasi Kerja</p>
+                  <p className="text-[11px] font-semibold text-ink truncate">{policy?.office?.name || DEFAULT_POLICY.office.name}</p>
                 </div>
               </div>
               {dist!=null
@@ -118,8 +118,8 @@ function AttendanceSuccessModal({ open, onClose, onHistory, kind, row, late, dis
                   {isOut ? <Timer size={15}/> : <ShieldCheck size={15}/>}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[11px] text-[#76777d] font-medium">{isOut? 'Durasi Kerja':'Status Jam Masuk'}</p>
-                  <p className="text-[11px] font-semibold text-[#0b1c30] truncate">{isOut? (jamKerja!=null? fmtJam(jamKerja):'-') : 'Batas masuk '+(policy?.cutoff_label||DEFAULT_POLICY.cutoff_label)}</p>
+                  <p className="text-[11px] text-ink-3 font-medium">{isOut? 'Durasi Kerja':'Status Jam Masuk'}</p>
+                  <p className="text-[11px] font-semibold text-ink truncate">{isOut? (jamKerja!=null? fmtJam(jamKerja):'-') : 'Batas masuk '+(policy?.cutoff_label||DEFAULT_POLICY.cutoff_label)}</p>
                 </div>
               </div>
               {isOut
@@ -139,16 +139,16 @@ function AttendanceSuccessModal({ open, onClose, onHistory, kind, row, late, dis
         </div>
 
         {/* Aksi selalu terlihat - konten di atasnya yang discroll */}
-        <div className="shrink-0 px-6 sm:px-8 pt-3 pb-3 space-y-2 bg-white border-t border-[#e7ecf7]">
-          <button onClick={onClose} className="w-full py-3 px-5 text-sm font-bold rounded-xl text-white bg-[#0051d5] hover:bg-blue-800 active:scale-[0.99] transition-all flex items-center justify-center gap-2">
+        <div className="shrink-0 px-6 sm:px-8 pt-3 pb-3 space-y-2 bg-white border-t border-line">
+          <button onClick={onClose} className="w-full py-3 px-5 text-sm font-bold rounded-xl text-white bg-brand hover:bg-blue-800 active:scale-[0.99] transition-all flex items-center justify-center gap-2">
             Mengerti
           </button>
-          <button onClick={onHistory} className="w-full py-2.5 px-4 text-sm font-semibold rounded-xl text-[#45464d] hover:text-[#0b1c30] hover:bg-[#eff4ff] transition-colors">
+          <button onClick={onHistory} className="w-full py-2.5 px-4 text-sm font-semibold rounded-xl text-ink-2 hover:text-ink hover:bg-surface-2 transition-colors">
             Lihat Riwayat Bulan Ini
           </button>
         </div>
-        <div className="pb-2 pt-1 flex justify-center bg-[#f8fafc] border-t border-[#e7ecf7]">
-          <span className="text-[11px] text-[#76777d] flex items-center gap-1 font-medium">
+        <div className="pb-2 pt-1 flex justify-center bg-[#f8fafc] border-t border-line">
+          <span className="text-[11px] text-ink-3 flex items-center gap-1 font-medium">
             <CheckCircle2 size={12}/> Sistem HR Sumber Material • ID #ABS-{String(row.id||0).padStart(5,'0')}
           </span>
         </div>
@@ -273,9 +273,9 @@ export default function MyAttendance(){
           <PosCardBody>
             <div className="flex flex-wrap items-center gap-4">
               <div className="min-w-0 flex-1">
-                <div className="text-[11px] font-bold tracking-wider text-[#45464d]">HARI INI - {fmtDate(data.today)}</div>
-                <div className="text-[26px] font-bold text-[#0b1c30] tabular-nums leading-none mt-1">{now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</div>
-                <div className="text-xs text-[#45464d] mt-1">waktu setempat (WIB)</div>
+                <div className="text-[11px] font-bold tracking-wider text-ink-2">HARI INI - {fmtDate(data.today)}</div>
+                <div className="text-[26px] font-bold text-ink tabular-nums leading-none mt-1">{now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</div>
+                <div className="text-xs text-ink-2 mt-1">waktu setempat (WIB)</div>
                 <div className="flex flex-wrap items-center gap-2 mt-3">
                   {sisaMasuk && <PosBadge tone="slate">Belum check-in</PosBadge>}
                   {bisaPulang && <PosBadge tone="sky">Sudah masuk {fmtTime(tr.check_in)}</PosBadge>}
@@ -301,13 +301,13 @@ export default function MyAttendance(){
             {/* Status lokasi + aturan jam masuk */}
             <div className="mt-4 grid sm:grid-cols-2 gap-2">
               <button type="button" onClick={locate}
-                className={'text-left rounded-xl border p-3 flex items-start gap-2 transition '+(dalamRadius? 'bg-emerald-50 border-emerald-200':geo.status==='locating'? 'bg-[#eff4ff] border-[#e7ecf7]':'bg-amber-50 border-amber-200')}>
-                <span className={'w-7 h-7 rounded-lg grid place-items-center shrink-0 '+(dalamRadius? 'bg-emerald-600 text-white':'bg-white border border-[#e7ecf7] text-[#45464d]')}>
+                className={'text-left rounded-xl border p-3 flex items-start gap-2 transition '+(dalamRadius? 'bg-emerald-50 border-emerald-200':geo.status==='locating'? 'bg-surface-2 border-line':'bg-amber-50 border-amber-200')}>
+                <span className={'w-7 h-7 rounded-lg grid place-items-center shrink-0 '+(dalamRadius? 'bg-emerald-600 text-white':'bg-white border border-line text-ink-2')}>
                   {geo.status==='locating'? <RefreshCw size={13} className="animate-spin"/> : <LocateFixed size={14}/>}
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-[11px] font-bold text-[#0b1c30]">{geoLabel}</span>
-                  <span className="block text-[11px] text-[#45464d] leading-snug">
+                  <span className="block text-[11px] font-bold text-ink">{geoLabel}</span>
+                  <span className="block text-[11px] text-ink-2 leading-snug">
                     {geo.status==='error' || geo.status==='unsupported'
                       ? `${geo.error||'Aktifkan izin lokasi'} Klik untuk coba lagi.`
                       : dalamRadius
@@ -318,13 +318,13 @@ export default function MyAttendance(){
                   </span>
                 </span>
               </button>
-              <div className={'rounded-xl border p-3 flex items-start gap-2 '+(lewatBatas && sisaMasuk? 'bg-amber-50 border-amber-200':'bg-[#eff4ff] border-[#e7ecf7]')}>
-                <span className={'w-7 h-7 rounded-lg grid place-items-center shrink-0 '+(lewatBatas && sisaMasuk? 'bg-amber-500 text-white':'bg-white border border-[#e7ecf7] text-[#45464d]')}>
+              <div className={'rounded-xl border p-3 flex items-start gap-2 '+(lewatBatas && sisaMasuk? 'bg-amber-50 border-amber-200':'bg-surface-2 border-line')}>
+                <span className={'w-7 h-7 rounded-lg grid place-items-center shrink-0 '+(lewatBatas && sisaMasuk? 'bg-amber-500 text-white':'bg-white border border-line text-ink-2')}>
                   <AlarmClock size={14}/>
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-[11px] font-bold text-[#0b1c30]">Batas masuk {policy.cutoff_label||'08:00 WIB'}</span>
-                  <span className="block text-[11px] text-[#45464d] leading-snug">
+                  <span className="block text-[11px] font-bold text-ink">Batas masuk {policy.cutoff_label||'08:00 WIB'}</span>
+                  <span className="block text-[11px] text-ink-2 leading-snug">
                     {lewatBatas
                       ? `Sudah lewat ${menitTelat} menit - tetap bisa absen, tercatat terlambat & masuk catatan HR/admin.`
                       : `Sisa ${Math.max(0,cutoffMin-menitSekarang)} menit lagi untuk absen tepat waktu.`}
@@ -338,25 +338,25 @@ export default function MyAttendance(){
         <div className="grid grid-cols-2 gap-3">
           <PosStat icon={CalendarCheck} tone="bg-emerald-50 text-emerald-700" label="HADIR" value={data.summary?.hadir ?? 0} sub={'bulan '+monthLabel}/>
           <PosStat icon={AlarmClock} tone="bg-amber-50 text-amber-700" label="TERLAMBAT" value={data.summary?.terlambat ?? 0} sub={'lewat '+(policy.cutoff_label||'08:00')}/>
-          <PosStat icon={Clock} tone="bg-[#0051d5]/10 text-[#0051d5]" label="TOTAL JAM" value={(data.summary?.jam ?? 0)+' jam'} sub="akumulasi bulan ini"/>
-          <PosStat icon={UserCircle} tone="bg-[#e5eeff] text-[#45464d]" label="RATA-RATA" value={(data.summary?.hadir? Math.round((data.summary.jam/data.summary.hadir)*10)/10 : 0)+' jam'} sub="per hari hadir"/>
+          <PosStat icon={Clock} tone="bg-brand/10 text-brand" label="TOTAL JAM" value={(data.summary?.jam ?? 0)+' jam'} sub="akumulasi bulan ini"/>
+          <PosStat icon={UserCircle} tone="bg-surface-3 text-ink-2" label="RATA-RATA" value={(data.summary?.hadir? Math.round((data.summary.jam/data.summary.hadir)*10)/10 : 0)+' jam'} sub="per hari hadir"/>
         </div>
       </div>
 
       <div id="att-history">
       <PosCard>
         <PosCardBody className="flex flex-wrap items-center gap-2">
-          <span className="text-[11px] font-bold tracking-wider text-[#45464d]">RIWAYAT BULANAN</span>
+          <span className="text-[11px] font-bold tracking-wider text-ink-2">RIWAYAT BULANAN</span>
           <div className="flex items-center gap-1.5 sm:ml-auto">
-            <button onClick={()=>shiftMonth(-1)} className="w-8 h-8 rounded-xl border border-[#e7ecf7] bg-white grid place-items-center hover:bg-[#eff4ff] text-[#2b3445]" title="Bulan sebelumnya"><ChevronLeft size={15}/></button>
-            <span className="text-sm font-semibold text-[#0b1c30] min-w-[120px] text-center">{monthLabel}</span>
-            <button onClick={()=>shiftMonth(1)} className="w-8 h-8 rounded-xl border border-[#e7ecf7] bg-white grid place-items-center hover:bg-[#eff4ff] text-[#2b3445]" title="Bulan berikutnya"><ChevronRight size={15}/></button>
+            <button onClick={()=>shiftMonth(-1)} className="w-8 h-8 rounded-xl border border-line bg-white grid place-items-center hover:bg-surface-2 text-ink-2" title="Bulan sebelumnya"><ChevronLeft size={15}/></button>
+            <span className="text-sm font-semibold text-ink min-w-[120px] text-center">{monthLabel}</span>
+            <button onClick={()=>shiftMonth(1)} className="w-8 h-8 rounded-xl border border-line bg-white grid place-items-center hover:bg-surface-2 text-ink-2" title="Bulan berikutnya"><ChevronRight size={15}/></button>
           </div>
         </PosCardBody>
         {loading ? <PosSkeleton rows={6} cols={5}/> : err ? <PosError message={err} onRetry={load}/> : !(data.data||[]).length ? <PosEmpty text="Belum ada absensi bulan ini - klik Check-in Masuk untuk mulai"/> : (
           <div className="overflow-auto">
             <table className="w-full text-sm">
-              <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+              <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                 <PosTh>TANGGAL</PosTh><PosTh align="center">MASUK</PosTh><PosTh align="center">PULANG</PosTh><PosTh align="center">JAM KERJA</PosTh><PosTh align="center">STATUS</PosTh>
               </tr></thead>
               <tbody>
@@ -370,7 +370,7 @@ export default function MyAttendance(){
                       {r.terlambat
                         ? <PosBadge tone="amber">Terlambat{parseInt(r.late_minutes||0)>0? ' '+r.late_minutes+' mnt':''}</PosBadge>
                         : <PosBadge tone="emerald">Hadir</PosBadge>}
-                      {r.check_in_distance_m!=null && <div className="text-[10px] text-[#76777d] mt-0.5">{r.check_in_distance_m} m dari pusat</div>}
+                      {r.check_in_distance_m!=null && <div className="text-[10px] text-ink-3 mt-0.5">{r.check_in_distance_m} m dari pusat</div>}
                     </td>
                   </tr>
                 ))}

@@ -340,8 +340,8 @@ const GLOSSARY = [
 function SectionTitle({ icon: Icon, children }) {
   return (
     <div className="flex items-center gap-2.5">
-      <span className="h-9 w-9 rounded-xl bg-[#e5eeff] text-[#0051d5] grid place-items-center shrink-0"><Icon size={17} /></span>
-      <h2 className="text-lg font-bold text-[#0b1c30] tracking-tight">{children}</h2>
+      <span className="h-9 w-9 rounded-xl bg-surface-3 text-brand grid place-items-center shrink-0"><Icon size={17} /></span>
+      <h2 className="text-lg font-bold text-ink tracking-tight">{children}</h2>
     </div>
   );
 }
@@ -349,8 +349,8 @@ function SectionTitle({ icon: Icon, children }) {
 function RichText({ text }) {
   const parts = String(text).split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
   return <>{parts.map((p, i) => {
-    if(p.startsWith('**') && p.endsWith('**')) return <b key={i} className="font-bold text-[#0b1c30]">{p.slice(2, -2)}</b>;
-    if(p.startsWith('`') && p.endsWith('`')) return <code key={i} className="font-mono text-[10px] bg-[#eff4ff] border border-[#e7ecf7] rounded px-1 py-0.5">{p.slice(1, -1)}</code>;
+    if(p.startsWith('**') && p.endsWith('**')) return <b key={i} className="font-bold text-ink">{p.slice(2, -2)}</b>;
+    if(p.startsWith('`') && p.endsWith('`')) return <code key={i} className="font-mono text-[10px] bg-surface-2 border border-line rounded px-1 py-0.5">{p.slice(1, -1)}</code>;
     return <span key={i}>{p}</span>;
   })}</>;
 }
@@ -379,17 +379,17 @@ export default function Guidebook() {
   }, [modules]);
 
   return (
-    <div className="min-h-screen bg-[#f7f9fd] text-[#0b1c30]">
-      <header className="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-[#e7ecf7] print:hidden">
+    <div className="min-h-screen bg-[#f7f9fd] text-ink">
+      <header className="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-line print:hidden">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center gap-3">
-          <div className="h-8 w-8 rounded-lg bg-[#0b1c30] text-white grid place-items-center font-bold text-sm">SM</div>
+          <div className="h-8 w-8 rounded-lg bg-navy text-white grid place-items-center font-bold text-sm">SM</div>
           <div className="font-bold text-sm">Guidebook ERP</div>
-          <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#e5eeff] text-[#0051d5] font-bold">v2.0</span>
+          <span className="text-[11px] px-2 py-0.5 rounded-full bg-surface-3 text-brand font-bold">v2.0</span>
           <div className="ml-auto flex items-center gap-2">
-            <button onClick={() => window.print()} className="h-9 px-3 rounded-lg border border-[#e7ecf7] bg-white text-xs font-bold text-[#45464d] hover:bg-[#eff4ff] inline-flex items-center gap-1.5">
+            <button onClick={() => window.print()} className="h-9 px-3 rounded-lg border border-line bg-white text-xs font-bold text-ink-2 hover:bg-surface-2 inline-flex items-center gap-1.5">
               <Printer size={14} /> Cetak / PDF
             </button>
-            <Link to="/login" className="h-9 px-3 rounded-lg bg-[#0051d5] text-white text-xs font-bold hover:bg-[#0041ab] inline-flex items-center gap-1.5">
+            <Link to="/login" className="h-9 px-3 rounded-lg bg-brand text-white text-xs font-bold hover:bg-brand-strong inline-flex items-center gap-1.5">
               <ArrowLeft size={14} /> Kembali ke Login
             </Link>
           </div>
@@ -421,20 +421,20 @@ export default function Guidebook() {
             <div className="grid lg:grid-cols-2 gap-4">
               {newModules.map(m => (
                 <div key={m.n} className={`bg-white rounded-2xl border ${m.tone} overflow-hidden`}>
-                  <div className="px-4 py-3 border-b border-[#e7ecf7] flex items-center gap-2">
-                    <span className="h-8 w-8 rounded-lg bg-[#eff4ff] border border-[#e7ecf7] text-[#0051d5] grid place-items-center shrink-0"><m.icon size={15}/></span>
+                  <div className="px-4 py-3 border-b border-line flex items-center gap-2">
+                    <span className="h-8 w-8 rounded-lg bg-surface-2 border border-line text-brand grid place-items-center shrink-0"><m.icon size={15}/></span>
                     <div className="min-w-0">
                       <div className="font-bold text-sm leading-tight">{m.n}</div>
-                      <div className="text-[10px] font-mono text-[#76777d]">{m.p}</div>
+                      <div className="text-[10px] font-mono text-ink-3">{m.p}</div>
                     </div>
                   </div>
                   <div className="p-4 space-y-3">
-                    <p className="text-[12px] text-[#45464d] leading-relaxed">{m.what}</p>
-                    <div className="text-[11px]"><span className="font-bold text-[#0b1c30]">Untuk: </span><span className="text-[#45464d]">{m.who}</span></div>
+                    <p className="text-[12px] text-ink-2 leading-relaxed">{m.what}</p>
+                    <div className="text-[11px]"><span className="font-bold text-ink">Untuk: </span><span className="text-ink-2">{m.who}</span></div>
                     <ol className="space-y-2">
                       {m.steps.map((s,i)=>(
-                        <li key={i} className="flex gap-2 text-[12px] leading-relaxed text-[#0b1c30]/90">
-                          <span className="h-5 w-5 shrink-0 rounded-full bg-[#e5eeff] text-[#0051d5] text-[10px] font-bold grid place-items-center mt-0.5">{i+1}</span>
+                        <li key={i} className="flex gap-2 text-[12px] leading-relaxed text-ink/90">
+                          <span className="h-5 w-5 shrink-0 rounded-full bg-surface-3 text-brand text-[10px] font-bold grid place-items-center mt-0.5">{i+1}</span>
                           <span><RichText text={s}/></span>
                         </li>
                       ))}
@@ -454,7 +454,7 @@ export default function Guidebook() {
             <SectionTitle icon={Workflow}>Alur Besar Sistem</SectionTitle>
             <div className="grid lg:grid-cols-3 gap-4">
               {FLOWS.map(f => (
-                <div key={f.title} className="bg-white rounded-2xl border border-[#e7ecf7] overflow-hidden">
+                <div key={f.title} className="bg-white rounded-2xl border border-line overflow-hidden">
                   <div className={`px-4 py-3 bg-gradient-to-r ${f.color} text-white flex items-center gap-2`}>
                     <f.icon size={16} />
                     <div className="font-bold text-sm">{f.title}</div>
@@ -462,15 +462,15 @@ export default function Guidebook() {
                   <ol className="p-4 space-y-3">
                     {f.steps.map(([t, d], i) => (
                       <li key={t} className="flex gap-2.5">
-                        <span className="h-5 w-5 shrink-0 rounded-full bg-[#e5eeff] text-[#0051d5] text-[10px] font-bold grid place-items-center mt-0.5">{i + 1}</span>
+                        <span className="h-5 w-5 shrink-0 rounded-full bg-surface-3 text-brand text-[10px] font-bold grid place-items-center mt-0.5">{i + 1}</span>
                         <div className="text-xs leading-relaxed">
-                          <div className="font-bold text-[#0b1c30]">{t}</div>
-                          <div className="text-[#45464d]">{d}</div>
+                          <div className="font-bold text-ink">{t}</div>
+                          <div className="text-ink-2">{d}</div>
                         </div>
                       </li>
                     ))}
                   </ol>
-                  <div className="px-4 pb-4 text-[11px] text-[#45464d] bg-[#f7f9fd] border-t border-[#e7ecf7] pt-3">{f.note}</div>
+                  <div className="px-4 pb-4 text-[11px] text-ink-2 bg-[#f7f9fd] border-t border-line pt-3">{f.note}</div>
                 </div>
               ))}
             </div>
@@ -489,7 +489,7 @@ export default function Guidebook() {
                   </div>
                   <ol className="mt-2.5 space-y-2">
                     {r.steps.map((s, i) => (
-                      <li key={i} className="flex gap-2 text-xs leading-relaxed text-[#0b1c30]/90">
+                      <li key={i} className="flex gap-2 text-xs leading-relaxed text-ink/90">
                         <span className="font-bold opacity-50 tabular-nums">{i + 1}.</span>
                         <span><RichText text={s} /></span>
                       </li>
@@ -504,30 +504,30 @@ export default function Guidebook() {
         {grouped.length > 0 && (
           <section className="space-y-4">
             <SectionTitle icon={ClipboardList}>Daftar Modul &amp; Langkahnya</SectionTitle>
-            <p className="text-xs text-[#45464d] -mt-2">Klik nama modul untuk melihat langkah kerjanya.</p>
+            <p className="text-xs text-ink-2 -mt-2">Klik nama modul untuk melihat langkah kerjanya.</p>
             <div className="space-y-5">
               {grouped.map(g => (
                 <div key={g.g}>
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-[#76777d] mb-2">{g.g}</div>
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-ink-3 mb-2">{g.g}</div>
                   <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
                     {g.items.map(m => (
-                      <details key={m.p} className="bg-white rounded-xl border border-[#e7ecf7] overflow-hidden group">
+                      <details key={m.p} className="bg-white rounded-xl border border-line overflow-hidden group">
                         <summary className="cursor-pointer p-3 flex items-start gap-2 list-none [&::-webkit-details-marker]:hidden">
-                          <span className="h-7 w-7 rounded-lg bg-[#eff4ff] text-[#0051d5] grid place-items-center shrink-0"><m.icon size={14} /></span>
+                          <span className="h-7 w-7 rounded-lg bg-surface-2 text-brand grid place-items-center shrink-0"><m.icon size={14} /></span>
                           <div className="min-w-0 flex-1">
                             <div className="font-bold text-[13px] leading-tight">{m.n}</div>
-                            <div className="text-[10px] font-mono text-[#76777d] mt-0.5">{m.p}</div>
+                            <div className="text-[10px] font-mono text-ink-3 mt-0.5">{m.p}</div>
                           </div>
-                          <ChevronRight size={13} className="text-[#76777d] group-open:rotate-90 transition-transform mt-1 shrink-0"/>
+                          <ChevronRight size={13} className="text-ink-3 group-open:rotate-90 transition-transform mt-1 shrink-0"/>
                         </summary>
                         <div className="px-3 pb-3 space-y-2">
-                          <p className="text-[11px] text-[#45464d] leading-relaxed">{m.d}</p>
-                          <div className="text-[10px] text-[#76777d] flex items-start gap-1"><Users size={10} className="mt-0.5 shrink-0"/><span>{m.r}</span></div>
+                          <p className="text-[11px] text-ink-2 leading-relaxed">{m.d}</p>
+                          <div className="text-[10px] text-ink-3 flex items-start gap-1"><Users size={10} className="mt-0.5 shrink-0"/><span>{m.r}</span></div>
                           {m.steps && (
-                            <ol className="space-y-1.5 pt-1 border-t border-[#e7ecf7]">
+                            <ol className="space-y-1.5 pt-1 border-t border-line">
                               {m.steps.map((s,i)=>(
-                                <li key={i} className="flex gap-1.5 text-[11px] leading-relaxed text-[#0b1c30]/90">
-                                  <span className="font-bold text-[#0051d5] tabular-nums">{i+1}.</span><span>{s}</span>
+                                <li key={i} className="flex gap-1.5 text-[11px] leading-relaxed text-ink/90">
+                                  <span className="font-bold text-brand tabular-nums">{i+1}.</span><span>{s}</span>
                                 </li>
                               ))}
                             </ol>
@@ -547,11 +547,11 @@ export default function Guidebook() {
             <SectionTitle icon={ShieldCheck}>Aturan Penting (jangan dilanggar)</SectionTitle>
             <div className="grid sm:grid-cols-2 gap-3">
               {rules.map(r => (
-                <div key={r.t} className="bg-white rounded-xl border border-[#e7ecf7] p-3.5 flex gap-2.5">
+                <div key={r.t} className="bg-white rounded-xl border border-line p-3.5 flex gap-2.5">
                   <span className="h-7 w-7 rounded-lg bg-amber-50 text-amber-700 grid place-items-center shrink-0"><r.i size={14} /></span>
                   <div>
                     <div className="font-bold text-xs">{r.t}</div>
-                    <div className="text-[11px] text-[#45464d] mt-1 leading-relaxed">{r.d}</div>
+                    <div className="text-[11px] text-ink-2 mt-1 leading-relaxed">{r.d}</div>
                   </div>
                 </div>
               ))}
@@ -562,16 +562,16 @@ export default function Guidebook() {
         {faqs.length > 0 && (
           <section className="space-y-4">
             <SectionTitle icon={AlertTriangle}>Troubleshooting &amp; FAQ</SectionTitle>
-            <div className="bg-white rounded-2xl border border-[#e7ecf7] divide-y divide-[#e7ecf7] overflow-hidden">
+            <div className="bg-white rounded-2xl border border-line divide-y divide-[#e7ecf7] overflow-hidden">
               {faqs.map((f, i) => {
                 const open = openFaq === i;
                 return (
                   <div key={f.q}>
                     <button onClick={() => setOpenFaq(open ? -1 : i)} className="w-full text-left px-4 py-3 flex items-center gap-2 hover:bg-[#f7f9fd]">
-                      <ChevronRight size={14} className={'text-[#0051d5] transition-transform ' + (open ? 'rotate-90' : '')} />
-                      <span className="text-xs font-bold text-[#0b1c30] flex-1">{f.q}</span>
+                      <ChevronRight size={14} className={'text-brand transition-transform ' + (open ? 'rotate-90' : '')} />
+                      <span className="text-xs font-bold text-ink flex-1">{f.q}</span>
                     </button>
-                    {open && <div className="px-10 pb-3 text-[11px] text-[#45464d] leading-relaxed">{f.a}</div>}
+                    {open && <div className="px-10 pb-3 text-[11px] text-ink-2 leading-relaxed">{f.a}</div>}
                   </div>
                 );
               })}
@@ -582,11 +582,11 @@ export default function Guidebook() {
         {glossary.length > 0 && (
           <section className="space-y-4">
             <SectionTitle icon={BookMarked}>Istilah &amp; Singkatan</SectionTitle>
-            <div className="bg-white rounded-2xl border border-[#e7ecf7] divide-y divide-[#e7ecf7] overflow-hidden">
+            <div className="bg-white rounded-2xl border border-line divide-y divide-[#e7ecf7] overflow-hidden">
               {glossary.map(([k,v]) => (
                 <div key={k} className="px-4 py-2.5 flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3">
-                  <div className="text-xs font-bold text-[#0b1c30] sm:w-[190px] shrink-0">{k}</div>
-                  <div className="text-[11px] text-[#45464d] leading-relaxed">{v}</div>
+                  <div className="text-xs font-bold text-ink sm:w-[190px] shrink-0">{k}</div>
+                  <div className="text-[11px] text-ink-2 leading-relaxed">{v}</div>
                 </div>
               ))}
             </div>
@@ -596,11 +596,11 @@ export default function Guidebook() {
         {!modules.length && !roles.length && !faqs.length && !newModules.length && (
           <div className="bg-white rounded-2xl border border-dashed border-[#cbdbf5] p-10 text-center">
             <div className="font-bold text-sm">Tidak ada hasil untuk "{q}"</div>
-            <div className="text-xs text-[#76777d] mt-1">Coba kata kunci lain: stok, opname, invoice, absen, kas, pajak, payroll, lacak.</div>
+            <div className="text-xs text-ink-3 mt-1">Coba kata kunci lain: stok, opname, invoice, absen, kas, pajak, payroll, lacak.</div>
           </div>
         )}
 
-        <footer className="text-center text-[11px] text-[#76777d] py-6 border-t border-[#e7ecf7]">
+        <footer className="text-center text-[11px] text-ink-3 py-6 border-t border-line">
           Guidebook ERP v2.0 • PT Sumber Material Jaya • diperbarui 30 Oktober 2026
           <div className="mt-1">Ada alur yang belum tercakup? Kirim ke IT support / admin sistem.</div>
         </footer>

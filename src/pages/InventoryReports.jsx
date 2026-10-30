@@ -54,7 +54,7 @@ export default function InventoryReports(){
 
       {tab==='valuasi' && val && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <PosStat icon={Boxes} tone="bg-[#0051d5]/10 text-[#0051d5]" label="NILAI PERSEDIAAN" value={rupiah(val.total_value)} sub={`${(val.data||[]).length} baris • stok negatif dipisah`}/>
+          <PosStat icon={Boxes} tone="bg-brand/10 text-brand" label="NILAI PERSEDIAAN" value={rupiah(val.total_value)} sub={`${(val.data||[]).length} baris • stok negatif dipisah`}/>
           <PosStat icon={Boxes} tone="bg-sky-50 text-sky-700" label="TOTAL QTY" value={nf(val.total_qty,2)} sub="unit (semua gudang)"/>
           <PosStat icon={AlertTriangle} tone="bg-red-50 text-red-700" label="STOK NEGATIF" value={String(val.negative_count||0)} sub={rupiah(val.negative_value||0)}/>
           <PosStat icon={TrendingUp} tone="bg-emerald-50 text-emerald-700" label="GUDANG" value={String((val.warehouses||[]).length)} sub="lokasi aktif"/>
@@ -62,7 +62,7 @@ export default function InventoryReports(){
       )}
       {tab==='margin' && margin && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <PosStat icon={TrendingUp} tone="bg-[#0051d5]/10 text-[#0051d5]" label="PENDAPATAN" value={rupiah(margin.totals?.revenue)} sub={`${margin.start} → ${margin.end}`}/>
+          <PosStat icon={TrendingUp} tone="bg-brand/10 text-brand" label="PENDAPATAN" value={rupiah(margin.totals?.revenue)} sub={`${margin.start} → ${margin.end}`}/>
           <PosStat icon={Boxes} tone="bg-amber-50 text-amber-700" label="ESTIMASI HPP" value={rupiah(margin.totals?.cost)} sub="qty × HPP rata-rata"/>
           <PosStat icon={TrendingUp} tone="bg-emerald-50 text-emerald-700" label="MARGIN KOTOR" value={rupiah(margin.totals?.margin)} sub="pendapatan − HPP"/>
           <PosStat icon={TrendingUp} tone="bg-violet-50 text-violet-700" label="MARGIN %" value={(margin.totals?.revenue? Math.round(margin.totals.margin/margin.totals.revenue*100):0)+'%'} sub="rata-rata tertimbang"/>
@@ -75,6 +75,16 @@ export default function InventoryReports(){
           <div>
             <b>{margin.cost_missing} produk</b> terjual tanpa HPP (avg_cost = 0), jadi margin terlihat lebih tinggi dari sebenarnya.
             Isi HPP lewat <b>Penambahan Stok</b> (harga beli) atau <b>Stock Opname</b> agar laporan akurat.
+          </div>
+        </div>
+      )}
+
+      {tab==='margin' && Number(margin?.price_outliers||0) > 0 && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-[11px] text-red-900 flex gap-2">
+          <AlertTriangle size={14} className="shrink-0 mt-0.5"/>
+          <div>
+            <b>{margin.price_outliers} baris invoice</b> punya harga jual &gt;5x atau &lt;0,2x HPP — biasanya kolom
+            harga satuan terisi nilai total baris. Margin di bawah ini jadi terlalu tinggi; perbaiki lewat revisi invoice.
           </div>
         </div>
       )}
@@ -95,7 +105,7 @@ export default function InventoryReports(){
           ) : (
             <div className="ml-auto flex items-center gap-2">
               <input type="date" value={start} onChange={e=>setStart(e.target.value)} className={posInput+' h-9 w-[150px] text-xs'}/>
-              <span className="text-[11px] text-[#76777d]">s/d</span>
+              <span className="text-[11px] text-ink-3">s/d</span>
               <input type="date" value={end} onChange={e=>setEnd(e.target.value)} className={posInput+' h-9 w-[150px] text-xs'}/>
             </div>
           )}
@@ -104,14 +114,14 @@ export default function InventoryReports(){
         {loading ? <PosSkeleton rows={8} cols={6}/> : err ? <PosError message={err} onRetry={load}/> : tab==='valuasi' ? (
           <div className="overflow-auto">
             <table className="w-full text-sm">
-              <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+              <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                 <PosTh>PRODUK</PosTh><PosTh>GUDANG</PosTh><PosTh align="right">QTY</PosTh>
                 <PosTh align="right">HPP RATA-RATA</PosTh><PosTh align="right">NILAI</PosTh>
               </tr></thead>
               <tbody>
                 {(val?.data||[]).map((x,i)=>(
                   <tr key={i} className={posTr}>
-                    <td className={posTd}><div className="font-semibold">{x.name}</div><div className="text-[10px] font-mono text-[#76777d]">{x.sku}</div></td>
+                    <td className={posTd}><div className="font-semibold">{x.name}</div><div className="text-[10px] font-mono text-ink-3">{x.sku}</div></td>
                     <td className={posTd+' text-xs'}>{x.warehouse_name}</td>
                     <td className={'p-3 text-right tabular-nums font-semibold '+(Number(x.qty)<0?'text-red-600':'')}>{nf(x.qty,2)}</td>
                     <td className={posTd+' text-right tabular-nums'}>{rupiah(x.avg_cost)}</td>
@@ -120,23 +130,23 @@ export default function InventoryReports(){
                 ))}
                 {!(val?.data||[]).length && <PosEmpty colSpan={5} text="Tidak ada data stok"/>}
               </tbody>
-              {val?.data?.length>0 && <tfoot><tr className="bg-[#131b2e] text-white font-bold"><td colSpan={2} className="p-2.5 text-right text-[11px] tracking-wider">TOTAL (QTY ≥ 0)</td><td className="p-2.5 text-right tabular-nums">{nf(val.total_qty,2)}</td><td/><td className="p-2.5 text-right tabular-nums">{rupiah(val.total_value)}</td></tr></tfoot>}
+              {val?.data?.length>0 && <tfoot><tr className="bg-navy text-white font-bold"><td colSpan={2} className="p-2.5 text-right text-[11px] tracking-wider">TOTAL (QTY ≥ 0)</td><td className="p-2.5 text-right tabular-nums">{nf(val.total_qty,2)}</td><td/><td className="p-2.5 text-right tabular-nums">{rupiah(val.total_value)}</td></tr></tfoot>}
             </table>
           </div>
         ) : (
           <div className="overflow-auto">
             <table className="w-full text-sm">
-              <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+              <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                 <PosTh>PRODUK</PosTh><PosTh align="right">QTY TERJUAL</PosTh><PosTh align="right">PENDAPATAN</PosTh>
                 <PosTh align="right">EST. HPP</PosTh><PosTh align="right">MARGIN</PosTh><PosTh align="center">MARGIN %</PosTh>
               </tr></thead>
               <tbody>
                 {(margin?.data||[]).map(x=>(
                   <tr key={x.product_id} className={posTr}>
-                    <td className={posTd}><div className="font-semibold">{x.name}</div><div className="text-[10px] font-mono text-[#76777d]">{x.sku}</div></td>
+                    <td className={posTd}><div className="font-semibold">{x.name}</div><div className="text-[10px] font-mono text-ink-3">{x.sku}</div></td>
                     <td className={posTd+' text-right tabular-nums'}>{nf(x.qty_sold,2)}</td>
                     <td className={posTd+' text-right tabular-nums'}>{rupiah(x.revenue)}</td>
-                    <td className={posTd+' text-right tabular-nums text-[#45464d]'}>{rupiah(x.est_cost)}</td>
+                    <td className={posTd+' text-right tabular-nums text-ink-2'}>{rupiah(x.est_cost)}</td>
                     <td className={posTd+' text-right tabular-nums font-bold'}>{rupiah(x.gross_margin)}</td>
                     <td className={posTd+' text-center'}><PosBadge tone={Number(x.margin_pct)>=20?'emerald':Number(x.margin_pct)>=10?'amber':'red'}>{nf(x.margin_pct,1)}%</PosBadge></td>
                   </tr>
@@ -148,7 +158,7 @@ export default function InventoryReports(){
         )}
       </PosCard>
 
-      <div className="text-[11px] text-[#76777d] px-1">
+      <div className="text-[11px] text-ink-3 px-1">
         Valuasi memakai HPP rata-rata (<span className="font-mono">stocks.avg_cost</span>). Stok negatif berarti ada transaksi keluar melebihi stok —
         perbaiki lewat <b>Stock Opname</b> agar nilai persediaan akurat.
       </div>

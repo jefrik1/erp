@@ -15,8 +15,18 @@
     "test:rbac": "node --test \"tests/*.test.js\"",
     "provision:accounts": "node scripts/provision-employee-accounts.mjs",
     "verify:rbac": "node scripts/verify-employee-rbac.mjs",
-    "test": "node --test tests/",
-    "test:api": "node --test tests/api-smoke.test.js"
+    "test": "node --test \"tests/*.test.js\"",
+    "test:api": "node --test tests/api-smoke.test.js",
+    "audit:data": "node scripts/audit-inventory-data.mjs",
+    "fix:data": "node scripts/fix-inventory-data.mjs",
+    "repair:ledger": "node scripts/repair-ledger.mjs",
+    "recon:gl": "node scripts/reconcile-gl-inventory.mjs",
+    "verify:golive": "node scripts/production-cutover-check.mjs",
+    "f16:dry": "node scripts/f16-pos-backfill.mjs",
+    "f16:apply": "node scripts/f16-pos-backfill.mjs --apply",
+    "status:report": "node scripts/status-report.mjs",
+    "golive:prod": "node scripts/production-cutover-check.mjs --profile=production",
+    "demo:off": "node scripts/disable-demo-accounts.mjs"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",

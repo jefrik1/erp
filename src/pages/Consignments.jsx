@@ -172,7 +172,7 @@ export default function Consignments(){
             <button onClick={openForm} className={posBtnPrimary+' h-9 px-4 text-xs'}><Plus size={14}/> Titipan Baru</button>
           </>}>
             <div className={posSearchWrap}>
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#76777d]"/>
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3"/>
               <input value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Enter'&&setAppliedQ(q)}
                 placeholder="Cari no konsinyasi / lokasi lalu Enter..." className={posInput+' pl-9'} />
             </div>
@@ -180,16 +180,16 @@ export default function Consignments(){
 
           <PosChipRow label="TIPE">
             {['Semua','OUT','IN'].map(t=> <PosChip key={t} active={type===t} onClick={()=>setType(t)}>{t}</PosChip>)}
-            <span className="text-[11px] font-bold tracking-wider text-[#45464d] ml-3">STATUS</span>
+            <span className="text-[11px] font-bold tracking-wider text-ink-2 ml-3">STATUS</span>
             {['Semua','ACTIVE','CLOSED'].map(s=> <PosChip key={s} active={status===s} onClick={()=>setStatus(s)}>{s}</PosChip>)}
           </PosChipRow>
 
           {loading ? <PosSkeleton rows={6} cols={5}/> : err ? <PosError message={err} onRetry={load}/> : rows.length===0 ? (
             <PosEmpty text="Belum ada dokumen konsinyasi"/>
           ) : (
-            <div className="overflow-auto rounded-xl border border-[#e7ecf7]">
+            <div className="overflow-auto rounded-xl border border-line">
               <table className="w-full text-sm">
-                <thead><tr className="bg-[#e5eeff] border-b border-[#e7ecf7]">
+                <thead><tr className="bg-surface-3 border-b border-line">
                   <PosTh>NO</PosTh><PosTh align="center">TIPE</PosTh><PosTh>LOKASI / PARTNER</PosTh>
                   <PosTh align="center">TGL TITIP</PosTh><PosTh>ITEMS</PosTh><PosTh align="center">STATUS</PosTh><PosTh align="right">AKSI</PosTh>
                 </tr></thead>
@@ -199,25 +199,25 @@ export default function Consignments(){
                     const sent = items.reduce((a,i)=> a + (Number(i.qty_sent)||0), 0);
                     const sold = items.reduce((a,i)=> a + (Number(i.qty_sold)||0), 0);
                     return (
-                      <tr key={c.id} className="border-b border-[#e5eeff] hover:bg-[#eff4ff] transition bg-white align-top">
-                        <td className="px-4 py-3.5 font-mono text-xs font-bold text-[#0b1c30]">{c.consignment_number}</td>
+                      <tr key={c.id} className="border-b border-line hover:bg-surface-2 transition bg-white align-top">
+                        <td className="px-4 py-3.5 font-mono text-xs font-bold text-ink">{c.consignment_number}</td>
                         <td className="px-4 py-3.5 text-center">
                           <PosBadge tone={c.type==='OUT' ? 'teal' : 'sky'}>{c.type}</PosBadge>
                         </td>
                         <td className="px-4 py-3.5">
-                          <div className="font-semibold text-xs text-[#0b1c30]">{c.location_name}</div>
-                          <div className="text-[11px] text-[#45464d]">{c.partner_type}{c.partner_id ? ' #'+c.partner_id : ''} • {c.location_address || 'tanpa alamat'}</div>
+                          <div className="font-semibold text-xs text-ink">{c.location_name}</div>
+                          <div className="text-[11px] text-ink-2">{c.partner_type}{c.partner_id ? ' #'+c.partner_id : ''} • {c.location_address || 'tanpa alamat'}</div>
                         </td>
-                        <td className="px-4 py-3.5 text-center text-xs tabular-nums text-[#2b3445]">{fmtDate(c.start_date)}</td>
-                        <td className="px-4 py-3.5 text-xs text-[#2b3445]">
+                        <td className="px-4 py-3.5 text-center text-xs tabular-nums text-ink-2">{fmtDate(c.start_date)}</td>
+                        <td className="px-4 py-3.5 text-xs text-ink-2">
                           <div className="font-semibold">{items.length} produk • {angka(sent)} unit</div>
-                          <div className="text-[11px] text-[#45464d]">terjual {angka(sold)}</div>
+                          <div className="text-[11px] text-ink-2">terjual {angka(sold)}</div>
                         </td>
                         <td className="px-4 py-3.5 text-center">
                           <PosBadge tone={c.status==='ACTIVE' ? 'amber' : 'slate'}>{c.status}</PosBadge>
                         </td>
                         <td className="px-4 py-3.5 text-right">
-                          <button onClick={()=>openDetail(c)} className="text-[11px] px-2.5 py-1 rounded-lg border border-[#e7ecf7] bg-white font-bold text-[#2b3445] hover:bg-[#eff4ff]">Detail</button>
+                          <button onClick={()=>openDetail(c)} className="text-[11px] px-2.5 py-1 rounded-lg border border-line bg-white font-bold text-ink-2 hover:bg-surface-2">Detail</button>
                         </td>
                       </tr>
                     );
@@ -236,25 +236,25 @@ export default function Consignments(){
       {show && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50" onClick={()=>setShow(false)}>
           <form onSubmit={submit} onClick={e=>e.stopPropagation()} className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-auto animate-pop">
-            <div className="flex items-center justify-between gap-3 p-5 border-b border-[#e5eeff]">
+            <div className="flex items-center justify-between gap-3 p-5 border-b border-line">
               <div>
-                <h3 className="font-bold text-[16px] text-[#0b1c30]">Buat Titipan Konsinyasi</h3>
-                <p className="text-xs text-[#45464d] mt-1">Stok pindah dari Gudang Pusat ke lokasi konsinyasi (milik kita, tapi tidak di gudang).</p>
+                <h3 className="font-bold text-[16px] text-ink">Buat Titipan Konsinyasi</h3>
+                <p className="text-xs text-ink-2 mt-1">Stok pindah dari Gudang Pusat ke lokasi konsinyasi (milik kita, tapi tidak di gudang).</p>
               </div>
-              <button type="button" onClick={()=>setShow(false)} className="h-9 w-9 grid place-items-center rounded-xl border border-[#e7ecf7] text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
+              <button type="button" onClick={()=>setShow(false)} className="h-9 w-9 grid place-items-center rounded-xl border border-line text-ink-2 hover:bg-surface-2"><X size={16}/></button>
             </div>
 
             <div className="p-5 space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold tracking-wider text-[#45464d] mb-1">TIPE TITIPAN</label>
+                  <label className="block text-[11px] font-bold tracking-wider text-ink-2 mb-1">TIPE TITIPAN</label>
                   <PosSelect size="md" value={form.type} onChange={v=>setForm({...form, type:v})}>
                     <option value="OUT">OUT - kita titip di toko/proyek</option>
                     <option value="IN">IN - supplier titip di gudang kita</option>
                   </PosSelect>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold tracking-wider text-[#45464d] mb-1">JENIS PARTNER</label>
+                  <label className="block text-[11px] font-bold tracking-wider text-ink-2 mb-1">JENIS PARTNER</label>
                   <PosSelect size="md" value={form.partner_type} onChange={v=>setForm({...form, partner_type:v, partner_id:''})}>
                     <option value="CUSTOMER">Customer</option>
                     <option value="SUPPLIER">Supplier</option>
@@ -264,56 +264,56 @@ export default function Consignments(){
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold tracking-wider text-[#45464d] mb-1">PARTNER</label>
+                  <label className="block text-[11px] font-bold tracking-wider text-ink-2 mb-1">PARTNER</label>
                   <PosSelect size="md" value={form.partner_id} onChange={v=>setForm({...form, partner_id:v})}>
                     <option value="">Pilih {form.partner_type === 'SUPPLIER' ? 'supplier' : 'customer'}</option>
                     {partners.map(p=> <option key={p.id} value={String(p.id)}>{p.name}</option>)}
                   </PosSelect>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold tracking-wider text-[#45464d] mb-1">TANGGAL MULAI</label>
+                  <label className="block text-[11px] font-bold tracking-wider text-ink-2 mb-1">TANGGAL MULAI</label>
                   <input type="date" value={form.start_date} onChange={e=>setForm({...form, start_date:e.target.value})} className={posInput+' h-[42px]'}/>
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold tracking-wider text-[#45464d] mb-1">LOKASI TITIPAN *</label>
+                <label className="block text-[11px] font-bold tracking-wider text-ink-2 mb-1">LOKASI TITIPAN *</label>
                 <input value={form.location_name} onChange={e=>setForm({...form, location_name:e.target.value})} placeholder="Nama toko / proyek" className={posInput+' h-[42px]'}/>
               </div>
               <div>
-                <label className="block text-[11px] font-bold tracking-wider text-[#45464d] mb-1">ALAMAT</label>
+                <label className="block text-[11px] font-bold tracking-wider text-ink-2 mb-1">ALAMAT</label>
                 <input value={form.location_address} onChange={e=>setForm({...form, location_address:e.target.value})} placeholder="Alamat lengkap lokasi titipan" className={posInput+' h-[42px]'}/>
               </div>
 
               <div>
-                <div className="text-[11px] font-bold tracking-wider text-[#45464d] mb-1">PILIH PRODUK</div>
-                <div className="rounded-xl border border-[#e7ecf7] max-h-[150px] overflow-auto divide-y divide-[#e5eeff]">
+                <div className="text-[11px] font-bold tracking-wider text-ink-2 mb-1">PILIH PRODUK</div>
+                <div className="rounded-xl border border-line max-h-[150px] overflow-auto divide-y divide-[#e5eeff]">
                   {products.map(p=>(
                     <div key={p.id} className="flex items-center justify-between gap-2 px-3 py-2">
-                      <span className="text-xs text-[#0b1c30]">{p.name} <span className="text-[#76777d]">{p.sku}</span></span>
-                      <button type="button" onClick={()=>addItem(p)} className="text-[11px] px-2.5 py-1 rounded-lg bg-[#0051d5] text-white font-bold hover:bg-[#0041ab]">+ Tambah</button>
+                      <span className="text-xs text-ink">{p.name} <span className="text-ink-3">{p.sku}</span></span>
+                      <button type="button" onClick={()=>addItem(p)} className="text-[11px] px-2.5 py-1 rounded-lg bg-brand text-white font-bold hover:bg-brand-strong">+ Tambah</button>
                     </div>
                   ))}
                 </div>
               </div>
 
               <div>
-                <div className="text-[11px] font-bold tracking-wider text-[#45464d] mb-1">ITEM ({form.items.length})</div>
+                <div className="text-[11px] font-bold tracking-wider text-ink-2 mb-1">ITEM ({form.items.length})</div>
                 {form.items.length === 0 ? (
-                  <div className="text-xs text-[#76777d] border border-dashed border-[#e7ecf7] rounded-xl px-3 py-4 text-center">Belum ada item.</div>
+                  <div className="text-xs text-ink-3 border border-dashed border-line rounded-xl px-3 py-4 text-center">Belum ada item.</div>
                 ) : (
                   <div className="space-y-1.5">
                     {form.items.map((it, i)=>(
-                      <div key={i} className="flex flex-wrap items-center gap-2 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl px-3 py-2">
-                        <span className="flex-1 min-w-[140px] text-xs text-[#0b1c30] truncate">{it.name}</span>
+                      <div key={i} className="flex flex-wrap items-center gap-2 bg-surface-2 border border-line rounded-xl px-3 py-2">
+                        <span className="flex-1 min-w-[140px] text-xs text-ink truncate">{it.name}</span>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[11px] font-bold text-[#45464d]">QTY</span>
+                          <span className="text-[11px] font-bold text-ink-2">QTY</span>
                           <PosQtyInput value={it.qty} onChange={v=>updItem(i, { qty: v })} min={1}/>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[11px] font-bold text-[#45464d]">HARGA JUAL</span>
+                          <span className="text-[11px] font-bold text-ink-2">HARGA JUAL</span>
                           <input type="number" value={it.selling_price} onChange={e=>updItem(i, { selling_price: e.target.value })}
-                            className="w-28 h-8 px-2 text-right text-xs tabular-nums bg-white border border-[#e7ecf7] rounded-lg outline-none focus:border-[#0051d5]"/>
+                            className="w-28 h-8 px-2 text-right text-xs tabular-nums bg-white border border-line rounded-lg outline-none focus:border-brand"/>
                         </div>
                         <button type="button" onClick={()=>delItem(i)} className="h-7 w-7 grid place-items-center rounded-lg text-red-600 hover:bg-red-50"><X size={14}/></button>
                       </div>
@@ -328,7 +328,7 @@ export default function Consignments(){
               {formErr && <div className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2">{formErr}</div>}
             </div>
 
-            <div className="flex justify-end gap-2 p-5 border-t border-[#e5eeff]">
+            <div className="flex justify-end gap-2 p-5 border-t border-line">
               <button type="button" onClick={()=>setShow(false)} className={posBtnSecondary}>Batal</button>
               <button disabled={saving} className={posBtnPrimary+' disabled:opacity-60'}>{saving ? 'Menyimpan...' : 'Simpan & Kirim'}</button>
             </div>
@@ -340,10 +340,10 @@ export default function Consignments(){
       {detail && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50" onClick={()=>setDetail(null)}>
           <div onClick={e=>e.stopPropagation()} className="bg-white rounded-xl w-full max-w-3xl max-h-[90vh] overflow-auto animate-pop">
-            <div className="flex items-center justify-between gap-3 p-5 border-b border-[#e5eeff]">
+            <div className="flex items-center justify-between gap-3 p-5 border-b border-line">
               <div>
-                <h3 className="font-bold text-[16px] text-[#0b1c30]">{detail.consignment_number || detail.header?.consignment_number}</h3>
-                <p className="text-xs text-[#45464d] mt-1">
+                <h3 className="font-bold text-[16px] text-ink">{detail.consignment_number || detail.header?.consignment_number}</h3>
+                <p className="text-xs text-ink-2 mt-1">
                   {detail.location_name || detail.header?.location_name} • {detail.type || detail.header?.type} • mulai {fmtDate(detail.start_date || detail.header?.start_date)}
                 </p>
               </div>
@@ -351,17 +351,17 @@ export default function Consignments(){
                 {(detail.status || detail.header?.status) === 'ACTIVE' && (
                   <button onClick={closeConsignment} className={posBtnSecondary+' h-9 px-4 text-xs'}>Tutup Konsinyasi</button>
                 )}
-                <button onClick={()=>setDetail(null)} className="h-9 w-9 grid place-items-center rounded-xl border border-[#e7ecf7] text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
+                <button onClick={()=>setDetail(null)} className="h-9 w-9 grid place-items-center rounded-xl border border-line text-ink-2 hover:bg-surface-2"><X size={16}/></button>
               </div>
             </div>
 
             {detail.loading || detailLoading ? <PosSkeleton rows={4} cols={4}/> : (
               <div className="p-5 space-y-4">
                 <div>
-                  <div className="text-[11px] font-bold tracking-wider text-[#45464d] mb-2">ITEM TITIPAN</div>
-                  <div className="overflow-auto rounded-xl border border-[#e7ecf7]">
+                  <div className="text-[11px] font-bold tracking-wider text-ink-2 mb-2">ITEM TITIPAN</div>
+                  <div className="overflow-auto rounded-xl border border-line">
                     <table className="w-full text-sm">
-                      <thead><tr className="bg-[#e5eeff] border-b border-[#e7ecf7]">
+                      <thead><tr className="bg-surface-3 border-b border-line">
                         <PosTh>PRODUK</PosTh><PosTh align="right">DIKIRIM</PosTh><PosTh align="right">TERJUAL</PosTh>
                         <PosTh align="right">KEMBALI</PosTh><PosTh align="right">HILANG</PosTh><PosTh align="right">SISA</PosTh><PosTh align="right">HARGA JUAL</PosTh>
                       </tr></thead>
@@ -369,8 +369,8 @@ export default function Consignments(){
                         {(detail.items||[]).map(it=>{
                           const sisa = (Number(it.qty_sent)||0) - (Number(it.qty_sold)||0) - (Number(it.qty_returned)||0) - (Number(it.qty_lost)||0);
                           return (
-                            <tr key={it.id} className="border-b border-[#e5eeff] bg-white">
-                              <td className="px-4 py-3"><div className="text-xs font-semibold text-[#0b1c30]">{it.product_name}</div><div className="text-[11px] text-[#45464d]">{it.sku}</div></td>
+                            <tr key={it.id} className="border-b border-line bg-white">
+                              <td className="px-4 py-3"><div className="text-xs font-semibold text-ink">{it.product_name}</div><div className="text-[11px] text-ink-2">{it.sku}</div></td>
                               <td className="px-4 py-3 text-right tabular-nums">{angka(it.qty_sent)}</td>
                               <td className="px-4 py-3 text-right tabular-nums text-emerald-700">{angka(it.qty_sold)}</td>
                               <td className="px-4 py-3 text-right tabular-nums text-sky-700">{angka(it.qty_returned)}</td>
@@ -387,8 +387,8 @@ export default function Consignments(){
                 </div>
 
                 {(detail.status || detail.header?.status) === 'ACTIVE' && (
-                  <div className="bg-[#eff4ff] border border-[#e7ecf7] rounded-xl p-3">
-                    <div className="text-[11px] font-bold tracking-wider text-[#45464d] mb-2">CATAT MUTASI</div>
+                  <div className="bg-surface-2 border border-line rounded-xl p-3">
+                    <div className="text-[11px] font-bold tracking-wider text-ink-2 mb-2">CATAT MUTASI</div>
                     <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
                       <PosSelect size="md" value={moveForm.item_id} onChange={v=>setMoveForm({...moveForm, item_id:v})}>
                         <option value="">Pilih item</option>
@@ -410,14 +410,14 @@ export default function Consignments(){
 
                 {(detail.movements||[]).length > 0 && (
                   <div>
-                    <div className="text-[11px] font-bold tracking-wider text-[#45464d] mb-2">RIWAYAT MUTASI</div>
+                    <div className="text-[11px] font-bold tracking-wider text-ink-2 mb-2">RIWAYAT MUTASI</div>
                     <div className="space-y-1">
                       {detail.movements.map(m=>(
-                        <div key={m.id} className="flex items-center justify-between gap-2 text-xs bg-[#eff4ff] border border-[#e7ecf7] rounded-lg px-3 py-2">
-                          <span className="text-[#2b3445]">{m.name || m.product_name}</span>
+                        <div key={m.id} className="flex items-center justify-between gap-2 text-xs bg-surface-2 border border-line rounded-lg px-3 py-2">
+                          <span className="text-ink-2">{m.name || m.product_name}</span>
                           <span className="flex items-center gap-2">
                             <PosBadge tone={m.type==='SOLD' ? 'emerald' : m.type==='RETURNED' ? 'sky' : 'red'}>{m.type}</PosBadge>
-                            <b className="tabular-nums text-[#0b1c30]">{angka(m.qty)}</b>
+                            <b className="tabular-nums text-ink">{angka(m.qty)}</b>
                           </span>
                         </div>
                       ))}

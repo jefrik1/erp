@@ -10,10 +10,10 @@ import SearchModal from './SearchModal';
 // Notifikasi: ikon & warna semantik per jenis (mengikuti Stitch "Sistem Notifikasi").
 const NOTIF_META = {
   stock:      { icon: AlertTriangle, cls:'bg-warning-soft text-warning border-warning-line/50', pill:'bg-warning-soft text-warning' },
-  invoice:    { icon: Receipt,       cls:'bg-danger-soft text-[#93000a] border-danger-line/50', pill:'bg-danger-soft text-[#93000a]' },
+  invoice:    { icon: Receipt,       cls:'bg-danger-soft text-danger border-danger-line/50', pill:'bg-danger-soft text-danger' },
   po:         { icon: Truck,         cls:'bg-info-soft text-info border-info-line/50', pill:'bg-info-soft text-info' },
   delivery:   { icon: PackageOpen,   cls:'bg-[#f3efff] text-[#5b3fd6] border-[#e8ddff]', pill:'bg-[#f3efff] text-[#5b3fd6]' },
-  do_invoice: { icon: FileText,      cls:'bg-[#e5eeff] text-[#0051d5] border-[#cfe0ff]', pill:'bg-[#e5eeff] text-[#0051d5]' },
+  do_invoice: { icon: FileText,      cls:'bg-surface-3 text-brand border-[#cfe0ff]', pill:'bg-surface-3 text-brand' },
   so_ready:   { icon: ShoppingCart,  cls:'bg-info-soft text-info border-info-line/50', pill:'bg-info-soft text-info' },
   leave:      { icon: CalendarCheck, cls:'bg-success-soft text-success border-success-line/50', pill:'bg-success-soft text-success' },
   attendance_late: { icon: Clock, cls:'bg-warning-soft text-warning border-warning-line/50', pill:'bg-warning-soft text-warning' },
@@ -101,7 +101,7 @@ const TONE_CLASS = {
   neutral: 'bg-surface-2 text-ink-2',
   success: 'bg-success-soft text-success',
   warning: 'bg-warning-soft text-warning',
-  danger:  'bg-danger-soft text-[#93000a]',
+  danger:  'bg-danger-soft text-danger',
   info:    'bg-info-soft text-info',
 };
 export function Badge({status}){
@@ -222,8 +222,8 @@ export default function Layout({children}){
   return (
     <div className="min-h-screen bg-bg">
       {/* ---------------------------------------------------------- sidebar */}
-      <aside className={"fixed inset-y-0 left-0 z-50 hidden lg:flex flex-col bg-navy text-white transition-[width] duration-200 "+(collapsed?'w-20':'w-72')}>
-        <div className={"h-16 flex items-center shrink-0 "+(collapsed?'justify-center px-2':'px-4 justify-between')}>
+      <aside className={"fixed inset-y-0 left-0 z-50 hidden lg:flex flex-col bg-navy text-white transition-[width] duration-200 "+(collapsed?'w-16':'w-60')}>
+        <div className={"h-14 flex items-center shrink-0 "+(collapsed?'justify-center px-2':'px-4 justify-between')}>
           {brand}
           {!collapsed && (
             <button onClick={toggleCollapsed} title="Ciutkan menu" aria-label="Ciutkan menu"
@@ -249,7 +249,7 @@ export default function Layout({children}){
           </button>
         )}
 
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden px-1.5 py-1 space-y-0.5">{navList()}</nav>
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-2 space-y-1">{navList()}</nav>
 
         <div className={"m-2 rounded-xl bg-white/5 flex items-center "+(collapsed?'justify-center p-2':'justify-between p-3')}>
           <div className="flex items-center gap-2.5 min-w-0">
@@ -275,8 +275,8 @@ export default function Layout({children}){
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-navy/60 backdrop-blur-sm" onClick={()=>setOpen(false)}/>
-          <div className="absolute inset-y-0 left-0 w-[288px] bg-navy text-white flex flex-col animate-pop">
-            <div className="h-16 px-4 flex items-center justify-between shrink-0">
+          <div className="absolute inset-y-0 left-0 w-60 bg-navy text-white flex flex-col animate-pop">
+            <div className="h-14 px-4 flex items-center justify-between shrink-0">
               {brand}
               <button onClick={()=>setOpen(false)} aria-label="Tutup menu" className="p-1.5 rounded-lg hover:bg-white/10"><X size={20}/></button>
             </div>
@@ -296,8 +296,8 @@ export default function Layout({children}){
       )}
 
       {/* --------------------------------------------------------- konten */}
-      <div className={"transition-[padding] duration-200 "+(collapsed?'lg:pl-20':'lg:pl-72')}>
-        <header className={"fixed top-0 left-0 right-0 h-16 bg-surface/90 backdrop-blur-xl shadow-card z-40 flex items-center gap-3 px-4 lg:px-6 transition-[left] duration-200 "+(collapsed?'lg:left-20':'lg:left-72')}>
+      <div className={"transition-[padding] duration-200 "+(collapsed?'lg:pl-16':'lg:pl-60')}>
+        <header className={"fixed top-0 left-0 right-0 h-[52px] bg-surface border-b border-line z-40 flex items-center gap-3 px-4 lg:px-6 transition-[left] duration-200 "+(collapsed?'lg:left-16':'lg:left-60')}>
           <button className="lg:hidden p-2 -ml-1 rounded-lg hover:bg-surface-2" onClick={()=>setOpen(true)} aria-label="Buka menu"><Menu size={20}/></button>
 
           <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-surface-2 text-label-sm text-ink-2">
@@ -338,7 +338,7 @@ export default function Layout({children}){
               {notifOpen && (
                 <div className="absolute right-0 top-full mt-2 w-[360px] bg-surface rounded-2xl shadow-pop border border-line overflow-hidden z-50 animate-pop">
                   <div className="relative px-4 py-3 border-b border-line bg-gradient-to-br from-surface-2 to-surface overflow-hidden">
-                    <div className="pointer-events-none absolute -top-10 -right-10 w-28 h-28 rounded-full bg-[#e5eeff] blur-2xl opacity-70"/>
+                    <div className="pointer-events-none absolute -top-10 -right-10 w-28 h-28 rounded-full bg-surface-3 blur-2xl opacity-70"/>
                     <div className="relative flex items-center gap-2.5">
                       <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#316bf3] to-sky-400 p-[1.5px] shadow-sm shrink-0">
                         <div className="w-full h-full rounded-[10px] bg-surface grid place-items-center text-brand"><Bell size={16}/></div>
@@ -392,7 +392,7 @@ export default function Layout({children}){
           </div>
         </header>
 
-        <main key={pathname} className="page-enter pt-16 min-h-screen px-4 lg:px-6 py-6 max-w-workspace mx-auto">{children}</main>
+        <main key={pathname} className="page-enter pt-[52px] min-h-screen px-4 lg:px-5 py-5 max-w-workspace mx-auto">{children}</main>
       </div>
 
       <SearchModal open={searchOpen} onClose={()=>setSearchOpen(false)} />

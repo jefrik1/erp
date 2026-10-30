@@ -35,7 +35,7 @@ export default function RFQs(){
       <div className="flex justify-between items-start gap-4 flex-wrap">
         <div>
           <PosPageHeader icon={FileText} title="RFQ (Quotation)" subtitle="Bandingkan penawaran supplier, pilih winner, PO otomatis dibuat"/>
-          <nav className="mt-2 flex flex-wrap items-center gap-1 p-1 bg-[#e5eeff] border rounded-full w-fit shadow-card">
+          <nav className="mt-2 flex flex-wrap items-center gap-1 p-1 bg-surface-3 border rounded-full w-fit shadow-card">
             {[
               {label:'PR',sub:'Purchase Request',to:'/purchase/requests'},
               {label:'RFQ',sub:'Quotation',to:'/purchase/rfqs',active:true},
@@ -45,11 +45,11 @@ export default function RFQs(){
               {label:'3-way',sub:'Matching',to:'/purchase/receipts'},
             ].map((s,i,arr)=>(
               <span key={s.label} className="flex items-center gap-1">
-                <button onClick={()=>nav(s.to)} className={"inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border "+(s.active?"bg-[#0051d5] text-white border-[#0051d5]":"bg-white text-gray-700 border-gray-200")}>
+                <button onClick={()=>nav(s.to)} className={"inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border "+(s.active?"bg-brand text-white border-brand":"bg-white text-gray-700 border-gray-200")}>
                   <span className={"w-5 h-5 grid place-items-center rounded-full text-[11px] font-bold "+(s.active?"bg-white/20 text-white":"bg-gray-900 text-white")}>{i+1}</span>
                   {s.label} <span className="hidden lg:inline text-[11px] opacity-60 font-semibold">{s.sub}</span>
                 </button>
-                {i<arr.length-1 && <span className="text-[#76777d]">›</span>}
+                {i<arr.length-1 && <span className="text-ink-3">›</span>}
               </span>
             ))}
           </nav>
@@ -60,48 +60,48 @@ export default function RFQs(){
       <div className="grid lg:grid-cols-2 gap-4">
         <div className="bg-white rounded-xl border shadow-card overflow-hidden">
           <div className="overflow-auto"><table className="w-full text-sm">
-            <thead><tr className="bg-[#e5eeff] border-y text-[11px] font-bold tracking-wider text-[#45464d]"><th className="text-left px-4 py-3">RFQ</th><th className="text-left px-4 py-3">PR / PRODUK</th><th className="text-left px-4 py-3">STATUS</th><th/></tr></thead>
+            <thead><tr className="bg-surface-3 border-y text-[11px] font-bold tracking-wider text-ink-2"><th className="text-left px-4 py-3">RFQ</th><th className="text-left px-4 py-3">PR / PRODUK</th><th className="text-left px-4 py-3">STATUS</th><th/></tr></thead>
             <tbody>{data.map(r=>(
-              <tr key={r.id} className={"border-b hover:bg-[#eff4ff] cursor-pointer "+(sel?.id===r.id?"bg-blue-50":"")} onClick={()=>loadDetail(r.id)}>
+              <tr key={r.id} className={"border-b hover:bg-surface-2 cursor-pointer "+(sel?.id===r.id?"bg-blue-50":"")} onClick={()=>loadDetail(r.id)}>
                 <td className="px-4 py-3 font-mono text-xs font-bold">{r.rfq_number}</td>
                 <td className="px-4 py-3 text-xs">{r.pr_number||'-'} • {r.product_name||'-'} {r.pr_qty?`x${r.pr_qty}`:''}</td>
                 <td className="px-4 py-3"><span className="text-xs px-2 py-1 rounded-full border bg-white font-bold">{r.status}</span></td>
-                <td className="px-4 py-3 text-right"><button className="text-xs text-[#0051d5] font-bold">Lihat</button></td>
+                <td className="px-4 py-3 text-right"><button className="text-xs text-brand font-bold">Lihat</button></td>
               </tr>
             ))}{loading && <tr><td colSpan={4} className="p-0"><PosSkeleton rows={4} cols={3}/></td></tr>}
             {err && !loading && <tr><td colSpan={4} className="p-0"><PosError message={err} onRetry={load}/></td></tr>}
-            {!loading && !err && data.length===0 && <tr><td colSpan={4} className="p-6 text-center text-sm text-[#76777d]">Belum ada RFQ - buat dari PR atau tombol Buat RFQ</td></tr>}</tbody>
+            {!loading && !err && data.length===0 && <tr><td colSpan={4} className="p-6 text-center text-sm text-ink-3">Belum ada RFQ - buat dari PR atau tombol Buat RFQ</td></tr>}</tbody>
           </table></div>
         </div>
 
         <div className="bg-white rounded-xl border shadow-card p-4 space-y-3">
-          {!sel ? <div className="text-sm text-[#76777d] p-6 text-center">Pilih RFQ di kiri untuk kelola penawaran</div> : (
+          {!sel ? <div className="text-sm text-ink-3 p-6 text-center">Pilih RFQ di kiri untuk kelola penawaran</div> : (
             <>
-              <div className="flex justify-between items-start"><div><div className="font-bold">{sel.rfq_number} - {sel.status}</div><div className="text-xs text-[#45464d]">{sel.pr_number?`PR ${sel.pr_number} • `:''}{sel.product_name} • qty {sel.pr_qty}</div></div><span className={"text-xs px-2 py-1 rounded-full border font-bold "+(sel.status==='OPEN'?"bg-emerald-50 border-emerald-200 text-emerald-700":sel.status==='SELECTED'?"bg-blue-50 border-blue-200":"bg-gray-100")}>{sel.status}</span></div>
+              <div className="flex justify-between items-start"><div><div className="font-bold">{sel.rfq_number} - {sel.status}</div><div className="text-xs text-ink-2">{sel.pr_number?`PR ${sel.pr_number} • `:''}{sel.product_name} • qty {sel.pr_qty}</div></div><span className={"text-xs px-2 py-1 rounded-full border font-bold "+(sel.status==='OPEN'?"bg-emerald-50 border-emerald-200 text-emerald-700":sel.status==='SELECTED'?"bg-blue-50 border-blue-200":"bg-gray-100")}>{sel.status}</span></div>
 
               {sel.status==='OPEN' && (
-                <form onSubmit={addQuote} className="border rounded-xl p-3 space-y-2 bg-[#eff4ff]">
+                <form onSubmit={addQuote} className="border rounded-xl p-3 space-y-2 bg-surface-2">
                   <div className="text-xs font-bold">+ Tambah Penawaran Supplier</div>
                   <div className="grid grid-cols-3 gap-2">
                     <select required value={add.supplier_id} onChange={e=>setAdd({...add,supplier_id:e.target.value})} className="h-9 border rounded-lg px-2 text-sm"><option value="">Supplier</option>{suppliers.map(s=> <option key={s.id} value={s.id}>{s.name}</option>)}</select>
                     <input required type="number" value={add.unit_price} onChange={e=>setAdd({...add,unit_price:e.target.value})} className="h-9 border rounded-lg px-2 text-sm" placeholder="Harga / unit"/>
                     <input type="number" value={add.lead_days} onChange={e=>setAdd({...add,lead_days:e.target.value})} className="h-9 border rounded-lg px-2 text-sm" placeholder="Lead days"/>
                   </div>
-                  <button className="h-9 px-4 bg-[#131b2e] text-white rounded-full text-xs font-bold">Tambah</button>
+                  <button className="h-9 px-4 bg-navy text-white rounded-full text-xs font-bold">Tambah</button>
                 </form>
               )}
 
               <div className="space-y-2">
                 {qs.map(q=>(
                   <div key={q.id} className={"flex justify-between items-center p-3 border rounded-xl "+(q.is_winner?"bg-blue-50 border-blue-200":"bg-white")}>
-                    <div><div className="font-bold text-sm">{q.supplier_name} {q.is_winner && <span className="ml-1 text-[11px] px-1.5 py-0.5 rounded bg-[#0051d5] text-white">WINNER</span>}</div><div className="text-xs text-[#45464d]">Rp {new Intl.NumberFormat('id-ID').format(q.unit_price)} • {q.lead_days||'-'} hari</div></div>
-                    {sel.status==='OPEN' && !q.is_winner && <button onClick={()=>selectWinner(q.id)} className="h-8 px-3 bg-[#0051d5] text-white rounded-full text-xs font-bold">Pilih Winner</button>}
+                    <div><div className="font-bold text-sm">{q.supplier_name} {q.is_winner && <span className="ml-1 text-[11px] px-1.5 py-0.5 rounded bg-brand text-white">WINNER</span>}</div><div className="text-xs text-ink-2">Rp {new Intl.NumberFormat('id-ID').format(q.unit_price)} • {q.lead_days||'-'} hari</div></div>
+                    {sel.status==='OPEN' && !q.is_winner && <button onClick={()=>selectWinner(q.id)} className="h-8 px-3 bg-brand text-white rounded-full text-xs font-bold">Pilih Winner</button>}
                   </div>
                 ))}
-                {qs.length===0 && <div className="text-xs text-[#76777d] text-center py-4">Belum ada penawaran - tambah di atas lalu bandingkan harga terendah</div>}
+                {qs.length===0 && <div className="text-xs text-ink-3 text-center py-4">Belum ada penawaran - tambah di atas lalu bandingkan harga terendah</div>}
               </div>
 
-              {sel.status==='SELECTED' && <div className="text-xs bg-blue-50 border border-blue-200 rounded-xl p-3 text-[#0051d5] font-semibold">Winner sudah dipilih - PO otomatis terbuat. Lihat di <button onClick={()=>nav('/purchase/orders')} className="underline">Purchase Orders</button></div>}
+              {sel.status==='SELECTED' && <div className="text-xs bg-blue-50 border border-blue-200 rounded-xl p-3 text-brand font-semibold">Winner sudah dipilih - PO otomatis terbuat. Lihat di <button onClick={()=>nav('/purchase/orders')} className="underline">Purchase Orders</button></div>}
             </>
           )}
         </div>

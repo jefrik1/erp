@@ -9,6 +9,8 @@ import {
 } from '../components/PosUI';
 import { useDialog } from '../components/DialogProvider';
 import { useAuth } from '../store/auth';
+import useBarcodeScanner from '../components/ui/useBarcodeScanner';
+import ScanStatusPill from '../components/ui/ScanStatusPill';
 import { canAccess } from '../config/access';
 
 const nf = (n)=> new Intl.NumberFormat('id-ID').format(Math.round(Number(n)||0));
@@ -105,6 +107,9 @@ export default function StockOpname(){
     return items.filter(i=> [i.sku,i.name].filter(Boolean).join(' ').toLowerCase().includes(s));
   }, [items,q]);
 
+  // Scanner barcode: kode hasil scan langsung menjadi kata kunci pencarian baris opname.
+  const { lastScan } = useBarcodeScanner({ onScan: (code)=> setQ(code) });
+
   const diffCount = useMemo(()=> items.filter(i=> Math.abs(Number(i.variance)||0) > 0.0001).length, [items]);
   const diffValue = useMemo(()=> items.reduce((s,i)=> s + (Number(i.variance)||0)*Number(i.unit_cost||0), 0), [items]);
   const editable = open && ['DRAFT','COUNTING'].includes(open.status);
@@ -123,7 +128,7 @@ export default function StockOpname(){
         </>}/>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <PosStat icon={Warehouse} tone="bg-[#0051d5]/10 text-[#0051d5]" label="SESI BERJALAN" value={nf(running.length)} sub="belum diposting"/>
+        <PosStat icon={Warehouse} tone="bg-brand/10 text-brand" label="SESI BERJALAN" value={nf(running.length)} sub="belum diposting"/>
         <PosStat icon={PackageCheck} tone="bg-emerald-50 text-emerald-700" label="SESI SELESAI" value={nf(posted.length)} sub="sudah posting"/>
         <PosStat icon={ClipboardCheck} tone="bg-amber-50 text-amber-700" label="ITEM BERSELISIH" value={nf(rows.reduce((s,r)=>s+(Number(r.items_diff)||0),0))} sub="akumulasi semua sesi"/>
         <PosStat icon={CheckCircle2} tone="bg-violet-50 text-violet-700" label="NILAI SELISIH" value={rupiah(rows.reduce((s,r)=>s+Number(r.total_variance_value||0),0))} sub="nilai HPP"/>
@@ -142,21 +147,21 @@ export default function StockOpname(){
         ) : (
           <div className="overflow-auto">
             <table className="w-full text-sm">
-              <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+              <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                 <PosTh>SESI</PosTh><PosTh>GUDANG</PosTh><PosTh align="center">STATUS</PosTh><PosTh align="center">ITEM</PosTh>
                 <PosTh align="center">SELISIH</PosTh><PosTh align="right">NILAI</PosTh><PosTh align="center">DIBUAT</PosTh><PosTh align="center">AKSI</PosTh>
               </tr></thead>
               <tbody>
                 {rows.map(r=>(
                   <tr key={r.id} className={posTr+' cursor-pointer'} onClick={()=>openSession(r)}>
-                    <td className={posTd}><div className="font-mono text-xs font-bold">{r.session_number}</div><div className="text-[10px] text-[#76777d]">{r.created_by_name||'-'}</div></td>
+                    <td className={posTd}><div className="font-mono text-xs font-bold">{r.session_number}</div><div className="text-[10px] text-ink-3">{r.created_by_name||'-'}</div></td>
                     <td className={posTd+' text-xs'}>{r.warehouse_name||'-'}</td>
                     <td className={posTd+' text-center'}><PosBadge tone={TONE[r.status]||'slate'}>{r.status}</PosBadge></td>
                     <td className={posTd+' text-center tabular-nums'}>{nf(r.items)}</td>
-                    <td className={posTd+' text-center tabular-nums'}>{Number(r.items_diff)>0? <span className="font-bold text-amber-700">{nf(r.items_diff)}</span> : <span className="text-[#76777d]">0</span>}</td>
+                    <td className={posTd+' text-center tabular-nums'}>{Number(r.items_diff)>0? <span className="font-bold text-amber-700">{nf(r.items_diff)}</span> : <span className="text-ink-3">0</span>}</td>
                     <td className={posTd+' text-right tabular-nums'}>{rupiah(r.total_variance_value)}</td>
                     <td className={posTd+' text-center text-xs'}>{tgl(r.created_at)}</td>
-                    <td className={posTd+' text-center'}><button onClick={(e)=>{e.stopPropagation(); openSession(r);}} className="text-[11px] font-bold text-[#0051d5] hover:underline">Buka</button></td>
+                    <td className={posTd+' text-center'}><button onClick={(e)=>{e.stopPropagation(); openSession(r);}} className="text-[11px] font-bold text-brand hover:underline">Buka</button></td>
                   </tr>
                 ))}
               </tbody>
@@ -168,19 +173,19 @@ export default function StockOpname(){
       {/* Modal buat sesi */}
       {createOpen && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-[#0b1c30]/60 backdrop-blur-sm" onClick={()=>!busy&&setCreateOpen(false)}/>
-          <div className="relative z-10 w-full max-w-md bg-white rounded-2xl border border-[#e7ecf7] p-5 space-y-3">
+          <div className="absolute inset-0 bg-navy/60 backdrop-blur-sm" onClick={()=>!busy&&setCreateOpen(false)}/>
+          <div className="relative z-10 w-full max-w-md bg-white rounded-2xl border border-line p-5 space-y-3">
             <div className="flex items-start justify-between">
-              <h3 className="font-bold text-sm flex items-center gap-1.5"><ClipboardCheck size={15} className="text-[#0051d5]"/> Buat Sesi Opname</h3>
+              <h3 className="font-bold text-sm flex items-center gap-1.5"><ClipboardCheck size={15} className="text-brand"/> Buat Sesi Opname</h3>
               <button onClick={()=>!busy&&setCreateOpen(false)} className="h-7 w-7 grid place-items-center rounded-full border"><X size={13}/></button>
             </div>
-            <p className="text-xs text-[#45464d]">Sistem akan mengambil snapshot stok sistem saat ini. Anda lalu mengisi jumlah fisik hasil hitung.</p>
-            <label className="block space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Gudang</span>
+            <p className="text-xs text-ink-2">Sistem akan mengambil snapshot stok sistem saat ini. Anda lalu mengisi jumlah fisik hasil hitung.</p>
+            <label className="block space-y-1"><span className="text-[11px] font-bold text-ink-2">Gudang</span>
               <select value={newWh} onChange={e=>setNewWh(e.target.value)} className={posInput}>
                 {warehouses.map(w=> <option key={w.id} value={w.id}>{w.name}</option>)}
               </select>
             </label>
-            <label className="block space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Catatan</span>
+            <label className="block space-y-1"><span className="text-[11px] font-bold text-ink-2">Catatan</span>
               <input value={newNotes} onChange={e=>setNewNotes(e.target.value)} placeholder="mis. opname akhir bulan" className={posInput}/>
             </label>
             <div className="flex justify-end gap-2">
@@ -194,12 +199,12 @@ export default function StockOpname(){
       {/* Modal detail / hitung */}
       {open && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-2 sm:p-4">
-          <div className="absolute inset-0 bg-[#0b1c30]/60 backdrop-blur-sm" onClick={()=>!busy&&setOpen(null)}/>
-          <div className="relative z-10 w-full max-w-[900px] max-h-[94vh] flex flex-col bg-white rounded-2xl border border-[#e7ecf7] overflow-hidden">
-            <div className="shrink-0 p-4 border-b bg-[#eff4ff] flex items-start justify-between gap-2">
+          <div className="absolute inset-0 bg-navy/60 backdrop-blur-sm" onClick={()=>!busy&&setOpen(null)}/>
+          <div className="relative z-10 w-full max-w-[900px] max-h-[94vh] flex flex-col bg-white rounded-2xl border border-line overflow-hidden">
+            <div className="shrink-0 p-4 border-b bg-surface-2 flex items-start justify-between gap-2">
               <div>
                 <div className="font-bold text-sm font-mono">{open.session_number}</div>
-                <div className="text-xs text-[#45464d] mt-0.5">{open.warehouse_name} • {open.status} • dibuat {tgl(open.created_at)}</div>
+                <div className="text-xs text-ink-2 mt-0.5">{open.warehouse_name} • {open.status} • dibuat {tgl(open.created_at)}</div>
                 <div className="flex flex-wrap gap-1.5 mt-2 text-[11px]">
                   <span className="px-2 py-0.5 rounded-full bg-white border font-bold">{items.length} item</span>
                   <span className="px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 font-bold text-amber-800">{diffCount} berselisih</span>
@@ -211,9 +216,10 @@ export default function StockOpname(){
 
             <div className="shrink-0 p-3 border-b flex flex-wrap items-center gap-2">
               <div className="relative flex-1 min-w-[180px]">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#76777d]"/>
-                <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Cari SKU / nama barang..." className={posInput+' pl-9 h-9'}/>
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3"/>
+                <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Scan barcode / cari SKU / nama barang..." className={posInput+' pl-9 h-9'}/>
               </div>
+              <ScanStatusPill code={lastScan}/>
               {editable && <button onClick={saveCount} disabled={busy} className={posBtnPrimary+' h-9 px-4 text-xs'}>{busy?'Menyimpan...':'Simpan Hitung'}</button>}
               {editable && <button onClick={()=>act('submit','Ajukan opname','Ajukan hasil hitung ke atasan? Setelah diajukan, angka tidak bisa diubah.')} disabled={busy} className={posBtnSecondary+' h-9 px-3 text-xs'}><Send size={12}/> Ajukan</button>}
               {open.status==='SUBMITTED' && canApprove && <button onClick={()=>act('approve','Approve opname','Setujui hasil opname ini?')} disabled={busy} className={posBtnPrimary+' h-9 px-3 text-xs'}><CheckCircle2 size={12}/> Approve</button>}
@@ -223,7 +229,7 @@ export default function StockOpname(){
 
             <div className="flex-1 overflow-auto">
               <table className="w-full text-xs">
-                <thead className="sticky top-0"><tr className="bg-[#e5eeff] border-b text-[10px] font-bold uppercase text-[#45464d]">
+                <thead className="sticky top-0"><tr className="bg-surface-3 border-b text-[10px] font-bold uppercase text-ink-2">
                   <th className="p-2 text-left">Barang</th><th className="p-2 text-right">Stok Sistem</th>
                   <th className="p-2 text-center">Hitung Fisik</th><th className="p-2 text-right">HPP / Satuan</th>
                   <th className="p-2 text-right">Selisih</th><th className="p-2 text-right">Nilai</th>
@@ -233,7 +239,7 @@ export default function StockOpname(){
                     const variance = Number(i.variance)||0;
                     return (
                       <tr key={i.id} className={'border-b '+(Math.abs(variance)>0.0001?'bg-amber-50/40':'bg-white')}>
-                        <td className="p-2"><div className="font-semibold">{i.name}</div><div className="text-[10px] font-mono text-[#76777d]">{i.sku}</div></td>
+                        <td className="p-2"><div className="font-semibold">{i.name}</div><div className="text-[10px] font-mono text-ink-3">{i.sku}</div></td>
                         <td className="p-2 text-right tabular-nums">{qty(i.qty_system)} {i.unit_code||''}</td>
                         <td className="p-2 text-center">
                           {editable
@@ -245,18 +251,18 @@ export default function StockOpname(){
                             ? <input type="number" step="1" value={i.unit_cost ?? ''} onChange={e=>setCost(i.id, e.target.value)} className="w-24 h-8 px-2 border rounded-lg text-right tabular-nums" title="Dasar penilaian selisih. Isi 0 bila HPP lama tidak relevan."/>
                             : <span className="tabular-nums">{rupiah(i.unit_cost)}</span>}
                         </td>
-                        <td className={'p-2 text-right tabular-nums font-bold '+(variance>0?'text-emerald-700':variance<0?'text-red-600':'text-[#76777d]')}>
+                        <td className={'p-2 text-right tabular-nums font-bold '+(variance>0?'text-emerald-700':variance<0?'text-red-600':'text-ink-3')}>
                           {variance>0?'+':''}{qty(variance)}
                         </td>
                         <td className="p-2 text-right tabular-nums">{rupiah(variance*Number(i.unit_cost||0))}</td>
                       </tr>
                     );
                   })}
-                  {!filtered.length && <tr><td colSpan={6} className="p-8 text-center text-[#76777d]">Tidak ada item{items.length? ' yang cocok dengan pencarian':''}</td></tr>}
+                  {!filtered.length && <tr><td colSpan={6} className="p-8 text-center text-ink-3">Tidak ada item{items.length? ' yang cocok dengan pencarian':''}</td></tr>}
                 </tbody>
               </table>
             </div>
-            <div className="shrink-0 p-3 border-t bg-[#f7f9fd] text-[11px] text-[#45464d]">
+            <div className="shrink-0 p-3 border-t bg-[#f7f9fd] text-[11px] text-ink-2">
               {editable
                 ? 'Isi kolom Hitung Fisik sesuai jumlah nyata di gudang. Selisih dihitung otomatis (fisik − sistem).'
                 : open.status==='POSTED'

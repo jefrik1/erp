@@ -53,6 +53,42 @@ router.post('/journals', async (req,res)=>{
   res.json({id:jid, entry_number});
 });
 
+// POST /finance/journals/:id/reverse — pembalik jurnal resmi (append-only, bukan hapus/ubah).
+// Membuat jurnal lawan dengan nomor REV-JRN-… lalu menandai jurnal asal sebagai reversed.
+router.post('/journals/:id/reverse', async (req,res)=>{
+  const { reason } = req.body || {};
+  const client = await pool.connect();
+  try{
+    await client.query('BEGIN');
+    const je = await client.query('SELECT * FROM journal_entries WHERE id=$1', [req.params.id]);
+    if(!je.rows[0]) { await client.query('ROLLBACK'); return res.status(404).json({error:'Jurnal tidak ditemukan'}); }
+    if(je.rows[0].reversed_by) { await client.query('ROLLBACK'); return res.status(400).json({error:'Jurnal sudah dibalik (#'+je.rows[0].reversed_by+')'}); }
+    if(je.rows[0].reversal_of) { await client.query('ROLLBACK'); return res.status(400).json({error:'Jurnal ini sendiri adalah jurnal pembalik — tidak bisa dibalik lagi'}); }
+    const det = await client.query(`SELECT jd.account_id, jd.debit, jd.credit, jd.description, a.code
+        FROM journal_details jd JOIN accounts a ON a.id=jd.account_id WHERE jd.journal_id=$1`, [req.params.id]);
+    if(!det.rows.length){ await client.query('ROLLBACK'); return res.status(400).json({error:'Jurnal tidak punya baris detail'}); }
+    const lines = det.rows.map(d=>({ code:d.code, debit:Number(d.credit), credit:Number(d.debit),
+      description:'Pembalik: '+(d.description||je.rows[0].description) }));
+    const { postJournal } = await import('../../lib/journal.js');
+    const revId = await postJournal({
+      refType: 'REVERSAL', refId: Number(req.params.id),
+      description: 'Pembalik ' + je.rows[0].entry_number + (reason ? ' — ' + reason : ''),
+      lines, createdBy: req.user.id, client,
+    });
+    // Tandai relasi dua arah (diizinkan lewat escape hatch kolom metadata, bukan angka jurnal)
+    await client.query("SET LOCAL app.allow_ledger_mutation='on'");
+    await client.query('UPDATE journal_entries SET reversed_by=$1, reversal_reason=$2 WHERE id=$3', [revId, reason||null, req.params.id]);
+    await client.query('UPDATE journal_entries SET reversal_of=$1 WHERE id=$2', [Number(req.params.id), revId]);
+    await client.query('INSERT INTO audit_logs (user_id, action, entity_type, entity_id, new_value) VALUES ($1,$2,$3,$4,$5)',
+      [req.user.id, 'REVERSE', 'JOURNAL', Number(req.params.id), JSON.stringify({ reversal_id: revId, reason: reason||null })]);
+    await client.query('COMMIT');
+    res.json({ ok:true, reversal_id: revId, original_id: Number(req.params.id) });
+  }catch(e){
+    await client.query('ROLLBACK').catch(()=>{});
+    res.status(400).json({ error: e.message });
+  }finally{ client.release(); }
+});
+
 // AR POS/DO/SO only - ponytail: jangan buat dummy di finance, baca invoices langsung
 router.get('/ar', async (req,res)=>{
   try{
@@ -189,7 +225,7 @@ async function coaId(code){
   return r.rows[0]?.id || null;
 }
 /** Catat uang masuk ke Kas Tunai + jurnal Dr Kas Tunai / Cr Penjualan. */
-export async function creditCash({ amount, source, referenceType, referenceId, notes, createdBy }){
+export async function creditCash({ amount, source, referenceType, referenceId, notes, createdBy, withJournal = true }){
   const amt = parseFloat(amount)||0;
   if(amt<=0) return null;
   await ensureCashAccount();
@@ -203,7 +239,9 @@ export async function creditCash({ amount, source, referenceType, referenceId, n
       VALUES ($1,'IN',$2,$3,$4,$5,$6,$7)`,[acc.id, amt, source||'MANUAL', referenceType||null, referenceId||null, notes||null, createdBy||null]);
     const kas = await coaId('1-1010');
     const jual = await coaId('4-1000');
-    if(kas && jual){
+    // withJournal=false dipakai tutup shift POS: pendapatan sudah diakui saat checkout,
+    // jadi kas masuk shift hanya memperbarui saldo & mutasi kas (tanpa jurnal kedua).
+    if(withJournal && kas && jual){
       const je = await client.query(`INSERT INTO journal_entries (entry_number, entry_date, reference_type, reference_id, description, total_debit, total_credit, posted, created_by)
         VALUES ($1, CURRENT_DATE, $2, $3, $4, $5, $5, true, $6) RETURNING id`,
         ['JE-'+Date.now(), referenceType||'CASH_IN', referenceId||null, notes||('Kas masuk '+(source||'')), amt, createdBy||null]);

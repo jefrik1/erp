@@ -26,7 +26,7 @@ function taxBadge(dateStr){
   if(d===null) return null;
   if(d < 0) return {label:`Pajak HABIS`, cls:'bg-red-600 text-white border-red-700'};
   if(d <= 14) return {label:`Pajak ${d} hari`, cls:'bg-amber-50 text-amber-800 border-amber-200'};
-  return {label:`Pajak ${d} hari`, cls:'bg-white text-[#45464d] border-[#e7ecf7]'};
+  return {label:`Pajak ${d} hari`, cls:'bg-white text-ink-2 border-line'};
 }
 
 const OWNERSHIP_LABEL={OWNED:'Milik', RENTED:'Sewa', THIRD_PARTY:'Vendor'};
@@ -264,8 +264,8 @@ export default function Fleet(){
     <div className="space-y-3">
       {/* Header POS */}
       <PosPageHeader icon={FileText} title="Armada & Trip" subtitle="Kelola armada toko bangunan • KIR/Pajak/SIM guard • Kapasitas vs muatan • Biaya/km • Preventive servis" actions={<>
-        <button onClick={openAddVehicle} className="h-[42px] px-5 bg-[#0051d5] text-white rounded-xl inline-flex items-center gap-1.5 text-sm font-bold shadow-card hover:bg-[#0041ab] active:scale-[0.98] transition"><Plus size={16}/> Armada</button>
-        <button onClick={()=>setShowTrip(true)} className="h-[42px] px-5 bg-white border border-[#e7ecf7] rounded-xl text-sm font-bold text-[#2b3445] hover:bg-[#eff4ff]">+ Trip</button>
+        <button onClick={openAddVehicle} className="h-[42px] px-5 bg-brand text-white rounded-xl inline-flex items-center gap-1.5 text-sm font-bold shadow-card hover:bg-brand-strong active:scale-[0.98] transition"><Plus size={16}/> Armada</button>
+        <button onClick={()=>setShowTrip(true)} className="h-[42px] px-5 bg-white border border-line rounded-xl text-sm font-bold text-ink-2 hover:bg-surface-2">+ Trip</button>
       </>}/>
 
       {msg && <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 p-3 rounded-xl text-sm flex justify-between gap-2"><span>{msg}</span><button onClick={()=>setMsg('')} className="font-bold"><X size={14}/></button></div>}
@@ -274,11 +274,11 @@ export default function Fleet(){
       {/* Stats POS 6-col with KIR/Pajak/SIM + area breakdown */}
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-          <div className="bg-white rounded-xl border border-[#e7ecf7] p-3 text-center shadow-card">
-            <div className="text-[11px] font-bold tracking-wider text-[#45464d]">ARMADA</div>
-            <div className="text-xl font-bold text-[#0b1c30]">{stats.total}</div>
-            <div className="text-[11px] text-[#45464d]">{stats.available} available • {stats.in_transit} jalan ({utilization}%)</div>
-            <div className="mt-1 h-1.5 bg-[#e5eeff] rounded-full overflow-hidden"><div className="h-full bg-[#0051d5]" style={{width: utilization+'%'}}/></div>
+          <div className="bg-white rounded-xl border border-line p-3 text-center shadow-card">
+            <div className="text-[11px] font-bold tracking-wider text-ink-2">ARMADA</div>
+            <div className="text-xl font-bold text-ink">{stats.total}</div>
+            <div className="text-[11px] text-ink-2">{stats.available} available • {stats.in_transit} jalan ({utilization}%)</div>
+            <div className="mt-1 h-1.5 bg-surface-3 rounded-full overflow-hidden"><div className="h-full bg-brand" style={{width: utilization+'%'}}/></div>
             <div className="mt-1 flex justify-center gap-1 flex-wrap text-[11px] font-bold">
               {(stats.by_area||[]).map(a=> <span key={a.area} className={"px-1.5 py-0.5 rounded-full border "+(a.area==='LUAR_KOTA'?'bg-amber-50 text-amber-800 border-amber-200':'bg-sky-50 text-sky-700 border-sky-200')}>{a.area==='LUAR_KOTA'?'Luar Kota':'Dalam Kota'} {a.cnt}</span>)}
             </div>
@@ -293,31 +293,31 @@ export default function Fleet(){
             <div className="text-xl font-bold text-sky-700">{stats.in_transit ?? stats.in_transit}</div>
             <div className="text-[11px] text-sky-700/70">Sedang kirim</div>
           </div>
-          <div className={"rounded-xl border p-3 text-center "+( (stats.kir_overdue||0)>0 ? 'bg-red-50 border-red-200':'bg-white border-[#e7ecf7]')}>
+          <div className={"rounded-xl border p-3 text-center "+( (stats.kir_overdue||0)>0 ? 'bg-red-50 border-red-200':'bg-white border-line')}>
             <div className="text-[11px] font-bold tracking-wider flex items-center justify-center gap-1" style={{color:(stats.kir_overdue||0)>0?'#B91C1C':'#45464d'}}><AlertTriangle size={12}/> KIR</div>
-            <div className={"text-xl font-bold "+((stats.kir_overdue||0)>0?'text-red-600':'text-[#0b1c30]')}>{stats.kir_overdue||0} <span className="text-xs font-bold text-[#76777d]">habis</span></div>
-            <div className="text-[11px] text-[#45464d]">{stats.kir_soon||0} &lt;30 hari</div>
+            <div className={"text-xl font-bold "+((stats.kir_overdue||0)>0?'text-red-600':'text-ink')}>{stats.kir_overdue||0} <span className="text-xs font-bold text-ink-3">habis</span></div>
+            <div className="text-[11px] text-ink-2">{stats.kir_soon||0} &lt;30 hari</div>
           </div>
-          <div className="bg-white rounded-xl border border-[#e7ecf7] p-3 text-center shadow-card">
-            <div className="text-[11px] font-bold tracking-wider text-[#45464d]">BIAYA 30H</div>
-            <div className="text-[15px] font-bold text-[#0b1c30]">{compact(stats.cost_30||0)}</div>
-            <div className="text-[11px] text-[#45464d]">{stats.trips_30||0} trip • {compact(stats.km_30||0)} km</div>
-            {stats.avg_cost_per_km ? <div className="text-[11px] font-bold text-[#0051d5]">Rp {Math.round(stats.avg_cost_per_km).toLocaleString('id-ID')}/km</div> : null}
+          <div className="bg-white rounded-xl border border-line p-3 text-center shadow-card">
+            <div className="text-[11px] font-bold tracking-wider text-ink-2">BIAYA 30H</div>
+            <div className="text-[15px] font-bold text-ink">{compact(stats.cost_30||0)}</div>
+            <div className="text-[11px] text-ink-2">{stats.trips_30||0} trip • {compact(stats.km_30||0)} km</div>
+            {stats.avg_cost_per_km ? <div className="text-[11px] font-bold text-brand">Rp {Math.round(stats.avg_cost_per_km).toLocaleString('id-ID')}/km</div> : null}
             <div className="mt-1.5 flex flex-col gap-1 text-[11px] font-bold">
-              <span className={"px-1.5 py-0.5 rounded-full border "+((stats.variance_dalam_30||0)>0?'bg-red-50 text-red-700 border-red-200':(stats.variance_dalam_30||0)<0?'bg-emerald-50 text-emerald-700 border-emerald-200':'bg-[#eff4ff] text-[#45464d] border-[#e7ecf7]')}>Dalam {compact(stats.est_dalam_30||0)} • {(stats.variance_dalam_30>0?'+':'')+compact(stats.variance_dalam_30||0)}</span>
-              <span className={"px-1.5 py-0.5 rounded-full border "+((stats.variance_luar_30||0)>0?'bg-red-50 text-red-700 border-red-200':(stats.variance_luar_30||0)<0?'bg-emerald-50 text-emerald-700 border-emerald-200':'bg-[#eff4ff] text-[#45464d] border-[#e7ecf7]')}>Luar {compact(stats.est_luar_30||0)} • {(stats.variance_luar_30>0?'+':'')+compact(stats.variance_luar_30||0)}</span>
+              <span className={"px-1.5 py-0.5 rounded-full border "+((stats.variance_dalam_30||0)>0?'bg-red-50 text-red-700 border-red-200':(stats.variance_dalam_30||0)<0?'bg-emerald-50 text-emerald-700 border-emerald-200':'bg-surface-2 text-ink-2 border-line')}>Dalam {compact(stats.est_dalam_30||0)} • {(stats.variance_dalam_30>0?'+':'')+compact(stats.variance_dalam_30||0)}</span>
+              <span className={"px-1.5 py-0.5 rounded-full border "+((stats.variance_luar_30||0)>0?'bg-red-50 text-red-700 border-red-200':(stats.variance_luar_30||0)<0?'bg-emerald-50 text-emerald-700 border-emerald-200':'bg-surface-2 text-ink-2 border-line')}>Luar {compact(stats.est_luar_30||0)} • {(stats.variance_luar_30>0?'+':'')+compact(stats.variance_luar_30||0)}</span>
             </div>
           </div>
-          <div className={"rounded-xl border p-3 text-center "+( (stats.tax_overdue||0)+(stats.sim_overdue||0)>0 ? 'bg-amber-50 border-amber-200':'bg-white border-[#e7ecf7]')}>
-            <div className="text-[11px] font-bold tracking-wider text-[#45464d]">PAJAK • SIM</div>
-            <div className="text-sm font-bold text-[#0b1c30]">{stats.tax_overdue||0} pajak • {stats.sim_overdue||0} SIM habis</div>
-            <div className="text-[11px] text-[#45464d]">Perlu perpanjang</div>
+          <div className={"rounded-xl border p-3 text-center "+( (stats.tax_overdue||0)+(stats.sim_overdue||0)>0 ? 'bg-amber-50 border-amber-200':'bg-white border-line')}>
+            <div className="text-[11px] font-bold tracking-wider text-ink-2">PAJAK • SIM</div>
+            <div className="text-sm font-bold text-ink">{stats.tax_overdue||0} pajak • {stats.sim_overdue||0} SIM habis</div>
+            <div className="text-[11px] text-ink-2">Perlu perpanjang</div>
           </div>
         </div>
       )}
 
       {/* Tabs POS pill */}
-      <div className="bg-white rounded-xl border border-[#e7ecf7] shadow-card p-2 flex flex-wrap gap-1.5">
+      <div className="bg-white rounded-xl border border-line shadow-card p-2 flex flex-wrap gap-1.5">
         {[
           {id:'armada', label:'Armada', count: vehicles.length, icon: Truck},
           {id:'trip', label:'Trip', count: trips.length, icon: MapPin},
@@ -326,16 +326,16 @@ export default function Fleet(){
         ].map(t=>{
           const active=tab===t.id;
           return (
-            <button key={t.id} onClick={()=>setTab(t.id)} className={"inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold border transition "+(active?'bg-[#0051d5] text-white border-[#0051d5] shadow':'bg-white text-[#2b3445] border-[#e7ecf7] hover:bg-[#eff4ff]')}>
+            <button key={t.id} onClick={()=>setTab(t.id)} className={"inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold border transition "+(active?'bg-brand text-white border-brand shadow':'bg-white text-ink-2 border-line hover:bg-surface-2')}>
               <t.icon size={14}/> {t.label}
-              <span className={"min-w-[22px] h-5 px-1.5 grid place-items-center rounded-full text-[11px] font-bold "+(active?'bg-white text-[#0051d5]':'bg-[#e5eeff] text-[#45464d]')}>{t.count}</span>
+              <span className={"min-w-[22px] h-5 px-1.5 grid place-items-center rounded-full text-[11px] font-bold "+(active?'bg-white text-brand':'bg-surface-3 text-ink-2')}>{t.count}</span>
             </button>
           )
         })}
         <div className="ml-auto flex items-center gap-2">
-          <span className="hidden lg:inline text-xs text-[#45464d]">{tab==='armada'? filteredVehicles.length+' unit': tab==='trip'? filteredTrips.length+' trip': ''}</span>
-          {tab==='armada' && <button onClick={openAddVehicle} className="lg:hidden h-8 px-3 bg-[#0051d5] text-white rounded-full text-xs font-bold">+ Armada</button>}
-          {tab==='trip' && <button onClick={()=>setShowTrip(true)} className="lg:hidden h-8 px-3 bg-[#0051d5] text-white rounded-full text-xs font-bold">+ Trip</button>}
+          <span className="hidden lg:inline text-xs text-ink-2">{tab==='armada'? filteredVehicles.length+' unit': tab==='trip'? filteredTrips.length+' trip': ''}</span>
+          {tab==='armada' && <button onClick={openAddVehicle} className="lg:hidden h-8 px-3 bg-brand text-white rounded-full text-xs font-bold">+ Armada</button>}
+          {tab==='trip' && <button onClick={()=>setShowTrip(true)} className="lg:hidden h-8 px-3 bg-brand text-white rounded-full text-xs font-bold">+ Trip</button>}
         </div>
       </div>
 
@@ -343,22 +343,22 @@ export default function Fleet(){
       {tab==='armada' && (
         <div className="space-y-3">
           {/* Search + filter POS */}
-          <div className="bg-white rounded-xl border border-[#e7ecf7] shadow-card p-3 sm:p-4 space-y-3">
+          <div className="bg-white rounded-xl border border-line shadow-card p-3 sm:p-4 space-y-3">
             <div className="flex flex-col lg:flex-row gap-3">
               <div className="flex-1 relative">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#76777d]"/>
-                <input value={qArmada} onChange={e=>setQArmada(e.target.value)} onKeyDown={e=>e.key==='Enter'&&setSearchArmada(qArmada)} placeholder="Cari plat / tipe / driver / brand..." className="w-full h-[42px] pl-9 pr-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-[13px] placeholder:text-[#76777d] outline-none focus:bg-white focus:border-[#0051d5] focus:ring-2 focus:ring-[#0051d5]/10 transition"/>
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3"/>
+                <input value={qArmada} onChange={e=>setQArmada(e.target.value)} onKeyDown={e=>e.key==='Enter'&&setSearchArmada(qArmada)} placeholder="Cari plat / tipe / driver / brand..." className="w-full h-[42px] pl-9 pr-3 bg-surface-2 border border-line rounded-xl text-[13px] placeholder:text-ink-3 outline-none focus:bg-white focus:border-brand focus:ring-2 focus:ring-[#0051d5]/10 transition"/>
               </div>
               <div className="flex gap-2 flex-wrap">
-                <button onClick={()=>{setSearchArmada(qArmada);}} className="h-[42px] px-5 bg-white border border-[#e7ecf7] rounded-xl text-sm font-semibold text-[#2b3445] hover:bg-[#eff4ff]">Cari</button>
+                <button onClick={()=>{setSearchArmada(qArmada);}} className="h-[42px] px-5 bg-white border border-line rounded-xl text-sm font-semibold text-ink-2 hover:bg-surface-2">Cari</button>
                 {searchArmada && <button onClick={()=>{setQArmada(''); setSearchArmada('');}} className="h-[42px] w-[42px] grid place-items-center bg-white border rounded-xl"><X size={14}/></button>}
-                <select value={statusArmada} onChange={e=>setStatusArmada(e.target.value)} className="h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-xs font-bold">
+                <select value={statusArmada} onChange={e=>setStatusArmada(e.target.value)} className="h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-xs font-bold">
                   <option value="">Semua status</option><option value="AVAILABLE">AVAILABLE</option><option value="IN_TRANSIT">IN_TRANSIT</option><option value="MAINTENANCE">MAINTENANCE</option>
                 </select>
-                <select value={ownFilter} onChange={e=>setOwnFilter(e.target.value)} className="h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-xs font-bold">
+                <select value={ownFilter} onChange={e=>setOwnFilter(e.target.value)} className="h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-xs font-bold">
                   <option value="">Semua kepemilikan</option><option value="OWNED">Milik</option><option value="RENTED">Sewa</option><option value="THIRD_PARTY">Vendor</option>
                 </select>
-                <select value={areaFilter} onChange={e=>setAreaFilter(e.target.value)} className="h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-xs font-bold">
+                <select value={areaFilter} onChange={e=>setAreaFilter(e.target.value)} className="h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-xs font-bold">
                   <option value="">Semua area</option><option value="DALAM_KOTA">Dalam Kota</option><option value="LUAR_KOTA">Luar Kota</option>
                 </select>
               </div>
@@ -370,7 +370,7 @@ export default function Fleet(){
                 {id:'IN_TRANSIT', label:'Sedang Kirim'},
                 {id:'MAINTENANCE', label:'Maintenance'},
               ].map(f=>(
-                <button key={f.id} onClick={()=>setStatusArmada(f.id)} className={"px-3.5 py-1.5 rounded-full text-xs font-bold border "+(statusArmada===f.id?'bg-[#0051d5] text-white border-[#0051d5]':'bg-white text-[#2b3445] border-[#e7ecf7]')}>{f.label}</button>
+                <button key={f.id} onClick={()=>setStatusArmada(f.id)} className={"px-3.5 py-1.5 rounded-full text-xs font-bold border "+(statusArmada===f.id?'bg-brand text-white border-brand':'bg-white text-ink-2 border-line')}>{f.label}</button>
               ))}
               <span className="h-5 w-px bg-[#e7ecf7] self-center mx-1"/>
               {[
@@ -378,9 +378,9 @@ export default function Fleet(){
                 {id:'DALAM_KOTA', label:'Dalam Kota'},
                 {id:'LUAR_KOTA', label:'Luar Kota'},
               ].map(f=>(
-                <button key={'area-'+f.id} onClick={()=>setAreaFilter(f.id)} className={"px-3.5 py-1.5 rounded-full text-xs font-bold border "+(areaFilter===f.id?'bg-[#131b2e] text-white border-[#0b1c30]':'bg-white text-[#2b3445] border-[#e7ecf7]')}>{f.label}</button>
+                <button key={'area-'+f.id} onClick={()=>setAreaFilter(f.id)} className={"px-3.5 py-1.5 rounded-full text-xs font-bold border "+(areaFilter===f.id?'bg-navy text-white border-[#0b1c30]':'bg-white text-ink-2 border-line')}>{f.label}</button>
               ))}
-              <span className="ml-auto text-xs text-[#76777d] hidden sm:inline">{filteredVehicles.length} unit • kapasitas total {filteredVehicles.reduce((s,v)=>s+parseFloat(v.capacity_ton||0),0).toFixed(1)} ton</span>
+              <span className="ml-auto text-xs text-ink-3 hidden sm:inline">{filteredVehicles.length} unit • kapasitas total {filteredVehicles.reduce((s,v)=>s+parseFloat(v.capacity_ton||0),0).toFixed(1)} ton</span>
             </div>
           </div>
 
@@ -393,15 +393,15 @@ export default function Fleet(){
               const simWarn = simDays!==null && simDays<0 ? {label:'SIM HABIS', cls:'bg-red-600 text-white'} : simDays!==null && simDays<=7 ? {label:`SIM ${simDays} hari`, cls:'bg-red-50 text-red-700 border-red-200'} : simDays!==null && simDays<=30 ? {label:`SIM ${simDays} hari`, cls:'bg-amber-50 text-amber-800'} : null;
               const isTransit=v.status==='IN_TRANSIT';
               return (
-                <div key={v.id} className={"bg-white rounded-xl border shadow-card overflow-hidden flex flex-col "+(isTransit?'border-sky-200 ring-1 ring-sky-100':'border-[#e7ecf7]')}>
+                <div key={v.id} className={"bg-white rounded-xl border shadow-card overflow-hidden flex flex-col "+(isTransit?'border-sky-200 ring-1 ring-sky-100':'border-line')}>
                   <div className={"h-1.5 "+(isTransit?'bg-sky-500': v.status==='MAINTENANCE'?'bg-amber-400':'bg-emerald-500')}/>
                   <div className="p-4 space-y-2.5 flex-1">
                     <div className="flex justify-between items-start gap-2">
                       <div className="min-w-0">
-                        <div className="font-mono font-bold text-sm text-[#0b1c30] tracking-tight flex items-center gap-1.5 flex-wrap">{v.plat_no}<span className={"px-1.5 py-0.5 rounded-full text-[11px] font-bold border tracking-wide "+( (v.area||'DALAM_KOTA')==='LUAR_KOTA' ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-sky-50 text-sky-700 border-sky-200')}>{(v.area||'DALAM_KOTA')==='LUAR_KOTA'?'Luar Kota':'Dalam Kota'}</span></div>
-                        <div className="text-xs text-[#2b3445] font-semibold">{v.type} • {v.brand||'-'} {v.model? '· '+v.model:''} {v.year? '· '+v.year:''}</div>
-                        <div className="text-[11px] text-[#45464d]">{v.capacity_weight_kg? (v.capacity_weight_kg/1000)+' ton' : (v.capacity_ton||'-')+' ton'} • {v.capacity_volume_m3||'-'} m³ • <span className="font-bold">{OWNERSHIP_LABEL[v.ownership]||v.ownership}</span> • {v.driver_name||'-'} {v.driver_phone? '· '+v.driver_phone:''}</div>
-                        <div className="text-[11px] text-[#45464d]">Tarif Dalam {new Intl.NumberFormat('id-ID').format(v.tarif_dalam_flat??150000)}+{new Intl.NumberFormat('id-ID').format(v.tarif_dalam_per_ton??120000)}/ton • Luar {new Intl.NumberFormat('id-ID').format(v.tarif_luar_flat??600000)}+{new Intl.NumberFormat('id-ID').format(v.tarif_luar_per_ton??350000)}/ton</div>
+                        <div className="font-mono font-bold text-sm text-ink tracking-tight flex items-center gap-1.5 flex-wrap">{v.plat_no}<span className={"px-1.5 py-0.5 rounded-full text-[11px] font-bold border tracking-wide "+( (v.area||'DALAM_KOTA')==='LUAR_KOTA' ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-sky-50 text-sky-700 border-sky-200')}>{(v.area||'DALAM_KOTA')==='LUAR_KOTA'?'Luar Kota':'Dalam Kota'}</span></div>
+                        <div className="text-xs text-ink-2 font-semibold">{v.type} • {v.brand||'-'} {v.model? '· '+v.model:''} {v.year? '· '+v.year:''}</div>
+                        <div className="text-[11px] text-ink-2">{v.capacity_weight_kg? (v.capacity_weight_kg/1000)+' ton' : (v.capacity_ton||'-')+' ton'} • {v.capacity_volume_m3||'-'} m³ • <span className="font-bold">{OWNERSHIP_LABEL[v.ownership]||v.ownership}</span> • {v.driver_name||'-'} {v.driver_phone? '· '+v.driver_phone:''}</div>
+                        <div className="text-[11px] text-ink-2">Tarif Dalam {new Intl.NumberFormat('id-ID').format(v.tarif_dalam_flat??150000)}+{new Intl.NumberFormat('id-ID').format(v.tarif_dalam_per_ton??120000)}/ton • Luar {new Intl.NumberFormat('id-ID').format(v.tarif_luar_flat??600000)}+{new Intl.NumberFormat('id-ID').format(v.tarif_luar_per_ton??350000)}/ton</div>
                       </div>
                       <span className={"shrink-0 px-2.5 py-1 rounded-full text-[11px] font-bold border "+(v.status==='AVAILABLE'?'bg-emerald-50 text-emerald-700 border-emerald-200': v.status==='IN_TRANSIT'?'bg-sky-50 text-sky-700 border-sky-200':'bg-amber-50 text-amber-700 border-amber-200')}>{v.status}</span>
                     </div>
@@ -414,81 +414,81 @@ export default function Fleet(){
 
                     <div className="flex flex-wrap gap-1.5">
                       {k && <span className={"inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border "+k.cls}>{k.dot} {k.label} {v.kir_expiry? '· '+String(v.kir_expiry).slice(0,10):''}</span>}
-                      {!k && v.kir_expiry && <span className="px-2.5 py-1 rounded-full text-[11px] font-bold border bg-white text-[#45464d]">KIR {String(v.kir_expiry).slice(0,10)}</span>}
-                      {!k && !v.kir_expiry && <span className="px-2.5 py-1 rounded-full text-[11px] text-[#76777d] border border-dashed">KIR -</span>}
+                      {!k && v.kir_expiry && <span className="px-2.5 py-1 rounded-full text-[11px] font-bold border bg-white text-ink-2">KIR {String(v.kir_expiry).slice(0,10)}</span>}
+                      {!k && !v.kir_expiry && <span className="px-2.5 py-1 rounded-full text-[11px] text-ink-3 border border-dashed">KIR -</span>}
                       {tx && <span className={"px-2.5 py-1 rounded-full text-[11px] font-bold border "+tx.cls}>{tx.label}</span>}
-                      {!tx && v.tax_expiry && <span className="px-2.5 py-1 rounded-full text-[11px] border bg-white text-[#45464d]">Pajak {String(v.tax_expiry).slice(0,10)}</span>}
-                      {!tx && !v.tax_expiry && <span className="px-2.5 py-1 rounded-full text-[11px] text-[#76777d] border border-dashed">Pajak -</span>}
+                      {!tx && v.tax_expiry && <span className="px-2.5 py-1 rounded-full text-[11px] border bg-white text-ink-2">Pajak {String(v.tax_expiry).slice(0,10)}</span>}
+                      {!tx && !v.tax_expiry && <span className="px-2.5 py-1 rounded-full text-[11px] text-ink-3 border border-dashed">Pajak -</span>}
                       {simWarn && <span className={"px-2.5 py-1 rounded-full text-[11px] font-bold border "+simWarn.cls}>{simWarn.label}</span>}
                     </div>
 
                     <div className="grid grid-cols-3 gap-2 text-center">
-                      <div className="bg-[#eff4ff] border border-[#e7ecf7] rounded-xl p-2">
-                        <div className="text-[11px] font-bold tracking-wider text-[#76777d]">TRIP 30H</div>
+                      <div className="bg-surface-2 border border-line rounded-xl p-2">
+                        <div className="text-[11px] font-bold tracking-wider text-ink-3">TRIP 30H</div>
                         <div className="text-sm font-bold">{v.trips_30 ?? 0}</div>
-                        <div className="text-[11px] text-[#45464d]">{v.km_30? compact(v.km_30)+' km':''}</div>
+                        <div className="text-[11px] text-ink-2">{v.km_30? compact(v.km_30)+' km':''}</div>
                       </div>
-                      <div className="bg-[#eff4ff] border border-[#e7ecf7] rounded-xl p-2">
-                        <div className="text-[11px] font-bold tracking-wider text-[#76777d]">BIAYA 30H</div>
+                      <div className="bg-surface-2 border border-line rounded-xl p-2">
+                        <div className="text-[11px] font-bold tracking-wider text-ink-3">BIAYA 30H</div>
                         <div className="text-xs font-bold">{compact(v.cost_30||0)}</div>
-                        <div className="text-[11px] text-[#45464d]">{v.cost_30 && v.km_30 ? 'Rp '+Math.round(v.cost_30/(v.km_30||1)).toLocaleString('id-ID')+'/km':''}</div>
+                        <div className="text-[11px] text-ink-2">{v.cost_30 && v.km_30 ? 'Rp '+Math.round(v.cost_30/(v.km_30||1)).toLocaleString('id-ID')+'/km':''}</div>
                         {(v.est_dalam_30||v.est_luar_30)? <>
-                          <div className={"text-[11px] font-bold px-1 py-0.5 rounded-full border mt-1 "+((v.variance_dalam_30||0)>0?'bg-red-50 text-red-700 border-red-200':(v.variance_dalam_30||0)<0?'bg-emerald-50 text-emerald-700 border-emerald-200':'bg-white text-[#45464d] border-[#e7ecf7]')}>Dalam Est {compact(v.est_dalam_30)} • {(v.variance_dalam_30>0?'+':'')+compact(v.variance_dalam_30||0)}</div>
-                          <div className={"text-[11px] font-bold px-1 py-0.5 rounded-full border mt-0.5 "+((v.variance_luar_30||0)>0?'bg-red-50 text-red-700 border-red-200':(v.variance_luar_30||0)<0?'bg-emerald-50 text-emerald-700 border-emerald-200':'bg-white text-[#45464d] border-[#e7ecf7]')}>Luar Est {compact(v.est_luar_30)} • {(v.variance_luar_30>0?'+':'')+compact(v.variance_luar_30||0)}</div>
+                          <div className={"text-[11px] font-bold px-1 py-0.5 rounded-full border mt-1 "+((v.variance_dalam_30||0)>0?'bg-red-50 text-red-700 border-red-200':(v.variance_dalam_30||0)<0?'bg-emerald-50 text-emerald-700 border-emerald-200':'bg-white text-ink-2 border-line')}>Dalam Est {compact(v.est_dalam_30)} • {(v.variance_dalam_30>0?'+':'')+compact(v.variance_dalam_30||0)}</div>
+                          <div className={"text-[11px] font-bold px-1 py-0.5 rounded-full border mt-0.5 "+((v.variance_luar_30||0)>0?'bg-red-50 text-red-700 border-red-200':(v.variance_luar_30||0)<0?'bg-emerald-50 text-emerald-700 border-emerald-200':'bg-white text-ink-2 border-line')}>Luar Est {compact(v.est_luar_30)} • {(v.variance_luar_30>0?'+':'')+compact(v.variance_luar_30||0)}</div>
                         </> : v.est_30? <div className={"text-[11px] font-bold px-1 py-0.5 rounded-full border mt-1 "+((v.variance_30||0)>0?'bg-red-50 text-red-700 border-red-200':(v.variance_30||0)<0?'bg-emerald-50 text-emerald-700 border-emerald-200':'bg-white')}>Est {compact(v.est_30)} • {(v.variance_30>0?'+':'')+compact(v.variance_30||0)}</div>:null}
                       </div>
-                      <div className={"border rounded-xl p-2 "+(v.next_service_date && daysLeft(v.next_service_date)!==null && daysLeft(v.next_service_date)<=7 ? 'bg-amber-50 border-amber-200':'bg-[#eff4ff] border-[#e7ecf7]')}>
-                        <div className="text-[11px] font-bold tracking-wider text-[#76777d]">SERVIS</div>
+                      <div className={"border rounded-xl p-2 "+(v.next_service_date && daysLeft(v.next_service_date)!==null && daysLeft(v.next_service_date)<=7 ? 'bg-amber-50 border-amber-200':'bg-surface-2 border-line')}>
+                        <div className="text-[11px] font-bold tracking-wider text-ink-3">SERVIS</div>
                         <div className="text-[11px] font-bold">{v.next_service_date? String(v.next_service_date).slice(0,10):'-'}</div>
                         <div className="text-[11px]">{v.next_service_date && daysLeft(v.next_service_date)!==null ? (daysLeft(v.next_service_date)<0? 'Terlambat '+Math.abs(daysLeft(v.next_service_date))+' hari' : daysLeft(v.next_service_date)<=7 ? `Jatuh tempo ${daysLeft(v.next_service_date)} hari` : `${daysLeft(v.next_service_date)} hari lagi`) : (v.last_service_date? 'Last '+String(v.last_service_date).slice(0,10):'Belum')}</div>
                       </div>
                     </div>
 
                     {v.recent_dos && v.recent_dos.length>0 && (
-                      <div className="text-[11px] text-[#45464d] bg-[#eff4ff] border border-[#e7ecf7] rounded-xl p-2">
-                        <div className="font-bold text-[#2b3445] mb-1">DO terakhir:</div>
+                      <div className="text-[11px] text-ink-2 bg-surface-2 border border-line rounded-xl p-2">
+                        <div className="font-bold text-ink-2 mb-1">DO terakhir:</div>
                         <div className="space-y-1">
                           {v.recent_dos.slice(0,3).map(d=>(
-                            <div key={d.id} className="flex justify-between gap-2"><span className="font-mono font-bold text-[#0b1c30]">{d.do_number}</span><span className={"px-1.5 py-0.5 rounded-full border text-[11px] font-bold "+(d.status==='IN_TRANSIT'?'bg-sky-50 text-sky-700':d.status==='DELIVERED'?'bg-emerald-50 text-emerald-700':'bg-white')}>{d.status}</span></div>
+                            <div key={d.id} className="flex justify-between gap-2"><span className="font-mono font-bold text-ink">{d.do_number}</span><span className={"px-1.5 py-0.5 rounded-full border text-[11px] font-bold "+(d.status==='IN_TRANSIT'?'bg-sky-50 text-sky-700':d.status==='DELIVERED'?'bg-emerald-50 text-emerald-700':'bg-white')}>{d.status}</span></div>
                           ))}
                         </div>
                       </div>
                     )}
                   </div>
-                  <div className="p-3 bg-[#eff4ff] border-t border-[#e7ecf7] flex gap-1.5">
-                    <button onClick={()=>openEditVehicle(v)} className="flex-1 h-8 inline-flex items-center justify-center gap-1 bg-white border border-[#e7ecf7] rounded-full text-xs font-bold hover:bg-[#e5eeff]"><Pencil size={12}/> Edit</button>
-                    <button onClick={()=>openHistory(v)} className="flex-1 h-8 inline-flex items-center justify-center gap-1 bg-white border border-[#e7ecf7] rounded-full text-xs font-bold hover:bg-[#e5eeff]"><History size={12}/> History</button>
-                    <button onClick={()=>{setTab('trip'); setSearchTrip(v.plat_no); setQTrip(v.plat_no);}} className="flex-1 h-8 inline-flex items-center justify-center gap-1 bg-[#0051d5] text-white rounded-full text-xs font-bold hover:bg-[#0041ab]"><MapPin size={12}/> Trip</button>
+                  <div className="p-3 bg-surface-2 border-t border-line flex gap-1.5">
+                    <button onClick={()=>openEditVehicle(v)} className="flex-1 h-8 inline-flex items-center justify-center gap-1 bg-white border border-line rounded-full text-xs font-bold hover:bg-surface-3"><Pencil size={12}/> Edit</button>
+                    <button onClick={()=>openHistory(v)} className="flex-1 h-8 inline-flex items-center justify-center gap-1 bg-white border border-line rounded-full text-xs font-bold hover:bg-surface-3"><History size={12}/> History</button>
+                    <button onClick={()=>{setTab('trip'); setSearchTrip(v.plat_no); setQTrip(v.plat_no);}} className="flex-1 h-8 inline-flex items-center justify-center gap-1 bg-brand text-white rounded-full text-xs font-bold hover:bg-brand-strong"><MapPin size={12}/> Trip</button>
                   </div>
                 </div>
               )
             })}
           </div>
-          {filteredVehicles.length===0 && <div className="bg-white rounded-xl border border-[#e7ecf7] p-10 text-center text-sm text-[#76777d]">{loading?'Memuat...':'Tidak ada armada - tambah dengan + Armada'}</div>}
+          {filteredVehicles.length===0 && <div className="bg-white rounded-xl border border-line p-10 text-center text-sm text-ink-3">{loading?'Memuat...':'Tidak ada armada - tambah dengan + Armada'}</div>}
         </div>
       )}
 
       {/* TRIP TAB */}
       {tab==='trip' && (
         <div className="space-y-3">
-          <div className="bg-white rounded-xl border border-[#e7ecf7] shadow-card p-3 sm:p-4 space-y-3">
+          <div className="bg-white rounded-xl border border-line shadow-card p-3 sm:p-4 space-y-3">
             <div className="flex flex-col lg:flex-row gap-3">
               <div className="flex-1 relative">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#76777d]"/>
-                <input value={qTrip} onChange={e=>setQTrip(e.target.value)} onKeyDown={e=>e.key==='Enter'&&setSearchTrip(qTrip)} placeholder="Cari TRIP / plat / rute / DO..." className="w-full h-[42px] pl-9 pr-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-[13px] placeholder:text-[#76777d] outline-none focus:bg-white focus:border-[#0051d5] focus:ring-2 focus:ring-[#0051d5]/10 transition"/>
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3"/>
+                <input value={qTrip} onChange={e=>setQTrip(e.target.value)} onKeyDown={e=>e.key==='Enter'&&setSearchTrip(qTrip)} placeholder="Cari TRIP / plat / rute / DO..." className="w-full h-[42px] pl-9 pr-3 bg-surface-2 border border-line rounded-xl text-[13px] placeholder:text-ink-3 outline-none focus:bg-white focus:border-brand focus:ring-2 focus:ring-[#0051d5]/10 transition"/>
               </div>
               <div className="flex gap-2 flex-wrap">
-                <button onClick={()=>setSearchTrip(qTrip)} className="h-[42px] px-5 bg-white border border-[#e7ecf7] rounded-xl text-sm font-semibold">Cari</button>
+                <button onClick={()=>setSearchTrip(qTrip)} className="h-[42px] px-5 bg-white border border-line rounded-xl text-sm font-semibold">Cari</button>
                 {searchTrip && <button onClick={()=>{setQTrip(''); setSearchTrip('');}} className="h-[42px] w-[42px] grid place-items-center bg-white border rounded-xl"><X size={14}/></button>}
-                <select value={tripStatusFilter} onChange={e=>setTripStatusFilter(e.target.value)} className="h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-xs font-bold">
+                <select value={tripStatusFilter} onChange={e=>setTripStatusFilter(e.target.value)} className="h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-xs font-bold">
                   <option value="">Semua status</option><option value="IN_PROGRESS">IN_PROGRESS</option><option value="COMPLETED">COMPLETED</option><option value="CANCELLED">CANCELLED</option>
                 </select>
-                <button onClick={()=>setShowTrip(true)} className="h-[42px] px-5 bg-[#0051d5] text-white rounded-xl text-sm font-bold shadow-card">+ Trip</button>
+                <button onClick={()=>setShowTrip(true)} className="h-[42px] px-5 bg-brand text-white rounded-xl text-sm font-bold shadow-card">+ Trip</button>
               </div>
             </div>
             <div className="flex gap-1.5 flex-wrap">
               {['','IN_PROGRESS','COMPLETED'].map(s=>(
-                <button key={s} onClick={()=>setTripStatusFilter(s)} className={"px-3.5 py-1.5 rounded-full text-xs font-bold border "+(tripStatusFilter===s?'bg-[#0051d5] text-white border-[#0051d5]':'bg-white text-[#2b3445] border-[#e7ecf7]')}>{s||'Semua'}</button>
+                <button key={s} onClick={()=>setTripStatusFilter(s)} className={"px-3.5 py-1.5 rounded-full text-xs font-bold border "+(tripStatusFilter===s?'bg-brand text-white border-brand':'bg-white text-ink-2 border-line')}>{s||'Semua'}</button>
               ))}
             </div>
           </div>
@@ -499,35 +499,35 @@ export default function Fleet(){
               const dist=parseFloat(t.distance_km||0);
               const isActive=t.status==='IN_PROGRESS';
               return (
-                <div key={t.id} className={"bg-white rounded-xl border shadow-card p-4 flex flex-col sm:flex-row gap-3 "+(isActive?'border-sky-200':'border-[#e7ecf7]')}>
+                <div key={t.id} className={"bg-white rounded-xl border shadow-card p-4 flex flex-col sm:flex-row gap-3 "+(isActive?'border-sky-200':'border-line')}>
                   <div className="flex-1 min-w-0 space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono text-xs font-bold bg-[#e5eeff] border px-2 py-1 rounded-full">{t.trip_number}</span>
+                      <span className="font-mono text-xs font-bold bg-surface-3 border px-2 py-1 rounded-full">{t.trip_number}</span>
                       <Badge status={t.status}/>
-                      <span className="text-xs font-bold text-[#0b1c30]">{t.plat_no||'-'} • {t.vehicle_type||''}</span>
-                      <span className="text-xs text-[#45464d]">kap {t.capacity_ton||'-'} ton</span>
+                      <span className="text-xs font-bold text-ink">{t.plat_no||'-'} • {t.vehicle_type||''}</span>
+                      <span className="text-xs text-ink-2">kap {t.capacity_ton||'-'} ton</span>
                     </div>
-                    <div className="text-xs text-[#2b3445] flex flex-wrap gap-2">
-                      <span className="inline-flex items-center gap-1"><MapPin size={12} className="text-[#76777d]"/> {t.route||'-'}</span>
+                    <div className="text-xs text-ink-2 flex flex-wrap gap-2">
+                      <span className="inline-flex items-center gap-1"><MapPin size={12} className="text-ink-3"/> {t.route||'-'}</span>
                       <span className="inline-flex items-center gap-1"><Gauge size={12}/> {dist} km {t.odometer_start? `• odo ${t.odometer_start}→${t.odometer_end||'?'}`:''}</span>
                       <span className="inline-flex items-center gap-1"><Fuel size={12}/> {t.fuel_liters? t.fuel_liters+' L':''} {t.km_per_liter? `• ${t.km_per_liter.toFixed(1)} km/L`:''}</span>
                     </div>
-                    <div className="text-xs text-[#45464d]">{t.driver_name||'driver #'+t.driver_id} {t.driver_phone? '• '+t.driver_phone:''} • DO {t.do_number||'-'} {t.customer_name? '• '+t.customer_name:''} • {t.departure_date? String(t.departure_date).slice(0,16).replace('T',' '):''} {t.arrival_date? '→ '+String(t.arrival_date).slice(0,16).replace('T',' '):''}</div>
-                    <div className="text-xs flex flex-wrap gap-1.5 items-center"><span className="font-bold">{rupiah(cost)}</span> <span className="text-[#76777d]">BBM {rupiah(t.fuel_cost)} • Tol {rupiah(t.toll_cost)} • Lain {rupiah(t.other_cost)}</span> {t.cost_per_km? <span className="px-2 py-0.5 rounded-full bg-[#e5eeff] border text-[11px] font-bold">Rp {Math.round(t.cost_per_km).toLocaleString('id-ID')}/km</span>:null} <span className={"px-1.5 py-0.5 rounded-full text-[11px] font-bold border "+( (t.vehicle_area||'DALAM_KOTA')==='LUAR_KOTA'?'bg-amber-50 text-amber-800 border-amber-200':'bg-sky-50 text-sky-700 border-sky-200')}>{(t.vehicle_area||'DALAM_KOTA')==='LUAR_KOTA'?'Luar Kota':'Dalam Kota'}</span>{t.do_est_cost? <span className={"px-2 py-0.5 rounded-full border text-[11px] font-bold "+( (t.variance_cost||0)>0 ? 'bg-red-50 text-red-700 border-red-200' : (t.variance_cost||0)<0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-white text-[#45464d]')}>Est {rupiah(t.do_est_cost)} • Selisih {t.variance_cost>0?'+':''}{rupiah(t.variance_cost)} {t.variance_pct? `(${t.variance_pct>0?'+':''}${t.variance_pct.toFixed(1)}%)`:''}</span>:null} {t.do_est_cost_dalam? <span className={"px-2 py-0.5 rounded-full border text-[11px] font-bold "+( (t.variance_dalam||0)>0 ? 'bg-red-50 text-red-700 border-red-200' : (t.variance_dalam||0)<0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-white')}>Dalam {rupiah(t.do_est_cost_dalam)} {(t.variance_dalam||0)>0?'+':''}{rupiah(t.variance_dalam||0)} {t.variance_dalam_pct? `(${t.variance_dalam_pct>0?'+':''}${t.variance_dalam_pct.toFixed(1)}%)`:''}</span>:null} {t.do_est_cost_luar? <span className={"px-2 py-0.5 rounded-full border text-[11px] font-bold "+( (t.variance_luar||0)>0 ? 'bg-red-50 text-red-700 border-red-200' : (t.variance_luar||0)<0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-white')}>Luar {rupiah(t.do_est_cost_luar)} {(t.variance_luar||0)>0?'+':''}{rupiah(t.variance_luar||0)} {t.variance_luar_pct? `(${t.variance_luar_pct>0?'+':''}${t.variance_luar_pct.toFixed(1)}%)`:''}</span>:null} {t.do_est_zone? <span className="px-2 py-0.5 rounded-full bg-[#eff4ff] border text-[11px]">DO {t.do_est_zone}{t.do_est_weight? ` • ${t.do_est_weight}t`:''}{t.do_distance_km? ` • ${t.do_distance_km}km`:''}</span>:null}</div>
-                    {t.variance_km!=null && <div className="text-[11px] text-[#45464d]">Jarak aktual {dist}km vs est {t.do_distance_km}km → {t.variance_km>0?'+':''}{t.variance_km}km</div>}
+                    <div className="text-xs text-ink-2">{t.driver_name||'driver #'+t.driver_id} {t.driver_phone? '• '+t.driver_phone:''} • DO {t.do_number||'-'} {t.customer_name? '• '+t.customer_name:''} • {t.departure_date? String(t.departure_date).slice(0,16).replace('T',' '):''} {t.arrival_date? '→ '+String(t.arrival_date).slice(0,16).replace('T',' '):''}</div>
+                    <div className="text-xs flex flex-wrap gap-1.5 items-center"><span className="font-bold">{rupiah(cost)}</span> <span className="text-ink-3">BBM {rupiah(t.fuel_cost)} • Tol {rupiah(t.toll_cost)} • Lain {rupiah(t.other_cost)}</span> {t.cost_per_km? <span className="px-2 py-0.5 rounded-full bg-surface-3 border text-[11px] font-bold">Rp {Math.round(t.cost_per_km).toLocaleString('id-ID')}/km</span>:null} <span className={"px-1.5 py-0.5 rounded-full text-[11px] font-bold border "+( (t.vehicle_area||'DALAM_KOTA')==='LUAR_KOTA'?'bg-amber-50 text-amber-800 border-amber-200':'bg-sky-50 text-sky-700 border-sky-200')}>{(t.vehicle_area||'DALAM_KOTA')==='LUAR_KOTA'?'Luar Kota':'Dalam Kota'}</span>{t.do_est_cost? <span className={"px-2 py-0.5 rounded-full border text-[11px] font-bold "+( (t.variance_cost||0)>0 ? 'bg-red-50 text-red-700 border-red-200' : (t.variance_cost||0)<0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-white text-ink-2')}>Est {rupiah(t.do_est_cost)} • Selisih {t.variance_cost>0?'+':''}{rupiah(t.variance_cost)} {t.variance_pct? `(${t.variance_pct>0?'+':''}${t.variance_pct.toFixed(1)}%)`:''}</span>:null} {t.do_est_cost_dalam? <span className={"px-2 py-0.5 rounded-full border text-[11px] font-bold "+( (t.variance_dalam||0)>0 ? 'bg-red-50 text-red-700 border-red-200' : (t.variance_dalam||0)<0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-white')}>Dalam {rupiah(t.do_est_cost_dalam)} {(t.variance_dalam||0)>0?'+':''}{rupiah(t.variance_dalam||0)} {t.variance_dalam_pct? `(${t.variance_dalam_pct>0?'+':''}${t.variance_dalam_pct.toFixed(1)}%)`:''}</span>:null} {t.do_est_cost_luar? <span className={"px-2 py-0.5 rounded-full border text-[11px] font-bold "+( (t.variance_luar||0)>0 ? 'bg-red-50 text-red-700 border-red-200' : (t.variance_luar||0)<0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-white')}>Luar {rupiah(t.do_est_cost_luar)} {(t.variance_luar||0)>0?'+':''}{rupiah(t.variance_luar||0)} {t.variance_luar_pct? `(${t.variance_luar_pct>0?'+':''}${t.variance_luar_pct.toFixed(1)}%)`:''}</span>:null} {t.do_est_zone? <span className="px-2 py-0.5 rounded-full bg-surface-2 border text-[11px]">DO {t.do_est_zone}{t.do_est_weight? ` • ${t.do_est_weight}t`:''}{t.do_distance_km? ` • ${t.do_distance_km}km`:''}</span>:null}</div>
+                    {t.variance_km!=null && <div className="text-[11px] text-ink-2">Jarak aktual {dist}km vs est {t.do_distance_km}km → {t.variance_km>0?'+':''}{t.variance_km}km</div>}
                     {t.notes && <div className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1">{t.notes}</div>}
                   </div>
                   <div className="flex sm:flex-col gap-2 shrink-0">
                     {isActive && <>
                       <button onClick={()=>{setCompleteId(t.id); setCompleteForm({odometer_end:'', fuel_liters:'', fuel_cost:'', notes:''});}} className="h-9 px-4 bg-emerald-600 text-white rounded-full text-xs font-bold hover:bg-emerald-700">Selesai</button>
-                      <button onClick={()=>cancelTrip(t.id)} className="h-9 px-4 bg-white border border-[#e7ecf7] rounded-full text-xs font-bold hover:bg-[#eff4ff]"><Ban size={12} className="inline mr-1"/> Batal</button>
+                      <button onClick={()=>cancelTrip(t.id)} className="h-9 px-4 bg-white border border-line rounded-full text-xs font-bold hover:bg-surface-2"><Ban size={12} className="inline mr-1"/> Batal</button>
                     </>}
-                    {!isActive && <span className="text-xs text-[#76777d] px-3 py-2">{t.status}</span>}
+                    {!isActive && <span className="text-xs text-ink-3 px-3 py-2">{t.status}</span>}
                   </div>
                 </div>
               )
             })}
-            {filteredTrips.length===0 && <div className="bg-white rounded-xl border border-[#e7ecf7] p-10 text-center text-sm text-[#76777d]">{loading?'Memuat...':'Belum ada trip - klik + Trip'}</div>}
+            {filteredTrips.length===0 && <div className="bg-white rounded-xl border border-line p-10 text-center text-sm text-ink-3">{loading?'Memuat...':'Belum ada trip - klik + Trip'}</div>}
           </div>
         </div>
       )}
@@ -535,24 +535,24 @@ export default function Fleet(){
       {/* MAINTENANCE TAB */}
       {tab==='maintenance' && (
         <div className="space-y-3">
-          <div className="bg-white rounded-xl border border-[#e7ecf7] shadow-card p-4 flex justify-between items-center">
-            <h3 className="font-bold text-sm flex items-center gap-2"><Wrench size={16} className="text-[#0051d5]"/> Servis & Preventive</h3>
-            <button onClick={()=>setShowMaint(true)} className="h-8 px-4 bg-[#0051d5] text-white rounded-full text-xs font-bold">+ Servis</button>
+          <div className="bg-white rounded-xl border border-line shadow-card p-4 flex justify-between items-center">
+            <h3 className="font-bold text-sm flex items-center gap-2"><Wrench size={16} className="text-brand"/> Servis & Preventive</h3>
+            <button onClick={()=>setShowMaint(true)} className="h-8 px-4 bg-brand text-white rounded-full text-xs font-bold">+ Servis</button>
           </div>
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs leading-relaxed">
             <b>Preventive:</b> cek <b>next_service_date</b> tiap armada. Jika <b className="text-red-600">Terlambat</b> atau &lt;7 hari jangan jalan jauh. Atur <b>Jatuh tempo</b> saat catat servis.
           </div>
-          <div className="bg-white rounded-xl border border-[#e7ecf7] shadow-card overflow-hidden">
+          <div className="bg-white rounded-xl border border-line shadow-card overflow-hidden">
             <div className="overflow-auto">
               <table className="w-full text-xs">
-                <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]"><th className="px-4 py-3.5 text-left">TGL SERVIS</th><th className="px-4 py-3.5">PLAT</th><th className="px-4 py-3.5">TIPE</th><th className="px-4 py-3.5">JATUH TEMPO</th><th className="px-4 py-3.5">BENGKEL</th><th className="px-4 py-3.5 text-right">BIAYA</th><th className="px-4 py-3.5">STATUS</th></tr></thead>
+                <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2"><th className="px-4 py-3.5 text-left">TGL SERVIS</th><th className="px-4 py-3.5">PLAT</th><th className="px-4 py-3.5">TIPE</th><th className="px-4 py-3.5">JATUH TEMPO</th><th className="px-4 py-3.5">BENGKEL</th><th className="px-4 py-3.5 text-right">BIAYA</th><th className="px-4 py-3.5">STATUS</th></tr></thead>
                 <tbody>
                   {(Array.isArray(maint)?maint:[]).map(m=>{
                     const dl=daysLeft(m.next_service_date);
                     const jatuh = !m.next_service_date ? '-' : dl===null? String(m.next_service_date).slice(0,10) : dl<0? `Terlambat ${Math.abs(dl)} hari` : dl<=7? `Jatuh tempo ${dl} hari` : `${dl} hari lagi`;
-                    const jatuhCls = dl!==null && dl<0? 'bg-red-50 text-red-700 border-red-200' : dl!==null && dl<=7? 'bg-amber-50 text-amber-800 border-amber-200':'bg-white text-[#45464d] border-[#e7ecf7]';
+                    const jatuhCls = dl!==null && dl<0? 'bg-red-50 text-red-700 border-red-200' : dl!==null && dl<=7? 'bg-amber-50 text-amber-800 border-amber-200':'bg-white text-ink-2 border-line';
                     return (
-                      <tr key={m.id} className="border-b border-[#e5eeff] hover:bg-[#eff4ff] bg-white">
+                      <tr key={m.id} className="border-b border-line hover:bg-surface-2 bg-white">
                         <td className="px-4 py-3.5 whitespace-nowrap">{String(m.service_date).slice(0,10)}</td>
                         <td className="px-4 py-3.5 font-mono font-bold">{m.plat_no}</td>
                         <td className="px-4 py-3.5">{m.maintenance_type}</td>
@@ -563,26 +563,26 @@ export default function Fleet(){
                       </tr>
                     )
                   })}
-                  {maint.length===0 && <tr><td colSpan={7} className="p-8 text-center text-sm text-[#76777d]">Belum ada data servis</td></tr>}
+                  {maint.length===0 && <tr><td colSpan={7} className="p-8 text-center text-sm text-ink-3">Belum ada data servis</td></tr>}
                 </tbody>
               </table>
             </div>
           </div>
 
           {/* Upcoming servis per armada */}
-          <div className="bg-white rounded-xl border border-[#e7ecf7] shadow-card p-4">
+          <div className="bg-white rounded-xl border border-line shadow-card p-4">
             <h4 className="font-bold text-sm mb-3 flex items-center gap-1.5"><Calendar size={14}/> Jadwal servis upcoming (next_service_date)</h4>
             <div className="space-y-2">
               {vehicles.filter(v=>v.next_service_date).sort((a,b)=> new Date(a.next_service_date)-new Date(b.next_service_date)).slice(0,6).map(v=>{
                 const dl=daysLeft(v.next_service_date);
                 return (
-                  <div key={v.id} className={"flex justify-between items-center p-3 rounded-xl border "+(dl!==null && dl<0?'bg-red-50 border-red-200': dl!==null && dl<=7?'bg-amber-50 border-amber-200':'bg-[#eff4ff] border-[#e7ecf7]')}>
-                    <div><div className="font-mono font-bold text-sm">{v.plat_no} • {v.type}</div><div className="text-xs text-[#45464d]">Next: {String(v.next_service_date).slice(0,10)} • Last: {v.last_service_date? String(v.last_service_date).slice(0,10):'-'}</div></div>
+                  <div key={v.id} className={"flex justify-between items-center p-3 rounded-xl border "+(dl!==null && dl<0?'bg-red-50 border-red-200': dl!==null && dl<=7?'bg-amber-50 border-amber-200':'bg-surface-2 border-line')}>
+                    <div><div className="font-mono font-bold text-sm">{v.plat_no} • {v.type}</div><div className="text-xs text-ink-2">Next: {String(v.next_service_date).slice(0,10)} • Last: {v.last_service_date? String(v.last_service_date).slice(0,10):'-'}</div></div>
                     <span className={"px-2.5 py-1 rounded-full text-xs font-bold border "+(dl!==null && dl<0?'bg-red-600 text-white': dl!==null && dl<=7?'bg-amber-500 text-white':'bg-white')}>{dl!==null && dl<0? `Terlambat ${Math.abs(dl)} hari`: dl===0? 'Hari ini' : `${dl} hari lagi`}</span>
                   </div>
                 )
               })}
-              {vehicles.filter(v=>v.next_service_date).length===0 && <div className="text-xs text-[#76777d] text-center py-4">Belum ada jadwal - catat servis dengan next_service_date</div>}
+              {vehicles.filter(v=>v.next_service_date).length===0 && <div className="text-xs text-ink-3 text-center py-4">Belum ada jadwal - catat servis dengan next_service_date</div>}
             </div>
           </div>
         </div>
@@ -592,11 +592,11 @@ export default function Fleet(){
       {tab==='analitik' && (
         <div className="space-y-3">
           <div className="grid lg:grid-cols-3 gap-3">
-            <div className="bg-white rounded-xl border border-[#e7ecf7] shadow-card p-4">
+            <div className="bg-white rounded-xl border border-line shadow-card p-4">
               <h4 className="font-bold text-sm flex items-center gap-1.5"><BarChart3 size={14}/> Utilisasi Armada</h4>
               <div className="mt-3">
                 <div className="flex justify-between text-xs font-bold"><span>IN_TRANSIT / Total</span><span>{stats?.in_transit||0} / {stats?.total||0} • {utilization}%</span></div>
-                <div className="mt-2 h-3 bg-[#e5eeff] rounded-full overflow-hidden flex">
+                <div className="mt-2 h-3 bg-surface-3 rounded-full overflow-hidden flex">
                   <div className="h-full bg-sky-500" style={{width: utilization+'%'}}/>
                   <div className="h-full bg-emerald-400" style={{width: (100-utilization)+'%'}}/>
                 </div>
@@ -606,45 +606,45 @@ export default function Fleet(){
                 </div>
                 <div className="mt-3 grid grid-cols-3 gap-2 text-center">
                   {stats?.by_ownership?.map(o=>(
-                    <div key={o.ownership} className="bg-[#eff4ff] border rounded-xl p-2"><div className="text-[11px] tracking-wider font-bold text-[#76777d]">{OWNERSHIP_LABEL[o.ownership]||o.ownership}</div><div className="font-bold">{o.cnt}</div></div>
+                    <div key={o.ownership} className="bg-surface-2 border rounded-xl p-2"><div className="text-[11px] tracking-wider font-bold text-ink-3">{OWNERSHIP_LABEL[o.ownership]||o.ownership}</div><div className="font-bold">{o.cnt}</div></div>
                   ))}
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-xl border border-[#e7ecf7] shadow-card p-4">
+            <div className="bg-white rounded-xl border border-line shadow-card p-4">
               <h4 className="font-bold text-sm">Biaya 30 hari - Est vs Aktual</h4>
               <div className="mt-3 space-y-1 text-xs">
                 <div className="flex justify-between"><span>Aktual (trip)</span><span className="font-bold">{rupiah(stats?.cost_30||0)}</span></div>
                 <div className="flex justify-between"><span>Est total</span><span className="font-bold">{rupiah(stats?.est_30||0)}</span></div>
-                <div className={"flex justify-between px-2 py-1 rounded-lg border font-bold "+( (stats?.variance_30||0)>0 ? 'bg-red-50 text-red-700 border-red-200' : (stats?.variance_30||0)<0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-[#eff4ff] text-[#45464d] border-[#e7ecf7]')}><span>Selisih total</span><span>{(stats?.variance_30||0)>0?'+':''}{rupiah(stats?.variance_30||0)} {stats?.variance_pct? `(${stats.variance_pct>0?'+':''}${stats.variance_pct.toFixed(1)}%)`:''}</span></div>
+                <div className={"flex justify-between px-2 py-1 rounded-lg border font-bold "+( (stats?.variance_30||0)>0 ? 'bg-red-50 text-red-700 border-red-200' : (stats?.variance_30||0)<0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-surface-2 text-ink-2 border-line')}><span>Selisih total</span><span>{(stats?.variance_30||0)>0?'+':''}{rupiah(stats?.variance_30||0)} {stats?.variance_pct? `(${stats.variance_pct>0?'+':''}${stats.variance_pct.toFixed(1)}%)`:''}</span></div>
                 <div className="grid grid-cols-2 gap-1.5 mt-2">
-                  <div className={"rounded-xl border p-2 text-center "+((stats?.variance_dalam_30||0)>0?'bg-red-50 border-red-200':(stats?.variance_dalam_30||0)<0?'bg-emerald-50 border-emerald-200':'bg-[#eff4ff] border-[#e7ecf7]')}><div className="text-[11px] font-bold tracking-wider text-[#45464d]">DALAM KOTA</div><div className="font-bold">{rupiah(stats?.est_dalam_30||0)}</div><div className={"text-[11px] font-bold "+((stats?.variance_dalam_30||0)>0?'text-red-700':(stats?.variance_dalam_30||0)<0?'text-emerald-700':'text-[#45464d]')}>{(stats?.variance_dalam_30||0)>0?'+':''}{rupiah(stats?.variance_dalam_30||0)} {stats?.variance_dalam_pct? `(${stats.variance_dalam_pct>0?'+':''}${stats.variance_dalam_pct.toFixed(1)}%)`:''}</div><div className="text-[11px] text-[#45464d]">per-armada Dalam</div></div>
-                  <div className={"rounded-xl border p-2 text-center "+((stats?.variance_luar_30||0)>0?'bg-red-50 border-red-200':(stats?.variance_luar_30||0)<0?'bg-emerald-50 border-emerald-200':'bg-[#eff4ff] border-[#e7ecf7]')}><div className="text-[11px] font-bold tracking-wider text-[#45464d]">LUAR KOTA</div><div className="font-bold">{rupiah(stats?.est_luar_30||0)}</div><div className={"text-[11px] font-bold "+((stats?.variance_luar_30||0)>0?'text-red-700':(stats?.variance_luar_30||0)<0?'text-emerald-700':'text-[#45464d]')}>{(stats?.variance_luar_30||0)>0?'+':''}{rupiah(stats?.variance_luar_30||0)} {stats?.variance_luar_pct? `(${stats.variance_luar_pct>0?'+':''}${stats.variance_luar_pct.toFixed(1)}%)`:''}</div><div className="text-[11px] text-[#45464d]">per-armada Luar</div></div>
+                  <div className={"rounded-xl border p-2 text-center "+((stats?.variance_dalam_30||0)>0?'bg-red-50 border-red-200':(stats?.variance_dalam_30||0)<0?'bg-emerald-50 border-emerald-200':'bg-surface-2 border-line')}><div className="text-[11px] font-bold tracking-wider text-ink-2">DALAM KOTA</div><div className="font-bold">{rupiah(stats?.est_dalam_30||0)}</div><div className={"text-[11px] font-bold "+((stats?.variance_dalam_30||0)>0?'text-red-700':(stats?.variance_dalam_30||0)<0?'text-emerald-700':'text-ink-2')}>{(stats?.variance_dalam_30||0)>0?'+':''}{rupiah(stats?.variance_dalam_30||0)} {stats?.variance_dalam_pct? `(${stats.variance_dalam_pct>0?'+':''}${stats.variance_dalam_pct.toFixed(1)}%)`:''}</div><div className="text-[11px] text-ink-2">per-armada Dalam</div></div>
+                  <div className={"rounded-xl border p-2 text-center "+((stats?.variance_luar_30||0)>0?'bg-red-50 border-red-200':(stats?.variance_luar_30||0)<0?'bg-emerald-50 border-emerald-200':'bg-surface-2 border-line')}><div className="text-[11px] font-bold tracking-wider text-ink-2">LUAR KOTA</div><div className="font-bold">{rupiah(stats?.est_luar_30||0)}</div><div className={"text-[11px] font-bold "+((stats?.variance_luar_30||0)>0?'text-red-700':(stats?.variance_luar_30||0)<0?'text-emerald-700':'text-ink-2')}>{(stats?.variance_luar_30||0)>0?'+':''}{rupiah(stats?.variance_luar_30||0)} {stats?.variance_luar_pct? `(${stats.variance_luar_pct>0?'+':''}${stats.variance_luar_pct.toFixed(1)}%)`:''}</div><div className="text-[11px] text-ink-2">per-armada Luar</div></div>
                 </div>
-                {(stats?.cost_by_area||[]).length>0 && <div className="grid grid-cols-2 gap-1.5"><div className="rounded-xl border bg-white p-2 text-center"><div className="text-[11px] font-bold tracking-wider text-[#45464d]">BIAYA Dalam 30h</div><div className="font-bold">{rupiah((stats.cost_by_area||[]).find(x=>x.area==='DALAM_KOTA')?.cost||0)}</div><div className="text-[11px] text-[#45464d]">{(stats.cost_by_area||[]).find(x=>x.area==='DALAM_KOTA')?.trips||0} trip • {Math.round((stats.cost_by_area||[]).find(x=>x.area==='DALAM_KOTA')?.km||0)} km</div></div><div className="rounded-xl border bg-white p-2 text-center"><div className="text-[11px] font-bold tracking-wider text-[#45464d]">BIAYA Luar 30h</div><div className="font-bold">{rupiah((stats.cost_by_area||[]).find(x=>x.area==='LUAR_KOTA')?.cost||0)}</div><div className="text-[11px] text-[#45464d]">{(stats.cost_by_area||[]).find(x=>x.area==='LUAR_KOTA')?.trips||0} trip • {Math.round((stats.cost_by_area||[]).find(x=>x.area==='LUAR_KOTA')?.km||0)} km</div></div></div>}
+                {(stats?.cost_by_area||[]).length>0 && <div className="grid grid-cols-2 gap-1.5"><div className="rounded-xl border bg-white p-2 text-center"><div className="text-[11px] font-bold tracking-wider text-ink-2">BIAYA Dalam 30h</div><div className="font-bold">{rupiah((stats.cost_by_area||[]).find(x=>x.area==='DALAM_KOTA')?.cost||0)}</div><div className="text-[11px] text-ink-2">{(stats.cost_by_area||[]).find(x=>x.area==='DALAM_KOTA')?.trips||0} trip • {Math.round((stats.cost_by_area||[]).find(x=>x.area==='DALAM_KOTA')?.km||0)} km</div></div><div className="rounded-xl border bg-white p-2 text-center"><div className="text-[11px] font-bold tracking-wider text-ink-2">BIAYA Luar 30h</div><div className="font-bold">{rupiah((stats.cost_by_area||[]).find(x=>x.area==='LUAR_KOTA')?.cost||0)}</div><div className="text-[11px] text-ink-2">{(stats.cost_by_area||[]).find(x=>x.area==='LUAR_KOTA')?.trips||0} trip • {Math.round((stats.cost_by_area||[]).find(x=>x.area==='LUAR_KOTA')?.km||0)} km</div></div></div>}
                 <div className="flex justify-between"><span>Total km</span><span className="font-bold">{(stats?.km_30||0).toLocaleString('id-ID')} km</span></div>
                 <div className="flex justify-between"><span>Total liter</span><span className="font-bold">{(stats?.liters_30||0).toLocaleString('id-ID')} L</span></div>
-                <div className="flex justify-between border-t pt-2 mt-2"><span>Rp / km (avg)</span><span className="font-bold text-[#0051d5]">Rp {Math.round(stats?.avg_cost_per_km||0).toLocaleString('id-ID')}/km</span></div>
+                <div className="flex justify-between border-t pt-2 mt-2"><span>Rp / km (avg)</span><span className="font-bold text-brand">Rp {Math.round(stats?.avg_cost_per_km||0).toLocaleString('id-ID')}/km</span></div>
                 <div className="flex justify-between"><span>km / liter</span><span className="font-bold">{stats?.km_30 && stats?.liters_30? (stats.km_30/stats.liters_30).toFixed(1):'-'} km/L</span></div>
-                <div className="text-[11px] text-[#45464d] mt-2">Kolom Dalam/Luar pakai <b>tarif per-armada</b> (edit di Armada) - hijau hemat vs est kolom tsb, merah boros.</div>
+                <div className="text-[11px] text-ink-2 mt-2">Kolom Dalam/Luar pakai <b>tarif per-armada</b> (edit di Armada) - hijau hemat vs est kolom tsb, merah boros.</div>
               </div>
             </div>
-            <div className="bg-white rounded-xl border border-[#e7ecf7] shadow-card p-4">
+            <div className="bg-white rounded-xl border border-line shadow-card p-4">
               <h4 className="font-bold text-sm">Top boros 30h (biaya)</h4>
               <div className="mt-3 space-y-2">
                 {(stats?.top_cost||[]).map(r=>{
                   const max=Math.max(...(stats.top_cost.map(x=>parseFloat(x.cost)||0)),1);
                   const w=Math.round(parseFloat(r.cost)/max*100);
                   return (
-                    <div key={r.plat_no}><div className="flex justify-between text-xs"><span className="font-mono font-bold">{r.plat_no}</span><span className="font-bold">{compact(r.cost)} • {r.trips} trip • {Math.round(r.km||0)} km</span></div><div className="h-2 bg-[#e5eeff] rounded-full overflow-hidden mt-1"><div className="h-full bg-[#0051d5]" style={{width:w+'%'}}/></div></div>
+                    <div key={r.plat_no}><div className="flex justify-between text-xs"><span className="font-mono font-bold">{r.plat_no}</span><span className="font-bold">{compact(r.cost)} • {r.trips} trip • {Math.round(r.km||0)} km</span></div><div className="h-2 bg-surface-3 rounded-full overflow-hidden mt-1"><div className="h-full bg-brand" style={{width:w+'%'}}/></div></div>
                   )
                 })}
-                {(!stats?.top_cost||stats.top_cost.length===0) && <div className="text-xs text-[#76777d] py-4 text-center">Belum ada trip 30 hari</div>}
+                {(!stats?.top_cost||stats.top_cost.length===0) && <div className="text-xs text-ink-3 py-4 text-center">Belum ada trip 30 hari</div>}
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-[#e7ecf7] shadow-card p-4">
+          <div className="bg-white rounded-xl border border-line shadow-card p-4">
             <h4 className="font-bold text-sm">Biaya per armada (30 hari)</h4>
             <div className="mt-3 space-y-2 max-h-[320px] overflow-auto">
               {vehicles.map(v=>{
@@ -652,11 +652,11 @@ export default function Fleet(){
                 const maxCost=Math.max(...vehicles.map(x=>x.cost_30||0),1);
                 const w=Math.round(cost/maxCost*100);
                 return (
-                  <div key={v.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-[#eff4ff] border border-transparent hover:border-[#e7ecf7]">
-                    <div className="w-[110px] shrink-0"><div className="font-mono font-bold text-xs">{v.plat_no}</div><div className="text-[11px] text-[#45464d]">{v.type}</div></div>
+                  <div key={v.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-surface-2 border border-transparent hover:border-line">
+                    <div className="w-[110px] shrink-0"><div className="font-mono font-bold text-xs">{v.plat_no}</div><div className="text-[11px] text-ink-2">{v.type}</div></div>
                     <div className="flex-1">
-                      <div className="h-2 bg-[#e5eeff] rounded-full overflow-hidden"><div className="h-full bg-emerald-500" style={{width:w+'%'}}/></div>
-                      <div className="text-[11px] text-[#45464d] mt-0.5">{v.trips_30||0} trip • {km? km+' km':''} {cost && km? `• Rp ${Math.round(cost/km).toLocaleString('id-ID')}/km`:''}</div>
+                      <div className="h-2 bg-surface-3 rounded-full overflow-hidden"><div className="h-full bg-emerald-500" style={{width:w+'%'}}/></div>
+                      <div className="text-[11px] text-ink-2 mt-0.5">{v.trips_30||0} trip • {km? km+' km':''} {cost && km? `• Rp ${Math.round(cost/km).toLocaleString('id-ID')}/km`:''}</div>
                     </div>
                     <div className="text-xs font-bold w-[90px] text-right">{compact(cost)}</div>
                   </div>
@@ -669,64 +669,64 @@ export default function Fleet(){
 
       {/* Floating quick on mobile */}
       <div className="fixed bottom-6 right-6 flex flex-col gap-2 lg:hidden">
-        <button onClick={openAddVehicle} className="w-12 h-12 rounded-full bg-[#0051d5] text-white shadow-raised grid place-items-center"><Truck size={20}/></button>
+        <button onClick={openAddVehicle} className="w-12 h-12 rounded-full bg-brand text-white shadow-raised grid place-items-center"><Truck size={20}/></button>
       </div>
 
       {/* Modal Armada */}
       {showVehicle && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50 overflow-auto">
-          <form onSubmit={submitVehicle} className="bg-white rounded-xl w-full max-w-[560px] shadow-raised border border-[#e7ecf7] overflow-hidden max-h-[92vh] flex flex-col animate-pop">
-            <div className="p-4 border-b flex justify-between items-center bg-[#eff4ff]"><h3 className="font-bold text-sm flex items-center gap-2"><Truck size={16} className="text-[#0051d5]"/> {editingVehicle? 'Edit Armada - '+editingVehicle.plat_no : 'Tambah Armada'}</h3><button type="button" onClick={()=>setShowVehicle(false)} className="w-8 h-8 grid place-items-center rounded-full border bg-white"><X size={14}/></button></div>
+          <form onSubmit={submitVehicle} className="bg-white rounded-xl w-full max-w-[560px] shadow-raised border border-line overflow-hidden max-h-[92vh] flex flex-col animate-pop">
+            <div className="p-4 border-b flex justify-between items-center bg-surface-2"><h3 className="font-bold text-sm flex items-center gap-2"><Truck size={16} className="text-brand"/> {editingVehicle? 'Edit Armada - '+editingVehicle.plat_no : 'Tambah Armada'}</h3><button type="button" onClick={()=>setShowVehicle(false)} className="w-8 h-8 grid place-items-center rounded-full border bg-white"><X size={14}/></button></div>
             <div className="flex-1 overflow-auto p-4 space-y-3">
               <div className="grid grid-cols-2 gap-2">
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">PLAT *</span><input required value={vehicleForm.plat_no} onChange={e=>setVehicleForm({...vehicleForm, plat_no:e.target.value})} placeholder="B 9004 JKT" className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm outline-none focus:bg-white focus:border-[#0051d5]"/></label>
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">TIPE *</span>
-                  <select value={vehicleForm.type} onChange={e=>setVehicleForm({...vehicleForm, type:e.target.value})} className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm">
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">PLAT *</span><input required value={vehicleForm.plat_no} onChange={e=>setVehicleForm({...vehicleForm, plat_no:e.target.value})} placeholder="B 9004 JKT" className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm outline-none focus:bg-white focus:border-brand"/></label>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">TIPE *</span>
+                  <select value={vehicleForm.type} onChange={e=>setVehicleForm({...vehicleForm, type:e.target.value})} className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm">
                     <option>Pickup 2 Ton</option><option>Colt Diesel 8 Ton</option><option>Truk Tronton 20 Ton</option><option>Engkel</option><option>Double Engkel</option><option>Tronton</option>
                   </select>
                 </label>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">BRAND</span><input value={vehicleForm.brand} onChange={e=>setVehicleForm({...vehicleForm, brand:e.target.value})} className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm"/></label>
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">MODEL</span><input value={vehicleForm.model} onChange={e=>setVehicleForm({...vehicleForm, model:e.target.value})} placeholder="FE 74" className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm"/></label>
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">TAHUN</span><input type="number" value={vehicleForm.year} onChange={e=>setVehicleForm({...vehicleForm, year:e.target.value})} placeholder="2022" className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm"/></label>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">BRAND</span><input value={vehicleForm.brand} onChange={e=>setVehicleForm({...vehicleForm, brand:e.target.value})} className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm"/></label>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">MODEL</span><input value={vehicleForm.model} onChange={e=>setVehicleForm({...vehicleForm, model:e.target.value})} placeholder="FE 74" className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm"/></label>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">TAHUN</span><input type="number" value={vehicleForm.year} onChange={e=>setVehicleForm({...vehicleForm, year:e.target.value})} placeholder="2022" className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm"/></label>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">TON</span><input type="number" step="0.1" value={vehicleForm.capacity_ton} onChange={e=>setVehicleForm({...vehicleForm, capacity_ton:e.target.value})} className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm"/></label>
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">M³</span><input type="number" step="0.1" value={vehicleForm.capacity_volume_m3} onChange={e=>setVehicleForm({...vehicleForm, capacity_volume_m3:e.target.value})} className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm"/></label>
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">KEPEMILIKAN</span>
-                  <select value={vehicleForm.ownership} onChange={e=>setVehicleForm({...vehicleForm, ownership:e.target.value})} className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm">
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">TON</span><input type="number" step="0.1" value={vehicleForm.capacity_ton} onChange={e=>setVehicleForm({...vehicleForm, capacity_ton:e.target.value})} className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm"/></label>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">M³</span><input type="number" step="0.1" value={vehicleForm.capacity_volume_m3} onChange={e=>setVehicleForm({...vehicleForm, capacity_volume_m3:e.target.value})} className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm"/></label>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">KEPEMILIKAN</span>
+                  <select value={vehicleForm.ownership} onChange={e=>setVehicleForm({...vehicleForm, ownership:e.target.value})} className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm">
                     <option value="OWNED">Milik</option><option value="RENTED">Sewa</option><option value="THIRD_PARTY">Vendor</option>
                   </select>
                 </label>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">KIR HABIS</span><input type="date" value={vehicleForm.kir_expiry} onChange={e=>setVehicleForm({...vehicleForm, kir_expiry:e.target.value})} className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm"/></label>
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">PAJAK STNK HABIS</span><input type="date" value={vehicleForm.tax_expiry} onChange={e=>setVehicleForm({...vehicleForm, tax_expiry:e.target.value})} className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm"/></label>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">KIR HABIS</span><input type="date" value={vehicleForm.kir_expiry} onChange={e=>setVehicleForm({...vehicleForm, kir_expiry:e.target.value})} className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm"/></label>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">PAJAK STNK HABIS</span><input type="date" value={vehicleForm.tax_expiry} onChange={e=>setVehicleForm({...vehicleForm, tax_expiry:e.target.value})} className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm"/></label>
               </div>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">DRIVER</span>
-                <select value={vehicleForm.driver_id} onChange={e=>setVehicleForm({...vehicleForm, driver_id:e.target.value})} className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm">
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">DRIVER</span>
+                <select value={vehicleForm.driver_id} onChange={e=>setVehicleForm({...vehicleForm, driver_id:e.target.value})} className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm">
                   <option value="">- Tanpa driver -</option>
                   {employees.map(emp=> <option key={emp.id} value={emp.id}>{emp.name} • {emp.employee_code} • {emp.position}</option>)}
                 </select>
               </label>
-              <div className="rounded-xl border border-[#e7ecf7] bg-[#eff4ff] p-3 space-y-3">
-                <div className="flex items-center justify-between"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">JENIS ARMADA</span><span className="text-[11px] text-[#76777d]">2 kolom tarif terpisah</span></div>
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">AREA *</span>
-                  <select value={vehicleForm.area} onChange={e=>setVehicleForm({...vehicleForm, area:e.target.value})} className="w-full h-[42px] px-3 bg-white border border-[#e7ecf7] rounded-xl text-sm font-bold">
+              <div className="rounded-xl border border-line bg-surface-2 p-3 space-y-3">
+                <div className="flex items-center justify-between"><span className="text-[11px] font-bold tracking-wider text-ink-2">JENIS ARMADA</span><span className="text-[11px] text-ink-3">2 kolom tarif terpisah</span></div>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">AREA *</span>
+                  <select value={vehicleForm.area} onChange={e=>setVehicleForm({...vehicleForm, area:e.target.value})} className="w-full h-[42px] px-3 bg-white border border-line rounded-xl text-sm font-bold">
                     <option value="DALAM_KOTA">Dalam Kota - Bekasi/Jakarta (≤40km)</option>
                     <option value="LUAR_KOTA">Luar Kota - &gt;40 km</option>
                   </select>
                 </label>
                 <div className="grid grid-cols-2 gap-2">
-                  <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-emerald-700">DALAM FLAT Rp</span><input type="number" value={vehicleForm.tarif_dalam_flat} onChange={e=>setVehicleForm({...vehicleForm, tarif_dalam_flat:e.target.value})} placeholder="150000" className="w-full h-[42px] px-3 bg-white border border-[#e7ecf7] rounded-xl text-sm outline-none focus:border-[#0051d5]"/></label>
-                  <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-emerald-700">DALAM /TON Rp</span><input type="number" value={vehicleForm.tarif_dalam_per_ton} onChange={e=>setVehicleForm({...vehicleForm, tarif_dalam_per_ton:e.target.value})} placeholder="120000" className="w-full h-[42px] px-3 bg-white border border-[#e7ecf7] rounded-xl text-sm outline-none focus:border-[#0051d5]"/></label>
+                  <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-emerald-700">DALAM FLAT Rp</span><input type="number" value={vehicleForm.tarif_dalam_flat} onChange={e=>setVehicleForm({...vehicleForm, tarif_dalam_flat:e.target.value})} placeholder="150000" className="w-full h-[42px] px-3 bg-white border border-line rounded-xl text-sm outline-none focus:border-brand"/></label>
+                  <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-emerald-700">DALAM /TON Rp</span><input type="number" value={vehicleForm.tarif_dalam_per_ton} onChange={e=>setVehicleForm({...vehicleForm, tarif_dalam_per_ton:e.target.value})} placeholder="120000" className="w-full h-[42px] px-3 bg-white border border-line rounded-xl text-sm outline-none focus:border-brand"/></label>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-amber-700">LUAR FLAT Rp</span><input type="number" value={vehicleForm.tarif_luar_flat} onChange={e=>setVehicleForm({...vehicleForm, tarif_luar_flat:e.target.value})} placeholder="600000" className="w-full h-[42px] px-3 bg-white border border-[#e7ecf7] rounded-xl text-sm outline-none focus:border-[#0051d5]"/></label>
-                  <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-amber-700">LUAR /TON Rp</span><input type="number" value={vehicleForm.tarif_luar_per_ton} onChange={e=>setVehicleForm({...vehicleForm, tarif_luar_per_ton:e.target.value})} placeholder="350000" className="w-full h-[42px] px-3 bg-white border border-[#e7ecf7] rounded-xl text-sm outline-none focus:border-[#0051d5]"/></label>
+                  <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-amber-700">LUAR FLAT Rp</span><input type="number" value={vehicleForm.tarif_luar_flat} onChange={e=>setVehicleForm({...vehicleForm, tarif_luar_flat:e.target.value})} placeholder="600000" className="w-full h-[42px] px-3 bg-white border border-line rounded-xl text-sm outline-none focus:border-brand"/></label>
+                  <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-amber-700">LUAR /TON Rp</span><input type="number" value={vehicleForm.tarif_luar_per_ton} onChange={e=>setVehicleForm({...vehicleForm, tarif_luar_per_ton:e.target.value})} placeholder="350000" className="w-full h-[42px] px-3 bg-white border border-line rounded-xl text-sm outline-none focus:border-brand"/></label>
                 </div>
-                <div className="text-[11px] text-[#45464d] leading-relaxed">Dalam = flat zona Bekasi/Jakarta + ton×tarif Dalam. Luar = flat Luar Kota + ton×tarif Luar. <b>2 kolom sendiri</b> per armada - DO pakai tarif armada terpilih, Analitik bandingkan kolom terpisah.</div>
+                <div className="text-[11px] text-ink-2 leading-relaxed">Dalam = flat zona Bekasi/Jakarta + ton×tarif Dalam. Luar = flat Luar Kota + ton×tarif Luar. <b>2 kolom sendiri</b> per armada - DO pakai tarif armada terpilih, Analitik bandingkan kolom terpisah.</div>
               </div>
               <div className="rounded-xl border border-sky-200 bg-sky-50 p-3 space-y-3">
                 <div className="flex items-center justify-between gap-2">
@@ -735,22 +735,22 @@ export default function Fleet(){
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-sky-800">TGL PEROLEHAN</span>
-                    <input type="date" value={vehicleForm.acquisition_date} onChange={e=>setVehicleForm({...vehicleForm, acquisition_date:e.target.value})} className="w-full h-[42px] px-3 bg-white border border-[#e7ecf7] rounded-xl text-sm"/></label>
+                    <input type="date" value={vehicleForm.acquisition_date} onChange={e=>setVehicleForm({...vehicleForm, acquisition_date:e.target.value})} className="w-full h-[42px] px-3 bg-white border border-line rounded-xl text-sm"/></label>
                   <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-sky-800">HARGA PEROLEHAN Rp</span>
-                    <input type="number" value={vehicleForm.acquisition_cost} onChange={e=>setVehicleForm({...vehicleForm, acquisition_cost:e.target.value})} placeholder="mis. 350000000" className="w-full h-[42px] px-3 bg-white border border-[#e7ecf7] rounded-xl text-sm"/></label>
+                    <input type="number" value={vehicleForm.acquisition_cost} onChange={e=>setVehicleForm({...vehicleForm, acquisition_cost:e.target.value})} placeholder="mis. 350000000" className="w-full h-[42px] px-3 bg-white border border-line rounded-xl text-sm"/></label>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-sky-800">UMUR EKONOMIS (TH)</span>
-                    <input type="number" value={vehicleForm.useful_life_years} onChange={e=>setVehicleForm({...vehicleForm, useful_life_years:e.target.value})} placeholder="8" className="w-full h-[42px] px-3 bg-white border border-[#e7ecf7] rounded-xl text-sm"/></label>
+                    <input type="number" value={vehicleForm.useful_life_years} onChange={e=>setVehicleForm({...vehicleForm, useful_life_years:e.target.value})} placeholder="8" className="w-full h-[42px] px-3 bg-white border border-line rounded-xl text-sm"/></label>
                   <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-sky-800">NILAI RESIDU Rp</span>
-                    <input type="number" value={vehicleForm.residual_value} onChange={e=>setVehicleForm({...vehicleForm, residual_value:e.target.value})} placeholder="0" className="w-full h-[42px] px-3 bg-white border border-[#e7ecf7] rounded-xl text-sm"/></label>
+                    <input type="number" value={vehicleForm.residual_value} onChange={e=>setVehicleForm({...vehicleForm, residual_value:e.target.value})} placeholder="0" className="w-full h-[42px] px-3 bg-white border border-line rounded-xl text-sm"/></label>
                 </div>
                 <div className="text-[11px] text-sky-800 leading-relaxed">Depresiasi garis lurus = (harga perolehan − residu) ÷ (umur × 12) per bulan. Harga perolehan yang diisi di sini <b>langsung dipakai</b> baris asetnya; kalau armada sudah punya baris aset, angkanya ikut diperbarui.</div>
               </div>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">FOTO URL (opsional)</span><input value={vehicleForm.photo_url} onChange={e=>setVehicleForm({...vehicleForm, photo_url:e.target.value})} placeholder="https://..." className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm"/></label>
-              <div className="text-[11px] text-[#45464d] bg-amber-50 border border-amber-200 rounded-xl p-2">KIR & Pajak akan jadi <b>guard</b> saat buat Trip - jika habis, backend block (tilang). Isi tanggal dengan benar.</div>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">FOTO URL (opsional)</span><input value={vehicleForm.photo_url} onChange={e=>setVehicleForm({...vehicleForm, photo_url:e.target.value})} placeholder="https://..." className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm"/></label>
+              <div className="text-[11px] text-ink-2 bg-amber-50 border border-amber-200 rounded-xl p-2">KIR & Pajak akan jadi <b>guard</b> saat buat Trip - jika habis, backend block (tilang). Isi tanggal dengan benar.</div>
             </div>
-            <div className="p-3 border-t bg-white flex justify-end gap-2 sticky bottom-0"><button type="button" onClick={()=>setShowVehicle(false)} className="h-10 px-5 rounded-xl border bg-white text-sm font-semibold">Batal</button><button className="h-10 px-5 rounded-xl bg-[#0051d5] text-white text-sm font-bold hover:bg-[#0041ab]">{editingVehicle? 'Simpan':'Tambah Armada'}</button></div>
+            <div className="p-3 border-t bg-white flex justify-end gap-2 sticky bottom-0"><button type="button" onClick={()=>setShowVehicle(false)} className="h-10 px-5 rounded-xl border bg-white text-sm font-semibold">Batal</button><button className="h-10 px-5 rounded-xl bg-brand text-white text-sm font-bold hover:bg-brand-strong">{editingVehicle? 'Simpan':'Tambah Armada'}</button></div>
           </form>
         </div>
       )}
@@ -758,11 +758,11 @@ export default function Fleet(){
       {/* Modal Trip */}
       {showTrip && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50 overflow-auto">
-          <form onSubmit={submitTrip} className="bg-white rounded-xl w-full max-w-[560px] shadow-raised border border-[#e7ecf7] overflow-hidden max-h-[92vh] flex flex-col animate-pop">
-            <div className="p-4 border-b flex justify-between items-center bg-[#eff4ff]"><h3 className="font-bold text-sm flex items-center gap-2"><MapPin size={16} className="text-[#0051d5]"/> Buat Trip</h3><button type="button" onClick={()=>setShowTrip(false)} className="w-8 h-8 grid place-items-center rounded-full border bg-white"><X size={14}/></button></div>
+          <form onSubmit={submitTrip} className="bg-white rounded-xl w-full max-w-[560px] shadow-raised border border-line overflow-hidden max-h-[92vh] flex flex-col animate-pop">
+            <div className="p-4 border-b flex justify-between items-center bg-surface-2"><h3 className="font-bold text-sm flex items-center gap-2"><MapPin size={16} className="text-brand"/> Buat Trip</h3><button type="button" onClick={()=>setShowTrip(false)} className="w-8 h-8 grid place-items-center rounded-full border bg-white"><X size={14}/></button></div>
             <div className="flex-1 overflow-auto p-4 space-y-3">
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">ARMADA *</span>
-                <select required value={tripForm.vehicle_id} onChange={e=>setTripForm({...tripForm,vehicle_id:e.target.value})} className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm">
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">ARMADA *</span>
+                <select required value={tripForm.vehicle_id} onChange={e=>setTripForm({...tripForm,vehicle_id:e.target.value})} className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm">
                   <option value="">- Pilih armada AVAILABLE -</option>
                   {vehicles.filter(v=>v.status==='AVAILABLE').map(v=>{
                     const k=kirBadge(v.kir_expiry); const tax=taxBadge(v.tax_expiry);
@@ -772,24 +772,24 @@ export default function Fleet(){
                 </select>
               </label>
               {vehicles.filter(v=>v.status==='AVAILABLE').length===0 && <div className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-2">Tidak ada armada AVAILABLE - selesaikan trip/DO aktif dulu.</div>}
-              <label className="space-y-1.5"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">RUTE</span><input placeholder="Bekasi → Jakarta • 42 km" value={tripForm.route} onChange={e=>setTripForm({...tripForm,route:e.target.value})} className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm outline-none focus:bg-white focus:border-[#0051d5] focus:ring-2 focus:ring-[#0051d5]/10 transition"/></label>
-              <div className="rounded-xl border border-[#e7ecf7] bg-[#eff4ff] p-3 space-y-3">
-                <div className="text-[11px] font-bold tracking-wider text-[#45464d]">JARAK & BBM</div>
+              <label className="space-y-1.5"><span className="text-[11px] font-bold tracking-wider text-ink-2">RUTE</span><input placeholder="Bekasi → Jakarta • 42 km" value={tripForm.route} onChange={e=>setTripForm({...tripForm,route:e.target.value})} className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm outline-none focus:bg-white focus:border-brand focus:ring-2 focus:ring-[#0051d5]/10 transition"/></label>
+              <div className="rounded-xl border border-line bg-surface-2 p-3 space-y-3">
+                <div className="text-[11px] font-bold tracking-wider text-ink-2">JARAK & BBM</div>
                 <div className="grid grid-cols-3 gap-3">
-                  <label className="space-y-1.5"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">Jarak km</span><input type="number" step="0.1" inputMode="decimal" placeholder="42" value={tripForm.distance_km} onChange={e=>setTripForm({...tripForm,distance_km:e.target.value})} className="w-full h-[42px] px-3 bg-white border border-[#e7ecf7] rounded-xl text-sm outline-none focus:border-[#0051d5] focus:ring-2 focus:ring-[#0051d5]/10 transition"/></label>
-                  <label className="space-y-1.5"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">Odo awal</span><input type="number" inputMode="numeric" placeholder="120500" value={tripForm.odometer_start} onChange={e=>setTripForm({...tripForm,odometer_start:e.target.value})} className="w-full h-[42px] px-3 bg-white border border-[#e7ecf7] rounded-xl text-sm outline-none focus:border-[#0051d5] focus:ring-2 focus:ring-[#0051d5]/10 transition"/></label>
-                  <label className="space-y-1.5"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">Liter BBM</span><input type="number" step="0.1" inputMode="decimal" placeholder="18.5" value={tripForm.fuel_liters} onChange={e=>setTripForm({...tripForm,fuel_liters:e.target.value})} className="w-full h-[42px] px-3 bg-white border border-[#e7ecf7] rounded-xl text-sm outline-none focus:border-[#0051d5] focus:ring-2 focus:ring-[#0051d5]/10 transition"/></label>
+                  <label className="space-y-1.5"><span className="text-[11px] font-bold tracking-wider text-ink-2">Jarak km</span><input type="number" step="0.1" inputMode="decimal" placeholder="42" value={tripForm.distance_km} onChange={e=>setTripForm({...tripForm,distance_km:e.target.value})} className="w-full h-[42px] px-3 bg-white border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-[#0051d5]/10 transition"/></label>
+                  <label className="space-y-1.5"><span className="text-[11px] font-bold tracking-wider text-ink-2">Odo awal</span><input type="number" inputMode="numeric" placeholder="120500" value={tripForm.odometer_start} onChange={e=>setTripForm({...tripForm,odometer_start:e.target.value})} className="w-full h-[42px] px-3 bg-white border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-[#0051d5]/10 transition"/></label>
+                  <label className="space-y-1.5"><span className="text-[11px] font-bold tracking-wider text-ink-2">Liter BBM</span><input type="number" step="0.1" inputMode="decimal" placeholder="18.5" value={tripForm.fuel_liters} onChange={e=>setTripForm({...tripForm,fuel_liters:e.target.value})} className="w-full h-[42px] px-3 bg-white border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-[#0051d5]/10 transition"/></label>
                 </div>
                 <div className="grid grid-cols-3 gap-3">
-                  <label className="space-y-1.5"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">BBM Rp</span><input type="number" inputMode="numeric" placeholder="250.000" value={tripForm.fuel_cost} onChange={e=>setTripForm({...tripForm,fuel_cost:e.target.value})} className="w-full h-[42px] px-3 bg-white border border-[#e7ecf7] rounded-xl text-sm outline-none focus:border-[#0051d5] focus:ring-2 focus:ring-[#0051d5]/10 transition"/></label>
-                  <label className="space-y-1.5"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">Tol Rp</span><input type="number" inputMode="numeric" placeholder="50.000" value={tripForm.toll_cost} onChange={e=>setTripForm({...tripForm,toll_cost:e.target.value})} className="w-full h-[42px] px-3 bg-white border border-[#e7ecf7] rounded-xl text-sm outline-none focus:border-[#0051d5] focus:ring-2 focus:ring-[#0051d5]/10 transition"/></label>
-                  <label className="space-y-1.5"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">Lain Rp</span><input type="number" inputMode="numeric" placeholder="0" value={tripForm.other_cost} onChange={e=>setTripForm({...tripForm,other_cost:e.target.value})} className="w-full h-[42px] px-3 bg-white border border-[#e7ecf7] rounded-xl text-sm outline-none focus:border-[#0051d5] focus:ring-2 focus:ring-[#0051d5]/10 transition"/></label>
+                  <label className="space-y-1.5"><span className="text-[11px] font-bold tracking-wider text-ink-2">BBM Rp</span><input type="number" inputMode="numeric" placeholder="250.000" value={tripForm.fuel_cost} onChange={e=>setTripForm({...tripForm,fuel_cost:e.target.value})} className="w-full h-[42px] px-3 bg-white border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-[#0051d5]/10 transition"/></label>
+                  <label className="space-y-1.5"><span className="text-[11px] font-bold tracking-wider text-ink-2">Tol Rp</span><input type="number" inputMode="numeric" placeholder="50.000" value={tripForm.toll_cost} onChange={e=>setTripForm({...tripForm,toll_cost:e.target.value})} className="w-full h-[42px] px-3 bg-white border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-[#0051d5]/10 transition"/></label>
+                  <label className="space-y-1.5"><span className="text-[11px] font-bold tracking-wider text-ink-2">Lain Rp</span><input type="number" inputMode="numeric" placeholder="0" value={tripForm.other_cost} onChange={e=>setTripForm({...tripForm,other_cost:e.target.value})} className="w-full h-[42px] px-3 bg-white border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-[#0051d5]/10 transition"/></label>
                 </div>
               </div>
-              <label className="space-y-1.5"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">CATATAN</span><input value={tripForm.notes} onChange={e=>setTripForm({...tripForm,notes:e.target.value})} placeholder="Muatan semen 100 sak / antar proyek..." className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm outline-none focus:bg-white focus:border-[#0051d5] focus:ring-2 focus:ring-[#0051d5]/10 transition"/></label>
-              <div className="text-[11px] text-[#45464d] bg-[#eff4ff] border border-[#e7ecf7] rounded-xl p-2">Guard aktif: KIR/Pajak habis → block, SIM habis → block, overload ton/m³ → block. Isi odo awal untuk hitung jarak otomatis saat Selesai. Biaya/km & km/L dihitung di detail trip.</div>
+              <label className="space-y-1.5"><span className="text-[11px] font-bold tracking-wider text-ink-2">CATATAN</span><input value={tripForm.notes} onChange={e=>setTripForm({...tripForm,notes:e.target.value})} placeholder="Muatan semen 100 sak / antar proyek..." className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm outline-none focus:bg-white focus:border-brand focus:ring-2 focus:ring-[#0051d5]/10 transition"/></label>
+              <div className="text-[11px] text-ink-2 bg-surface-2 border border-line rounded-xl p-2">Guard aktif: KIR/Pajak habis → block, SIM habis → block, overload ton/m³ → block. Isi odo awal untuk hitung jarak otomatis saat Selesai. Biaya/km & km/L dihitung di detail trip.</div>
             </div>
-            <div className="p-3 border-t bg-white flex justify-end gap-2 sticky bottom-0"><button type="button" onClick={()=>setShowTrip(false)} className="h-10 px-5 rounded-xl border bg-white text-sm font-semibold">Batal</button><button className="h-10 px-5 rounded-xl bg-[#0051d5] text-white text-sm font-bold hover:bg-[#0041ab]">Simpan Trip</button></div>
+            <div className="p-3 border-t bg-white flex justify-end gap-2 sticky bottom-0"><button type="button" onClick={()=>setShowTrip(false)} className="h-10 px-5 rounded-xl border bg-white text-sm font-semibold">Batal</button><button className="h-10 px-5 rounded-xl bg-brand text-white text-sm font-bold hover:bg-brand-strong">Simpan Trip</button></div>
           </form>
         </div>
       )}
@@ -799,13 +799,13 @@ export default function Fleet(){
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50">
           <form onSubmit={submitComplete} className="bg-white rounded-xl w-full max-w-[420px] p-5 space-y-3 border shadow-raised animate-pop">
             <h3 className="font-bold text-sm flex items-center gap-2"><Gauge size={16} className="text-emerald-600"/> Selesaikan Trip - catat odo akhir</h3>
-            <p className="text-xs text-[#45464d]">Isi odometer akhir untuk hitung jarak otomatis. Armada akan AVAILABLE kembali.</p>
-            <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">ODOMETER AKHIR</span><input required type="number" value={completeForm.odometer_end} onChange={e=>setCompleteForm({...completeForm, odometer_end:e.target.value})} placeholder="120542" className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm"/></label>
+            <p className="text-xs text-ink-2">Isi odometer akhir untuk hitung jarak otomatis. Armada akan AVAILABLE kembali.</p>
+            <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">ODOMETER AKHIR</span><input required type="number" value={completeForm.odometer_end} onChange={e=>setCompleteForm({...completeForm, odometer_end:e.target.value})} placeholder="120542" className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm"/></label>
             <div className="grid grid-cols-2 gap-2">
-              <label className="space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Liter BBM aktual</span><input type="number" step="0.1" value={completeForm.fuel_liters} onChange={e=>setCompleteForm({...completeForm, fuel_liters:e.target.value})} placeholder="19.2" className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm"/></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold text-[#45464d]">BBM Rp (koreksi)</span><input type="number" value={completeForm.fuel_cost} onChange={e=>setCompleteForm({...completeForm, fuel_cost:e.target.value})} placeholder="260000" className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm"/></label>
+              <label className="space-y-1"><span className="text-[11px] font-bold text-ink-2">Liter BBM aktual</span><input type="number" step="0.1" value={completeForm.fuel_liters} onChange={e=>setCompleteForm({...completeForm, fuel_liters:e.target.value})} placeholder="19.2" className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm"/></label>
+              <label className="space-y-1"><span className="text-[11px] font-bold text-ink-2">BBM Rp (koreksi)</span><input type="number" value={completeForm.fuel_cost} onChange={e=>setCompleteForm({...completeForm, fuel_cost:e.target.value})} placeholder="260000" className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm"/></label>
             </div>
-            <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">CATATAN</span><input value={completeForm.notes} onChange={e=>setCompleteForm({...completeForm, notes:e.target.value})} placeholder="Sampai lokasi, macet 1 jam..." className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm"/></label>
+            <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">CATATAN</span><input value={completeForm.notes} onChange={e=>setCompleteForm({...completeForm, notes:e.target.value})} placeholder="Sampai lokasi, macet 1 jam..." className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm"/></label>
             <div className="flex justify-end gap-2"><button type="button" onClick={()=>setCompleteId(null)} className="h-10 px-5 rounded-xl border bg-white text-sm font-semibold">Batal</button><button className="h-10 px-5 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700">Selesai</button></div>
           </form>
         </div>
@@ -814,39 +814,39 @@ export default function Fleet(){
       {/* History modal */}
       {historyOpen && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50 overflow-auto">
-          <div className="bg-white rounded-xl w-full max-w-[640px] shadow-raised border border-[#e7ecf7] overflow-hidden max-h-[85vh] flex flex-col animate-pop">
-            <div className="p-4 border-b flex justify-between items-center bg-[#eff4ff]"><h3 className="font-bold text-sm">History Armada</h3><button onClick={()=>setHistoryOpen(false)} className="w-8 h-8 grid place-items-center rounded-full border bg-white"><X size={14}/></button></div>
+          <div className="bg-white rounded-xl w-full max-w-[640px] shadow-raised border border-line overflow-hidden max-h-[85vh] flex flex-col animate-pop">
+            <div className="p-4 border-b flex justify-between items-center bg-surface-2"><h3 className="font-bold text-sm">History Armada</h3><button onClick={()=>setHistoryOpen(false)} className="w-8 h-8 grid place-items-center rounded-full border bg-white"><X size={14}/></button></div>
             <div className="flex-1 overflow-auto p-4 space-y-4">
-              {historyLoading && <div className="text-sm text-[#76777d] text-center py-8">Memuat...</div>}
+              {historyLoading && <div className="text-sm text-ink-3 text-center py-8">Memuat...</div>}
               {historyData?.error && <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl p-3">{historyData.error}</div>}
               {historyData && !historyLoading && !historyData.error && (
                 <>
-                  <div className="text-xs font-bold text-[#2b3445]">Plat {historyData.plat_no} - {historyData.deliveries?.length||0} DO • {historyData.trips?.length||0} trip • {historyData.maintenance?.length||0} servis</div>
+                  <div className="text-xs font-bold text-ink-2">Plat {historyData.plat_no} - {historyData.deliveries?.length||0} DO • {historyData.trips?.length||0} trip • {historyData.maintenance?.length||0} servis</div>
                   <div>
-                    <div className="text-[11px] font-bold tracking-wider text-[#45464d] mb-2">DELIVERY (10 terakhir)</div>
+                    <div className="text-[11px] font-bold tracking-wider text-ink-2 mb-2">DELIVERY (10 terakhir)</div>
                     <div className="space-y-1">
                       {(historyData.deliveries||[]).slice(0,10).map(d=>(
-                        <div key={d.id} className="flex justify-between items-center p-2 border rounded-xl bg-[#eff4ff] text-xs"><span className="font-mono font-bold">{d.do_number}</span><span>{d.customer_name||''}</span><span className={"px-2 py-0.5 rounded-full border text-[11px] font-bold "+(d.status==='IN_TRANSIT'?'bg-sky-50 text-sky-700':'bg-white')}>{d.status}</span></div>
+                        <div key={d.id} className="flex justify-between items-center p-2 border rounded-xl bg-surface-2 text-xs"><span className="font-mono font-bold">{d.do_number}</span><span>{d.customer_name||''}</span><span className={"px-2 py-0.5 rounded-full border text-[11px] font-bold "+(d.status==='IN_TRANSIT'?'bg-sky-50 text-sky-700':'bg-white')}>{d.status}</span></div>
                       ))}
-                      {(historyData.deliveries||[]).length===0 && <div className="text-xs text-[#76777d]">Belum ada DO</div>}
+                      {(historyData.deliveries||[]).length===0 && <div className="text-xs text-ink-3">Belum ada DO</div>}
                     </div>
                   </div>
                   <div>
-                    <div className="text-[11px] font-bold tracking-wider text-[#45464d] mb-2">TRIP</div>
+                    <div className="text-[11px] font-bold tracking-wider text-ink-2 mb-2">TRIP</div>
                     <div className="space-y-1">
                       {(historyData.trips||[]).slice(0,10).map(t=>(
                         <div key={t.id} className="flex justify-between p-2 border rounded-xl text-xs"><span className="font-mono font-bold">{t.trip_number}</span><span>{t.route||'-'} • {t.distance_km} km</span><span className="font-bold">{rupiah(parseFloat(t.fuel_cost||0)+parseFloat(t.toll_cost||0))}</span></div>
                       ))}
-                      {(historyData.trips||[]).length===0 && <div className="text-xs text-[#76777d]">Belum ada trip</div>}
+                      {(historyData.trips||[]).length===0 && <div className="text-xs text-ink-3">Belum ada trip</div>}
                     </div>
                   </div>
                   <div>
-                    <div className="text-[11px] font-bold tracking-wider text-[#45464d] mb-2">MAINTENANCE</div>
+                    <div className="text-[11px] font-bold tracking-wider text-ink-2 mb-2">MAINTENANCE</div>
                     <div className="space-y-1">
                       {(historyData.maintenance||[]).slice(0,10).map(m=>(
                         <div key={m.id} className="flex justify-between p-2 border rounded-xl text-xs"><span>{String(m.service_date).slice(0,10)} • {m.maintenance_type}</span><span>{m.workshop||'-'}</span><span className="font-bold">{new Intl.NumberFormat('id-ID').format(m.cost)}</span></div>
                       ))}
-                      {(historyData.maintenance||[]).length===0 && <div className="text-xs text-[#76777d]">Belum ada servis</div>}
+                      {(historyData.maintenance||[]).length===0 && <div className="text-xs text-ink-3">Belum ada servis</div>}
                     </div>
                   </div>
                 </>
@@ -861,16 +861,16 @@ export default function Fleet(){
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50">
           <form onSubmit={submitMaint} className="bg-white rounded-xl p-6 w-full max-w-md space-y-3 border shadow-raised animate-pop">
             <h3 className="font-bold text-sm">Catat Servis</h3>
-            <select name="vehicle_id" required className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm"><option value="">Pilih armada</option>{vehicles.map(v=> <option key={v.id} value={v.id}>{v.plat_no} • {v.type}</option>)}</select>
-            <select name="maintenance_type" className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm"><option value="PREVENTIVE">PREVENTIVE</option><option value="CORRECTIVE">CORRECTIVE</option><option value="EMERGENCY">EMERGENCY</option></select>
+            <select name="vehicle_id" required className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm"><option value="">Pilih armada</option>{vehicles.map(v=> <option key={v.id} value={v.id}>{v.plat_no} • {v.type}</option>)}</select>
+            <select name="maintenance_type" className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm"><option value="PREVENTIVE">PREVENTIVE</option><option value="CORRECTIVE">CORRECTIVE</option><option value="EMERGENCY">EMERGENCY</option></select>
             <div className="grid grid-cols-2 gap-2">
-              <label className="space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Tgl servis</span><input type="date" name="service_date" defaultValue={new Date().toISOString().slice(0,10)} className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm"/></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Jatuh tempo</span><input type="date" name="next_service_date" className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm"/></label>
+              <label className="space-y-1"><span className="text-[11px] font-bold text-ink-2">Tgl servis</span><input type="date" name="service_date" defaultValue={new Date().toISOString().slice(0,10)} className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm"/></label>
+              <label className="space-y-1"><span className="text-[11px] font-bold text-ink-2">Jatuh tempo</span><input type="date" name="next_service_date" className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm"/></label>
             </div>
-            <input name="cost" type="number" placeholder="Biaya" className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm"/>
-            <input name="workshop" placeholder="Bengkel" className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm"/>
-            <input name="description" placeholder="Deskripsi (ganti oli, kampas...)" className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm"/>
-            <div className="flex justify-end gap-2"><button type="button" onClick={()=>setShowMaint(false)} className="h-10 px-5 rounded-xl border bg-white text-sm font-semibold">Batal</button><button className="h-10 px-5 rounded-xl bg-[#0051d5] text-white text-sm font-bold">Simpan</button></div>
+            <input name="cost" type="number" placeholder="Biaya" className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm"/>
+            <input name="workshop" placeholder="Bengkel" className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm"/>
+            <input name="description" placeholder="Deskripsi (ganti oli, kampas...)" className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm"/>
+            <div className="flex justify-end gap-2"><button type="button" onClick={()=>setShowMaint(false)} className="h-10 px-5 rounded-xl border bg-white text-sm font-semibold">Batal</button><button className="h-10 px-5 rounded-xl bg-brand text-white text-sm font-bold">Simpan</button></div>
           </form>
         </div>
       )}

@@ -1,0 +1,38 @@
+npm notice run erp-material@1.0.0 audit:data
+npm notice run node scripts/audit-inventory-data.mjs
+=== AUDIT DATA PERSEDIAAN ===
+
+[P1] Stok minus (qty_on_hand < 0): 0 temuan
+
+[P1] Stok ber-HPP 0 (margin terlihat ~100%): 0 temuan
+
+[P1] Baris stok kembar (produk+gudang sama, lebih dari satu baris): 0 temuan
+
+[P2] Baris batch pada produk non-batch: 0 temuan
+
+  OK   Saldo GL Persediaan (1-1200) vs nilai stok: 0 temuan
+       - nilai_stok=20.000.344.583,7  nilai_gl=20.000.344.583,7  selisih=0  nilai_minus=0  baris_stok=20
+
+[P2] Stok tanpa riwayat kartu stok: 0 temuan
+
+[P2] Produk terjual tanpa HPP (margin 100%): 0 temuan
+
+[P1] Harga jual di invoice tidak wajar vs HPP (>5x atau <0,2x): 0 temuan
+
+[P2] Penjualan di bawah HPP (margin negatif per transaksi): 3 temuan
+       - invoice=INV-20261014-2770  sku=BJR-C75  qty=16  hpp=82.551,02  harga_jual=65.000  margin=-21.3%
+       - invoice=INV-20261014-3077  sku=BJR-C75  qty=18  hpp=82.551,02  harga_jual=65.000  margin=-21.3%
+       - invoice=INV-20261014-3009  sku=BJR-C75  qty=7  hpp=82.551,02  harga_jual=65.000  margin=-21.3%
+       → Naikkan harga jual atau koreksi HPP (harga beli) lewat Penambahan Stok. Jangan ditutupi dengan mengubah angka margin.
+
+[INFO] Produk aktif belum punya baris stok: 7 temuan
+       - sku=BESI-BETON-06-SNI  name=Besi Beton 6mm SNI BjTS 35
+       - sku=BESI-BETON-08-SNI  name=Besi Beton 8mm SNI BjTS 40
+       - sku=BESI-BETON-10-SNI  name=Besi Beton 10mm SNI BjTS 40
+       - sku=BESI-BETON-16-SNI  name=Besi Beton 16mm SNI BjTS 40
+       - sku=BSI-10-ULIR  name=Besi Beton Ulir 10mm
+       - sku=KRM-60-GLS  name=Keramik 60x60 Putih Glossy
+       - sku=SEM-PC-40  name=Semen PC 40kg
+       → Tidak berdampak nilai. HPP terisi saat penerimaan/penambahan stok pertama.
+
+Nilai persediaan: Rp 20.000.344.584 (baris minus Rp 0) | GL 1-1200: Rp 20.000.344.584 | selisih Rp 0

@@ -1,6 +1,8 @@
 import express from 'express';
 import { pool } from '../../config/db.js';
 import { sendReport } from '../../lib/exporters.js';
+import { postJournal } from '../../lib/journal.js';
+import { mutateStock, weightedCost, sendBusinessError } from '../../lib/stock-service.js';
 const router = express.Router();
 
 const num = (v)=> parseFloat(v ?? 0) || 0;
@@ -61,23 +63,35 @@ router.post('/sales', async(req,res)=>{
     await client.query('BEGIN');
     const ins=await client.query('INSERT INTO sales_returns (return_number,invoice_id,customer_id,reason,settlement_type,total,created_by) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id',[num,invoice_id,customer_id,reason||'OTHER',settlement_type||'CREDIT_NOTE',total,req.user.id]);
     const rid=ins.rows[0].id;
+    // HPP barang yang kembali = HPP gudang asal (wh1) saat ini
+    const hpp = await weightedCost(client, items.map(it=>it.product_id), 1);
+    let cogsBack = 0;
     for(const it of items){
       await client.query('INSERT INTO sales_return_items (return_id,product_id,qty,unit_price,total,condition) VALUES ($1,$2,$3,$4,$5,$6)',[rid,it.product_id,it.qty,it.unit_price||0,parseFloat(it.qty)*parseFloat(it.unit_price||0),it.condition||'QUARANTINE']);
-      // masuk gudang karantina (warehouse 2). Update-atau-insert supaya tidak
-      // bergantung pada unique constraint (product_id,warehouse_id,batch_no).
-      const ex=await client.query('SELECT id FROM stocks WHERE product_id=$1 AND warehouse_id=2 ORDER BY id LIMIT 1',[it.product_id]);
-      if(ex.rows[0]){
-        // qty_available adalah kolom generated - jangan diisi manual
-        await client.query('UPDATE stocks SET qty_on_hand = COALESCE(qty_on_hand,0) + $1 WHERE id=$2',[it.qty, ex.rows[0].id]);
-      } else {
-        await client.query('INSERT INTO stocks (product_id,warehouse_id,qty_on_hand,avg_cost) VALUES ($1,2,$2,0)',[it.product_id,it.qty]);
-      }
-      await client.query("INSERT INTO stock_movements (product_id,warehouse_id,movement_type,reference_type,reference_id,qty_in,created_by) VALUES ($1,2,'IN','SALES_RETURN',$2,$3,$4)",[it.product_id,rid,it.qty,req.user.id]);
+      const cost = Number(hpp.get(Number(it.product_id))) || 0;
+      // masuk gudang karantina (warehouse 2) lewat pintu tunggal mutateStock
+      await mutateStock(client, {
+        productId: it.product_id, warehouseId: 2, qtyDelta: Math.abs(parseFloat(it.qty)),
+        unitCost: cost, refType: 'SALES_RETURN', refId: rid, userId: req.user.id,
+        notes: `Retur penjualan ${num}`,
+      });
+      cogsBack += Math.abs(parseFloat(it.qty)) * cost;
     }
-    // jika CREDIT_NOTE, kurangi piutang
+    // jika CREDIT_NOTE, kurangi piutang + jurnal nota kredit (Dr Penjualan + Dr PPN / Cr Piutang)
     if(settlement_type==='CREDIT_NOTE' && invoice_id){
       await client.query('UPDATE invoices SET total = total - $1 WHERE id=$2',[total,invoice_id]);
-      await client.query("INSERT INTO journal_entries (entry_number,entry_date,description,total_debit,total_credit,posted) VALUES ($1,CURRENT_DATE,$2,$3,$3,true)",['JE-RS-'+rid,'Retur '+num,total]);
+      const dpp = Math.round(total/1.11);
+      const ppn = total - dpp;
+      const lines = [
+        { code:'4-1000', debit:dpp, description:'Retur penjualan '+num },
+        { code:'1-1100', credit:total, description:'Nota kredit '+num },
+      ];
+      if(ppn > 0) lines.push({ code:'2-1100', debit:ppn, description:'PPN retur '+num });
+      if(cogsBack > 0.5){
+        lines.push({ code:'1-1200', debit:cogsBack, description:'Persediaan masuk (retur) '+num });
+        lines.push({ code:'5-1000', credit:cogsBack, description:'Pembalik HPP retur '+num });
+      }
+      await postJournal({ refType:'SALES_RETURN', refId:rid, description:'Retur '+num, lines, createdBy:req.user.id, client });
     }
     await client.query('INSERT INTO audit_logs (user_id,action,entity_type,entity_id,new_value) VALUES ($1,\'CREATE\',\'SALES_RETURN\',$2,$3)',[req.user.id,rid,JSON.stringify({num,reason})]);
     await client.query('COMMIT');

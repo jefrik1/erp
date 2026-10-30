@@ -36,7 +36,7 @@ export async function assertPeriodOpen(date, db){
  * lines: [{ code:'1-1200', debit:0, credit:1000, description:'...' }]
  * Mengembalikan id journal_entries.
  */
-export async function postJournal({ date, refType, refId, description, lines, createdBy, client }){
+export async function postJournal({ date, refType, refId, description, lines, createdBy, client, reversalOf = null, reversalReason = null }){
   const db = client || pool;
   await assertPeriodOpen(date, db);
   const clean = (lines||[]).map(l=>({ code:String(l.code), debit:Number(l.debit)||0, credit:Number(l.credit)||0, description:l.description||description }))
@@ -52,9 +52,9 @@ export async function postJournal({ date, refType, refId, description, lines, cr
   if(missing.length) throw new Error('Akun COA belum ada: '+missing.join(', '));
   const entryNo = 'JE-'+Date.now()+'-'+String(Math.floor(Math.random()*900+100));
   const je = await db.query(
-    `INSERT INTO journal_entries (entry_number, entry_date, reference_type, reference_id, description, total_debit, total_credit, posted, created_by)
-     VALUES ($1, COALESCE($2::date, CURRENT_DATE), $3, $4, $5, $6, $6, true, $7) RETURNING id`,
-    [entryNo, date||null, refType||'MANUAL', refId||null, description||'Jurnal', totalD, createdBy||null]);
+    `INSERT INTO journal_entries (entry_number, entry_date, reference_type, reference_id, description, total_debit, total_credit, posted, created_by, reversal_of, reversal_reason)
+     VALUES ($1, COALESCE($2::date, CURRENT_DATE), $3, $4, $5, $6, $6, true, $7, $8, $9) RETURNING id`,
+    [entryNo, date||null, refType||'MANUAL', refId||null, description||'Jurnal', totalD, createdBy||null, reversalOf, reversalReason]);
   const id = je.rows[0].id;
   for(const l of clean){
     await db.query('INSERT INTO journal_details (journal_id, account_id, debit, credit, description) VALUES ($1,$2,$3,$4,$5)',
@@ -63,10 +63,26 @@ export async function postJournal({ date, refType, refId, description, lines, cr
   return id;
 }
 
-/** Helper transaksi: BEGIN/COMMIT/ROLLBACK + release. */
+/** Helper transaksi: BEGIN/COMMIT/ROLLBACK + release, dengan retry untuk deadlock. */
 export async function withTx(fn){
-  const client = await pool.connect();
-  try{ await client.query('BEGIN'); const out = await fn(client); await client.query('COMMIT'); return out; }
-  catch(e){ try{ await client.query('ROLLBACK'); }catch{}; throw e; }
-  finally{ client.release(); }
+  const MAX = 3;
+  for(let attempt = 1; ; attempt++){
+    const client = await pool.connect();
+    try{
+      await client.query('BEGIN');
+      const out = await fn(client);
+      await client.query('COMMIT');
+      return out;
+    }catch(e){
+      try{ await client.query('ROLLBACK'); }catch{ /* koneksi sudah putus */ }
+      // 40P01 deadlock_detected / 40001 serialization_failure → ulangi dengan jitter.
+      const transient = ['40P01','40001'].includes(e.code);
+      if(transient && attempt < MAX){
+        const wait = 50 + Math.floor(Math.random() * 150);
+        await new Promise(r=> setTimeout(r, wait));
+        continue;
+      }
+      throw e;
+    }finally{ client.release(); }
+  }
 }

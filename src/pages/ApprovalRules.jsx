@@ -67,19 +67,19 @@ export default function ApprovalRules(){
 
       <PosCard>
         <PosCardBody className="grid grid-cols-1 sm:grid-cols-6 gap-2 items-end">
-          <label className="block space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Modul</span>
+          <label className="block space-y-1"><span className="text-[11px] font-bold text-ink-2">Modul</span>
             <PosSelect value={form.module} onChange={v=>setForm(f=>({...f,module:v}))}>{MODULES.map(m=> <option key={m} value={m}>{m}</option>)}</PosSelect>
           </label>
-          <label className="block space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Metrik</span>
+          <label className="block space-y-1"><span className="text-[11px] font-bold text-ink-2">Metrik</span>
             <PosSelect value={form.metric} onChange={v=>setForm(f=>({...f,metric:v}))}>{METRICS.map(m=> <option key={m} value={m}>{m}</option>)}</PosSelect>
           </label>
-          <label className="block space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Ambang</span>
+          <label className="block space-y-1"><span className="text-[11px] font-bold text-ink-2">Ambang</span>
             <input type="number" value={form.threshold} onChange={e=>setForm(f=>({...f,threshold:e.target.value}))} className={posInput+' h-9 text-xs'}/>
           </label>
-          <label className="block space-y-1"><span className="text-[11px] font-bold text-[#45464d]">Approver</span>
+          <label className="block space-y-1"><span className="text-[11px] font-bold text-ink-2">Approver</span>
             <input value={form.approver_roles} onChange={e=>setForm(f=>({...f,approver_roles:e.target.value}))} className={posInput+' h-9 text-xs'} placeholder="direktur,finance"/>
           </label>
-          <label className="block space-y-1 sm:col-span-1"><span className="text-[11px] font-bold text-[#45464d]">Catatan</span>
+          <label className="block space-y-1 sm:col-span-1"><span className="text-[11px] font-bold text-ink-2">Catatan</span>
             <input value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} className={posInput+' h-9 text-xs'}/>
           </label>
           <button onClick={add} disabled={busy} className={posBtnPrimary+' h-9 px-3 text-xs'}><Plus size={13}/> Tambah</button>
@@ -88,7 +88,7 @@ export default function ApprovalRules(){
         {loading ? <PosSkeleton rows={4} cols={5}/> : err ? <PosError message={err} onRetry={load}/> : (
           <div className="overflow-auto">
             <table className="w-full text-sm">
-              <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+              <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                 <PosTh>MODUL</PosTh><PosTh>METRIK</PosTh><PosTh align="right">AMBANG</PosTh><PosTh>APPROVER</PosTh>
                 <PosTh align="center">AKTIF</PosTh><PosTh>CATATAN</PosTh><PosTh align="center">AKSI</PosTh>
               </tr></thead>
@@ -107,7 +107,7 @@ export default function ApprovalRules(){
                     <td className={posTd+' text-center'}>
                       <button onClick={()=>toggle(r)}><PosBadge tone={r.active?'emerald':'slate'}>{r.active?'AKTIF':'MATI'}</PosBadge></button>
                     </td>
-                    <td className={posTd+' text-[11px] text-[#45464d]'}>{r.notes||'-'}</td>
+                    <td className={posTd+' text-[11px] text-ink-2'}>{r.notes||'-'}</td>
                     <td className={posTd+' text-center'}><button onClick={()=>del(r)} className="text-red-600 hover:underline"><Trash2 size={13}/></button></td>
                   </tr>
                 ))}

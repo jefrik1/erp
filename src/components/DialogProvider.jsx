@@ -14,8 +14,8 @@ const TONE = {
   success: { icon: CheckCircle2, ring:'from-emerald-500 to-teal-400', soft:'bg-emerald-50 text-emerald-600', pill:'bg-emerald-50 text-emerald-700', dot:'bg-emerald-500', label:'Berhasil', btn:'bg-emerald-600 hover:bg-emerald-700' },
   warning: { icon: AlertTriangle, ring:'from-amber-500 to-orange-400', soft:'bg-amber-50 text-amber-600', pill:'bg-amber-50 text-amber-700', dot:'bg-amber-500', label:'Perhatian', btn:'bg-amber-600 hover:bg-amber-700' },
   danger:  { icon: XCircle, ring:'from-rose-500 to-red-400', soft:'bg-rose-50 text-rose-600', pill:'bg-rose-50 text-rose-700', dot:'bg-rose-500', label:'Gagal', btn:'bg-rose-600 hover:bg-rose-700' },
-  info:    { icon: Info, ring:'from-[#316bf3] to-sky-400', soft:'bg-info-soft text-[#0051d5]', pill:'bg-info-soft text-[#0051d5]', dot:'bg-[#0051d5]', label:'Informasi', btn:'bg-brand hover:bg-brand-strong' },
-  confirm: { icon: Info, ring:'from-[#316bf3] to-sky-400', soft:'bg-info-soft text-[#0051d5]', pill:'bg-info-soft text-[#0051d5]', dot:'bg-[#0051d5]', label:'Konfirmasi', btn:'bg-brand hover:bg-brand-strong' },
+  info:    { icon: Info, ring:'from-[#316bf3] to-sky-400', soft:'bg-info-soft text-brand', pill:'bg-info-soft text-brand', dot:'bg-brand', label:'Informasi', btn:'bg-brand hover:bg-brand-strong' },
+  confirm: { icon: Info, ring:'from-[#316bf3] to-sky-400', soft:'bg-info-soft text-brand', pill:'bg-info-soft text-brand', dot:'bg-brand', label:'Konfirmasi', btn:'bg-brand hover:bg-brand-strong' },
 }
 
 export function DialogProvider({ children }){
@@ -68,8 +68,8 @@ export function DialogProvider({ children }){
             role="dialog" aria-modal="true" aria-labelledby="dlg-title">
             <div className="relative px-6 pt-6 pb-4 overflow-y-auto overflow-x-hidden">
               {/* dekorasi lembut ala Stitch */}
-              <div className="pointer-events-none absolute -top-14 -right-14 w-36 h-36 rounded-full bg-[#e5eeff] blur-2xl opacity-70"/>
-              <div className="pointer-events-none absolute -bottom-16 -left-16 w-40 h-40 rounded-full bg-[#e8fbf2] blur-2xl opacity-60"/>
+              <div className="pointer-events-none absolute -top-14 -right-14 w-36 h-36 rounded-full bg-surface-3 blur-2xl opacity-70"/>
+              <div className="pointer-events-none absolute -bottom-16 -left-16 w-40 h-40 rounded-full bg-success-soft blur-2xl opacity-60"/>
 
               <div className="relative mx-auto mb-3 w-14 h-14 grid place-items-center">
                 <div className={"absolute inset-0 rounded-2xl "+t.soft.split(' ')[0]+" opacity-40 animate-ping"}/>

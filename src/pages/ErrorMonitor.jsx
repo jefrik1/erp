@@ -63,7 +63,7 @@ export default function ErrorMonitor(){
             <PosChip active={status==='resolved'} onClick={()=>setStatus('resolved')}>Selesai</PosChip>
           </PosChipRow>
           <div className="ml-auto relative">
-            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#76777d]"/>
+            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-3"/>
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Cari pesan / path…" className={posInput+' h-9 w-[240px] pl-7 text-xs'}/>
           </div>
         </PosCardBody>
@@ -74,7 +74,7 @@ export default function ErrorMonitor(){
         ) : (
           <div className="overflow-auto">
             <table className="w-full text-sm">
-              <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+              <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                 <PosTh align="center">KODE</PosTh><PosTh>PESAN</PosTh><PosTh>PATH</PosTh>
                 <PosTh align="center">KEJADIAN</PosTh><PosTh align="center">TERAKHIR</PosTh><PosTh align="center">AKSI</PosTh>
               </tr></thead>
@@ -84,18 +84,18 @@ export default function ErrorMonitor(){
                     <td className={posTd+' text-center'}><PosBadge tone={row.status>=500?'red':'slate'}>{row.status}</PosBadge></td>
                     <td className={posTd}>
                       <div className="text-xs font-semibold line-clamp-2">{row.message}</div>
-                      <div className="text-[10px] text-[#76777d]">{row.source} • {row.username||'anon'}</div>
+                      <div className="text-[10px] text-ink-3">{row.source} • {row.username||'anon'}</div>
                       {open===row.id && row.stack && (
-                        <pre className="mt-1.5 max-h-40 overflow-auto bg-[#0b1c30] text-[10px] text-emerald-200 rounded-lg p-2 whitespace-pre-wrap">{row.stack}</pre>
+                        <pre className="mt-1.5 max-h-40 overflow-auto bg-navy text-[10px] text-emerald-200 rounded-lg p-2 whitespace-pre-wrap">{row.stack}</pre>
                       )}
                     </td>
                     <td className={posTd+' font-mono text-[11px]'}>{row.method} {(row.path||'').split('?')[0]}</td>
                     <td className={posTd+' text-center tabular-nums font-bold'}>{nf(row.count)}</td>
-                    <td className={posTd+' text-center text-[11px] text-[#76777d] whitespace-nowrap'}>{waktu(row.last_seen)}</td>
+                    <td className={posTd+' text-center text-[11px] text-ink-3 whitespace-nowrap'}>{waktu(row.last_seen)}</td>
                     <td className={posTd+' text-center'}>
                       {!row.resolved
                         ? <button onClick={(e)=>{e.stopPropagation(); resolve(row);}} className="text-[11px] font-bold text-emerald-700 hover:underline">Selesaikan</button>
-                        : <span className="text-[11px] text-[#76777d]">{waktu(row.resolved_at)}</span>}
+                        : <span className="text-[11px] text-ink-3">{waktu(row.resolved_at)}</span>}
                     </td>
                   </tr>
                 ))}
@@ -105,7 +105,7 @@ export default function ErrorMonitor(){
         )}
       </PosCard>
 
-      <div className="text-[11px] text-[#76777d] px-1 flex flex-wrap items-center gap-1.5">
+      <div className="text-[11px] text-ink-3 px-1 flex flex-wrap items-center gap-1.5">
         <ExternalLink size={11}/>
         Detail teknis: <span className="font-mono">GET /api/metrics</span> (p95/p99, 5xx, uptime) •
         log file: <span className="font-mono">logs/errors-YYYY-MM-DD.log</span> •

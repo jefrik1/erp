@@ -107,7 +107,7 @@ export default function Tax(){
         </>}/>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <PosStat icon={Percent} tone="bg-[#0051d5]/10 text-[#0051d5]" label="PPN KELUARAN" value={rupiah(summary?.ppn_keluaran)} sub={(summary?.invoices||0)+' invoice penjualan'}/>
+        <PosStat icon={Percent} tone="bg-brand/10 text-brand" label="PPN KELUARAN" value={rupiah(summary?.ppn_keluaran)} sub={(summary?.invoices||0)+' invoice penjualan'}/>
         <PosStat icon={FileSpreadsheet} tone="bg-sky-50 text-sky-700" label="PPN MASUKAN" value={rupiah(summary?.ppn_masukan)} sub={(summary?.purchase_invoices||0)+' invoice pembelian'}/>
         <PosStat icon={Receipt} tone={kb>0?'bg-amber-50 text-amber-700':'bg-emerald-50 text-emerald-700'} label={kb>0?'PPN KURANG BAYAR':'PPN LEBIH BAYAR'} value={rupiah(kb>0?kb:lb)} sub={kb>0?'setor ke kas negara':'dikompensasi bulan depan'}/>
         <PosStat icon={Percent} tone="bg-violet-50 text-violet-700" label="PPh DIPOTONG" value={rupiah(summary?.pph_total)} sub={(summary?.pph||[]).map(x=>x.type+':'+x.count).join(' • ')||'belum ada'}/>
@@ -131,7 +131,7 @@ export default function Tax(){
             {tab==='keluaran' && (
               <div className="overflow-auto">
                 <table className="w-full text-sm">
-                  <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                  <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                     <PosTh>INVOICE</PosTh><PosTh>PEMBELI</PosTh><PosTh align="right">DPP</PosTh><PosTh align="right">PPN</PosTh>
                     <PosTh>NOMOR FAKTUR</PosTh><PosTh align="center">AKSI</PosTh>
                   </tr></thead>
@@ -143,11 +143,11 @@ export default function Tax(){
                         <tr key={inv.id} className={posTr}>
                           <td className={posTd}>
                             <div className="font-mono text-xs font-bold">{inv.invoice_number}</div>
-                            <div className="text-[10px] text-[#76777d]">{tgl(inv.invoice_date)} • {inv.status}</div>
+                            <div className="text-[10px] text-ink-3">{tgl(inv.invoice_date)} • {inv.status}</div>
                           </td>
                           <td className={posTd+' text-xs'}>
                             <div className="font-semibold">{inv.customer_name||'-'}</div>
-                            <div className="text-[10px] font-mono text-[#76777d]">{inv.npwp||'NPWP belum ada'}</div>
+                            <div className="text-[10px] font-mono text-ink-3">{inv.npwp||'NPWP belum ada'}</div>
                           </td>
                           <td className={posTd+' text-right tabular-nums'}>{rupiah(inv.dpp)}</td>
                           <td className={posTd+' text-right tabular-nums font-semibold'}>{rupiah(inv.ppn)}</td>
@@ -161,7 +161,7 @@ export default function Tax(){
                           </td>
                           <td className={posTd+' text-center whitespace-nowrap'}>
                             <button onClick={()=>saveNumber(inv)} disabled={busyId===inv.id || !valid}
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-[#0051d5] text-white text-[11px] font-bold disabled:opacity-40">
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-brand text-white text-[11px] font-bold disabled:opacity-40">
                               <Save size={11}/> Simpan
                             </button>
                             {inv.tax_number && <button onClick={()=>removeNumber(inv)} className="ml-1 text-[11px] text-red-600 font-bold hover:underline">Hapus</button>}
@@ -178,28 +178,28 @@ export default function Tax(){
             {tab==='pph' && (
               <>
                 <PosCardBody className="grid grid-cols-1 sm:grid-cols-7 gap-2 items-end">
-                  <label className="block space-y-1 sm:col-span-1"><span className="text-[11px] font-bold text-[#45464d]">Jenis</span>
+                  <label className="block space-y-1 sm:col-span-1"><span className="text-[11px] font-bold text-ink-2">Jenis</span>
                     <PosSelect value={form.pph_type} onChange={v=>setForm(f=>({...f,pph_type:v}))}>
                       <option value="PPH21">PPh 21</option><option value="PPH23">PPh 23</option><option value="PPH4_2">PPh 4(2)</option>
                     </PosSelect>
                   </label>
-                  <label className="block space-y-1 sm:col-span-1"><span className="text-[11px] font-bold text-[#45464d]">Base</span>
+                  <label className="block space-y-1 sm:col-span-1"><span className="text-[11px] font-bold text-ink-2">Base</span>
                     <input type="number" value={form.base} onChange={e=>setForm(f=>({...f,base:e.target.value}))} className={posInput+' h-9 text-xs'}/>
                   </label>
-                  <label className="block space-y-1 sm:col-span-1"><span className="text-[11px] font-bold text-[#45464d]">Tarif %</span>
+                  <label className="block space-y-1 sm:col-span-1"><span className="text-[11px] font-bold text-ink-2">Tarif %</span>
                     <input type="number" value={form.rate} onChange={e=>setForm(f=>({...f,rate:e.target.value}))} placeholder="2" className={posInput+' h-9 text-xs'}/>
                   </label>
-                  <label className="block space-y-1 sm:col-span-1"><span className="text-[11px] font-bold text-[#45464d]">Nominal</span>
+                  <label className="block space-y-1 sm:col-span-1"><span className="text-[11px] font-bold text-ink-2">Nominal</span>
                     <input type="number" value={form.amount} onChange={e=>setForm(f=>({...f,amount:e.target.value}))} placeholder="auto" className={posInput+' h-9 text-xs'}/>
                   </label>
-                  <label className="block space-y-1 sm:col-span-2"><span className="text-[11px] font-bold text-[#45464d]">Pihak dipotong</span>
+                  <label className="block space-y-1 sm:col-span-2"><span className="text-[11px] font-bold text-ink-2">Pihak dipotong</span>
                     <input value={form.partner_name} onChange={e=>setForm(f=>({...f,partner_name:e.target.value}))} placeholder="nama supplier/penerima" className={posInput+' h-9 text-xs'}/>
                   </label>
                   <button onClick={addPph} disabled={saving} className={posBtnPrimary+' h-9 px-3 text-xs'}><Plus size={13}/> Tambah</button>
                 </PosCardBody>
                 <div className="overflow-auto">
                   <table className="w-full text-sm">
-                    <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                    <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                       <PosTh>TANGGAL</PosTh><PosTh>JENIS</PosTh><PosTh>PIHAK</PosTh><PosTh align="right">BASE</PosTh>
                       <PosTh align="center">TARIF</PosTh><PosTh align="right">PPh</PosTh><PosTh align="center">AKSI</PosTh>
                     </tr></thead>
@@ -208,7 +208,7 @@ export default function Tax(){
                         <tr key={p.id} className={posTr}>
                           <td className={posTd+' text-xs'}>{tgl(p.created_at)}</td>
                           <td className={posTd+' text-center'}><PosBadge tone="violet">{String(p.pph_type).replace('PPH','PPh ')}</PosBadge></td>
-                          <td className={posTd+' text-xs'}>{p.partner_name||'-'}{p.invoice_number? <span className="block text-[10px] font-mono text-[#76777d]">{p.invoice_number}</span>:null}</td>
+                          <td className={posTd+' text-xs'}>{p.partner_name||'-'}{p.invoice_number? <span className="block text-[10px] font-mono text-ink-3">{p.invoice_number}</span>:null}</td>
                           <td className={posTd+' text-right tabular-nums'}>{rupiah(p.base)}</td>
                           <td className={posTd+' text-center tabular-nums'}>{Number(p.rate)}%</td>
                           <td className={posTd+' text-right tabular-nums font-bold'}>{rupiah(p.amount)}</td>
@@ -217,7 +217,7 @@ export default function Tax(){
                       ))}
                       {!pph.length && <PosEmpty colSpan={7} text="Belum ada pemotongan PPh pada periode ini"/>}
                     </tbody>
-                    {pph.length>0 && <tfoot><tr className="bg-[#131b2e] text-white font-bold"><td colSpan={5} className="p-2.5 text-right text-[11px] tracking-wider">TOTAL PPh</td><td className="p-2.5 text-right tabular-nums">{rupiah(summary?.pph_total)}</td><td/></tr></tfoot>}
+                    {pph.length>0 && <tfoot><tr className="bg-navy text-white font-bold"><td colSpan={5} className="p-2.5 text-right text-[11px] tracking-wider">TOTAL PPh</td><td className="p-2.5 text-right tabular-nums">{rupiah(summary?.pph_total)}</td><td/></tr></tfoot>}
                   </table>
                 </div>
               </>
@@ -226,7 +226,7 @@ export default function Tax(){
         )}
       </PosCard>
 
-      <div className="text-[11px] text-[#76777d] px-1">
+      <div className="text-[11px] text-ink-3 px-1">
         PPN keluaran dihitung dari <b>invoices.tax</b>, PPN masukan dari <b>purchase_invoices.tax</b> pada periode terpilih.
         Nomor faktur wajib 16 digit (format e-Faktur <span className="font-mono">010.000-26.00000001</span>) — {summary? summary.invoices_with_number:0} dari {summary? summary.invoices:0} invoice sudah bernomor.
       </div>

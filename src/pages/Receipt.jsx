@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Printer, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import api from '../lib/api';
+import ThermalPrintButton from '../components/ui/ThermalPrintButton';
 
 const nf = (n)=> new Intl.NumberFormat('id-ID').format(Number(n)||0);
 const rp = (n)=> 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(Number(n)||0));
@@ -24,11 +25,34 @@ export default function Receipt(){
   },[id]);
 
   if(err) return <div className="p-6 text-sm text-red-600">{err}</div>;
-  if(!inv) return <div className="p-6 text-sm text-[#45464d]">Memuat struk…</div>;
+  if(!inv) return <div className="p-6 text-sm text-ink-2">Memuat struk…</div>;
 
   const items = inv.items||[];
   const payments = inv.payments||[];
   const totalDisc = Number(inv.discount)||0;
+  // Teks struk untuk mode thermal langsung (RawBT / WebUSB ESC/POS).
+  const plainText = useMemo(()=>{
+    const line = (a,b)=> String(a).padEnd(20).slice(0,20) + String(b).padStart(12);
+    const rows = [
+      'PT SUMBER MATERIAL JAYA',
+      'Jl. Raya Industri No. 88, Gresik',
+      'Telp. 031-1234567',
+      '--------------------------------',
+      'No.  : ' + inv.invoice_number,
+      'Tgl  : ' + tgl(inv.invoice_date),
+      'Plgn : ' + (inv.customer_name || 'Umum'),
+      '--------------------------------',
+    ];
+    for(const it of items) rows.push(line((it.name||it.product_name||'').slice(0,20), (Number(it.qty)||0) + ' x ' + Math.round(Number(it.unit_price)||0)));
+    rows.push('--------------------------------');
+    rows.push(line('Subtotal', Math.round(Number(inv.subtotal)||0)));
+    if(totalDisc>0) rows.push(line('Diskon', -Math.round(totalDisc)));
+    rows.push(line('PPN', Math.round(Number(inv.tax)||0)));
+    rows.push(line('TOTAL', Math.round(Number(inv.total)||0)));
+    for(const p of payments) rows.push(line('Bayar '+(p.method||''), Math.round(Number(p.amount)||0)));
+    rows.push('', 'Terima kasih atas kepercayaan Anda', 'Barang yang sudah dibeli tidak dapat', 'ditukar tanpa nota.', '', '');
+    return rows.join('\n');
+  }, [inv, items, payments, totalDisc]);
 
   return (
     <div className="min-h-screen bg-[#eef2f9] py-6 print:bg-white print:py-0">
@@ -43,11 +67,11 @@ export default function Receipt(){
       `}</style>
 
       <div className="no-print max-w-[340px] mx-auto mb-3 flex items-center justify-between">
-        <button onClick={()=>navigate(-1)} className="inline-flex items-center gap-1 text-xs font-bold text-[#45464d]"><ArrowLeft size={14}/> Kembali</button>
-        <button onClick={()=>window.print()} className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-[#131b2e] text-white text-xs font-bold"><Printer size={14}/> Cetak Struk</button>
+        <button onClick={()=>navigate(-1)} className="inline-flex items-center gap-1 text-xs font-bold text-ink-2"><ArrowLeft size={14}/> Kembali</button>
+        <ThermalPrintButton text={plainText} label="Cetak Struk" className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-navy text-white text-xs font-bold" />
       </div>
 
-      <div id="receipt" className="mx-auto w-[340px] bg-white border border-[#e7ecf7] rounded-xl p-4 font-mono text-[11px] leading-[1.5] text-black">
+      <div id="receipt" className="mx-auto w-[340px] bg-white border border-line rounded-xl p-4 font-mono text-[11px] leading-[1.5] text-black">
         <div className="text-center space-y-0.5">
           <div className="font-bold text-[13px] tracking-wide">PT SUMBER MATERIAL JAYA</div>
           <div>Jl. Raya Industri No. 88, Gresik</div>

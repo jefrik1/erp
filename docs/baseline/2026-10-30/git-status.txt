@@ -1,0 +1,45 @@
+ M .gitignore
+ M docs/PRODUCTION-CHECKLIST.md
+ M package.json
+ M scripts/audit-inventory-data.mjs
+ M src/index.js
+ M src/lib/journal.js
+ M src/modules/consignment/routes.js
+ M src/modules/finance/routes.js
+ M src/modules/hr/routes.js
+ M src/modules/inventory/routes.js
+ M src/modules/pos/shift-routes.js
+ M src/modules/purchase/routes.js
+ M src/modules/reporting/routes.js
+ M src/modules/returns/routes.js
+ M src/modules/sales/delivery-service.js
+ M src/modules/sales/routes.js
+ M src/modules/waste/routes.js
+ M src/pages/InventoryReports.jsx
+ M src/pages/POS.jsx
+ M src/pages/Receipt.jsx
+ M src/pages/StockOpname.jsx
+ M tests/hr-route-guards.test.js
+?? .env.production.example
+?? docs/AUDIT-DAN-STATUS.md
+?? docs/F16-BACKFILL-REPORT.md
+?? docs/FITUR-LENGKAP.md
+?? docs/baseline/
+?? migrations/025_stock_and_audit_guards.sql
+?? migrations/026_immutable_guard_fix.sql
+?? migrations/027_data_backfill_ledger.sql
+?? migrations/027_industry_workflows.sql
+?? migrations/028_customer_overpayment_account.sql
+?? scripts/disable-demo-accounts.mjs
+?? scripts/f16-pos-backfill.mjs
+?? scripts/production-cutover-check.mjs
+?? scripts/reconcile-gl-inventory.mjs
+?? scripts/repair-ledger.mjs
+?? scripts/status-report.mjs
+?? src/components/ui/
+?? src/lib/stock-service.js
+?? src/modules/finance/recon-center-routes.js
+?? src/modules/logistics/scale-routes.js
+?? tests/phase0-recon-center.test.js
+?? tests/phase1-guards.test.js
+?? tests/phase2-industry.test.js

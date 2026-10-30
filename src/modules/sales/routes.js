@@ -6,8 +6,23 @@ import { rbac } from '../../middleware/auth.js';
 import { createDelivery, DeliveryError, calcEst, ensureSignatureCols } from './delivery-service.js';
 import { ensureTrackCols } from '../public/routes.js';
 import { getRule, createApproval } from '../approvals/rules-routes.js';
+import { postJournal } from '../../lib/journal.js';
+import { mutateStock, assertPriceSanity, cogsValue, sendBusinessError } from '../../lib/stock-service.js';
 const router = express.Router();
 export { calcEst };
+
+// HPP per produk (rata-rata tertimbang per gudang) untuk baris jurnal HPP/Persediaan.
+async function hppMap(db, productIds, warehouseId=1){
+  const ids = [...new Set((productIds||[]).map(Number).filter(Boolean))];
+  const out = new Map();
+  if(!ids.length) return out;
+  const r = await db.query(
+    `SELECT product_id,
+            COALESCE(NULLIF(SUM(ABS(qty_on_hand)*COALESCE(avg_cost,0))/NULLIF(SUM(ABS(qty_on_hand)),0),0), MAX(avg_cost), 0)::numeric AS cost
+       FROM stocks WHERE product_id = ANY($1) AND warehouse_id = $2 GROUP BY product_id`, [ids, warehouseId]);
+  for(const row of r.rows) out.set(Number(row.product_id), Number(row.cost)||0);
+  return out;
+}
 
 function wibNow(){ return new Date(Date.now() + 7*3600*1000); } void wibNow;
 function requireDoOfficeConfirmed(doRow){
@@ -128,6 +143,44 @@ router.get('/orders/history', async (req,res)=>{
   }catch(e){ console.error('[orders history]',e); res.status(500).json({error:e.message}); }
 });
 
+// POST /sales/orders/:id/create-dropship-po — pesanan pelanggan dibelikan langsung ke pemasok.
+// Barang tidak masuk gudang: GRN drop-ship tidak menambah stok, jurnalnya Dr HPP / Cr GR/IR.
+router.post('/orders/:id/create-dropship-po', async (req,res)=>{
+  const { supplier_id, expected_date } = req.body || {};
+  if(!supplier_id) return res.status(400).json({error:'supplier_id wajib'});
+  const client = await pool.connect();
+  try{
+    await client.query('BEGIN');
+    const so = await client.query('SELECT * FROM sales_orders WHERE id=$1 FOR UPDATE',[req.params.id]);
+    if(!so.rows[0]){ await client.query('ROLLBACK'); return res.status(404).json({error:'Sales order tidak ditemukan'}); }
+    if(!['APPROVED','PICKING','SHIPPED'].includes(String(so.rows[0].status))){ await client.query('ROLLBACK'); return res.status(400).json({error:'SO harus APPROVED/PICKING/SHIPPED'}); }
+    const dup = await client.query("SELECT id, po_number FROM purchase_orders WHERE source_so_id=$1 LIMIT 1",[req.params.id]);
+    if(dup.rows[0]){ await client.query('ROLLBACK'); return res.json({duplicate:true, ...dup.rows[0]}); }
+    const items = await client.query('SELECT product_id, qty, unit_price FROM so_details WHERE so_id=$1',[req.params.id]);
+    if(!items.rows.length){ await client.query('ROLLBACK'); return res.status(400).json({error:'SO tidak punya item'}); }
+    const po_number = 'PO-DS-'+Date.now();
+    const subtotal = items.rows.reduce((a,x)=> a + Number(x.qty)*Number(x.unit_price||0), 0);
+    const tax = Math.round(subtotal*0.11);
+    const ins = await client.query(
+      `INSERT INTO purchase_orders (po_number, supplier_id, branch_id, po_date, expected_date, status, subtotal, tax, total, created_by, source_so_id, fulfillment_type)
+       VALUES ($1,$2,$3,CURRENT_DATE,$4,'APPROVED',$5,$6,$7,$8,$9,'DROP_SHIP') RETURNING id`,
+      [po_number, supplier_id, so.rows[0].branch_id||1, expected_date||so.rows[0].delivery_date||null, subtotal, tax, subtotal+tax, req.user.id, req.params.id]);
+    const poId = ins.rows[0].id;
+    for(const it of items.rows){
+      await client.query('INSERT INTO po_details (po_id, product_id, qty, unit_cost, total) VALUES ($1,$2,$3,$4,$5)',
+        [poId, it.product_id, it.qty, it.unit_price, Number(it.qty)*Number(it.unit_price||0)]);
+    }
+    await client.query("UPDATE sales_orders SET fulfillment_type='DROP_SHIP' WHERE id=$1",[req.params.id]);
+    await client.query(`INSERT INTO audit_logs (user_id, action, entity_type, entity_id, new_value) VALUES ($1,'CREATE','DROPSHIP_PO',$2,$3)`,
+      [req.user.id, poId, JSON.stringify({ po_number, so_id:Number(req.params.id), supplier_id })]);
+    await client.query('COMMIT');
+    res.json({ ok:true, po_id:poId, po_number, total:subtotal+tax });
+  }catch(e){
+    await client.query('ROLLBACK').catch(()=>{});
+    res.status(500).json({error:e.message});
+  }finally{ client.release(); }
+});
+
 // Link lacak publik (tanpa login) untuk pelanggan: token acak per order.
 router.post('/orders/:id/track-link', async (req,res)=>{
   await ensureTrackCols();
@@ -178,6 +231,15 @@ router.post('/orders', async (req,res)=>{
   await ensureDeliveryEst();
   const {customer_id, branch_id, delivery_date, delivery_address, delivery_lat, delivery_lng, notes, items, discount, discount_percent, voucher_code, dp_percent} = req.body;
   if(!items||!items.length) return res.status(400).json({error:'Items required'});
+  // Penjaga harga (insiden "nilai total masuk kolom harga satuan"): harga >5x HPP selalu
+  // ditolak; harga di bawah HPP/harga lantai hanya boleh untuk direktur/super admin.
+  try{
+    await assertPriceSanity(pool, items.map(it=>({ product_id: it.product_id, qty: it.qty, unit_price: it.unit_price })),
+      { user: req.user, warehouseId: Number(req.body.warehouse_id)||1, allowOverride: req.body.price_override === true });
+  }catch(e){
+    const sent = sendBusinessError(res, e); if(sent) return sent;
+    return res.status(422).json({ error: e.message });
+  }
   if(customer_id){
     // gate: HOLD / limit - blok bikin SO baru
     const so_number_tmp = 'SO-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+String(Math.floor(Math.random()*9000+1000));
@@ -403,6 +465,13 @@ router.post('/invoices', async (req,res)=>{
     }
     if(!customer_id) { await client.query('ROLLBACK'); return res.status(400).json({error:'customer_id wajib (atau kirim do_id)'}); }
     if(!items || !items.length){ await client.query('ROLLBACK'); return res.status(400).json({error:'Items required'}); }
+    try{
+      await assertPriceSanity(client, items.map(it=>({ product_id: it.product_id, qty: it.qty, unit_price: it.unit_price })),
+        { user: req.user, warehouseId: 1, allowOverride: req.body.price_override === true });
+    }catch(e){
+      await client.query('ROLLBACK');
+      return sendBusinessError(res, e) || res.status(422).json({ error: e.message });
+    }
     const inv_number='INV-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+String(Math.floor(Math.random()*9000+1000));
     let subtotal=0; for(const it of items) subtotal+= parseFloat(it.qty)*parseFloat(it.unit_price);
     const discPct=Math.min(100,Math.max(0,parseInt(bodyDiscPct||0,10)||0));
@@ -424,7 +493,15 @@ router.post('/invoices', async (req,res)=>{
     const ins=await client.query("INSERT INTO invoices (invoice_number, customer_id, so_id, do_id, invoice_date, due_date, status, subtotal, discount, discount_pct, voucher_code, tax, total, paid_amount) VALUES ($1,$2,$3,$4,CURRENT_DATE,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING id",[inv_number, customer_id, so_id, do_id, due, invStatus, subtotal, discount, discPct, bodyVoucher?String(bodyVoucher).toUpperCase():null, tax, total, initPaid]);
     const invId=ins.rows[0].id;
     for(const it of items) await client.query('INSERT INTO invoice_details (invoice_id, product_id, qty, unit_price, total) VALUES ($1,$2,$3,$4,$5)',[invId, it.product_id, it.qty, it.unit_price, parseFloat(it.qty)*parseFloat(it.unit_price)]);
-    await client.query("INSERT INTO journal_entries (entry_number, entry_date, reference_type, reference_id, description, total_debit, total_credit, posted) VALUES ($1,CURRENT_DATE,'INVOICE',$2,$3,$4,$4,true)", ['JE-'+Date.now(), invId, 'Invoice '+inv_number, total]);
+    // Jurnal invoice: Dr Piutang / Cr Penjualan / Cr PPN.
+    // HPP tidak dijurnal di sini — sudah dibukukan saat barang keluar (DO) atau saat
+    // checkout POS, supaya tidak terjadi HPP ganda.
+    const invLines = [
+      { code:'1-1100', debit:total, description:'Piutang invoice '+inv_number },
+      { code:'4-1000', credit:taxable, description:'Penjualan '+inv_number },
+    ];
+    if(tax > 0) invLines.push({ code:'2-1100', credit:tax, description:'PPN invoice '+inv_number });
+    await postJournal({ refType:'INVOICE', refId:invId, description:'Invoice '+inv_number, lines:invLines, createdBy:req.user.id, client });
     if(initPaid>0){ await client.query("INSERT INTO payments (payment_number, type, invoice_id, payment_date, method, amount, created_by) VALUES ($1,'AR',$2,CURRENT_DATE,'TRANSFER',$3,$4)",['PAY-INV-'+Date.now(), invId, initPaid, req.user.id]); }
     if(doRow){
       await client.query("UPDATE delivery_orders SET status='INVOICED' WHERE id=$1",[do_id]);
@@ -453,7 +530,21 @@ router.post('/invoices/:id/pay', async (req,res)=>{
   // ponytail: full payment only - harus bayar sisa penuh, upgrade ke partial bertahap jika butuh cicilan
   if(Math.abs(payAmt - remaining) > 1) return res.status(400).json({error:`Harus bayar full sisa Rp ${new Intl.NumberFormat('id-ID').format(remaining)}`});
   const pay_no='PAY-'+Date.now();
-  await pool.query("INSERT INTO payments (payment_number, type, invoice_id, payment_date, method, amount, created_by) VALUES ($1,'AR',$2,CURRENT_DATE,$3,$4,$5)",[pay_no, req.params.id, method||'TRANSFER', payAmt, req.user.id]);
+  const payIns=await pool.query("INSERT INTO payments (payment_number, type, invoice_id, payment_date, method, amount, created_by) VALUES ($1,'AR',$2,CURRENT_DATE,$3,$4,$5) RETURNING id",[pay_no, req.params.id, method||'TRANSFER', payAmt, req.user.id]);
+  // Jurnal pelunasan hanya untuk invoice yang punya jurnal piutang (invoice jalur DO).
+  // Invoice POS tidak membuat piutang: uangnya masuk lewat tutup shift (creditCash),
+  // jadi menjurnal Dr Kas/Cr Piutang di sini akan menggandakan pendapatan.
+  try{
+    const hasAr = await pool.query(
+      `SELECT 1 FROM journal_entries je JOIN journal_details jd ON jd.journal_id=je.id
+        WHERE je.reference_type='INVOICE' AND je.reference_id=$1 LIMIT 1`, [req.params.id]);
+    if(hasAr.rows[0]){
+      await postJournal({ refType:'PAYMENT', refId:payIns.rows[0].id, description:'Pelunasan '+inv.rows[0].invoice_number,
+        lines:[ { code:'1-1000', debit:payAmt, description:'Terima pembayaran '+inv.rows[0].invoice_number },
+                { code:'1-1100', credit:payAmt, description:'Pelunasan piutang '+inv.rows[0].invoice_number } ],
+        createdBy:req.user.id });
+    }
+  }catch(e){ console.error('[pay journal]', e.message); }
   await pool.query("UPDATE invoices SET paid_amount = paid_amount + $1, status = CASE WHEN paid_amount + $1 >= total - 0.5 THEN 'PAID' ELSE 'PARTIAL' END WHERE id=$2",[payAmt, req.params.id]);
   // auto-complete SO hanya jika SEMUA invoice untuk SO tersebut sudah PAID/lunas
   const soId=inv.rows[0].so_id;
@@ -501,21 +592,27 @@ router.post('/pos', async (req,res)=>{
       }
     }
     await client.query('BEGIN');
-    // Validasi stok + potong stok atomik per item (kunci baris stok dulu)
+    // Validasi stok + potong stok atomik per item lewat pintu tunggal mutateStock
+    // (kunci baris FOR UPDATE, tolak stok minus dengan 422 INSUFFICIENT_STOCK).
     const WH=1;
-    for(const it of items){
-      const pid=parseInt(it.product_id);
-      const qty=parseFloat(it.qty);
-      if(!pid || !(qty>0)) { await client.query('ROLLBACK'); return res.status(400).json({error:'Item tidak valid'}); }
-      const s=await client.query('SELECT qty_on_hand, qty_reserved FROM stocks WHERE product_id=$1 AND warehouse_id=$2 FOR UPDATE',[pid, WH]);
-      const avail = s.rows[0] ? (parseFloat(s.rows[0].qty_on_hand||0) - parseFloat(s.rows[0].qty_reserved||0)) : 0;
-      if(!s.rows[0] || avail + 1e-9 < qty){
-        const nm=await client.query('SELECT name FROM products WHERE id=$1',[pid]);
-        await client.query('ROLLBACK');
-        return res.status(400).json({error:`Stok tidak cukup untuk ${nm.rows[0]?.name||('produk '+pid)}: tersedia ${Math.max(0,avail)}, diminta ${qty}`});
+    // Penjaga harga: nilai total yang tak sengaja masuk ke kolom harga satuan ditolak.
+    try{
+      await assertPriceSanity(client, items.map(it=>({ product_id: it.product_id, qty: it.qty, unit_price: it.unit_price })), { user: req.user, warehouseId: WH });
+    }catch(e){
+      await client.query('ROLLBACK');
+      return sendBusinessError(res, e) || res.status(422).json({ error: e.message });
+    }
+    try{
+      for(const it of items){
+        const pid=parseInt(it.product_id);
+        const qty=parseFloat(it.qty);
+        if(!pid || !(qty>0)) { await client.query('ROLLBACK'); return res.status(400).json({error:'Item tidak valid'}); }
+        await mutateStock(client, { productId: pid, warehouseId: WH, qtyDelta: -qty,
+          refType: 'POS', refId: null, userId: req.user.id, notes: 'Penjualan POS' });
       }
-      const up=await client.query('UPDATE stocks SET qty_on_hand = qty_on_hand - $1 WHERE product_id=$2 AND warehouse_id=$3 RETURNING qty_on_hand',[qty, pid, WH]);
-      await client.query("INSERT INTO stock_movements (product_id, warehouse_id, movement_type, reference_type, reference_id, qty_out, balance_qty, created_by) VALUES ($1,$2,'OUT','POS',NULL,$3,$4,$5)",[pid, WH, qty, up.rows[0]?.qty_on_hand ?? 0, req.user.id]);
+    }catch(e){
+      await client.query('ROLLBACK');
+      return sendBusinessError(res, e) || res.status(422).json({ error: e.message });
     }
     const so_number='SO-POS-'+Date.now();
     let subtotal=0; for(const it of items) subtotal+= parseFloat(it.qty)*parseFloat(it.unit_price);
@@ -547,6 +644,31 @@ router.post('/pos', async (req,res)=>{
     const invNo='INV-POS-'+Date.now();
     const invIns=await client.query("INSERT INTO invoices (invoice_number, customer_id, so_id, invoice_date, due_date, status, subtotal, discount, discount_pct, voucher_code, tax, total, paid_amount, client_ref) VALUES ($1,$2,$3,CURRENT_DATE,CURRENT_DATE,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id",[invNo, customer_id||4, soId, invStatus, subtotal, discTotal, discPct, voucher_code?String(voucher_code).toUpperCase():null, tax, total, dp, client_ref?String(client_ref):null]);
     await client.query("INSERT INTO payments (payment_number, type, invoice_id, payment_date, method, amount, created_by) VALUES ($1,'AR',$2,CURRENT_DATE,$3,$4,$5)",['PAY-POS-'+Date.now(), invIns.rows[0].id, payment_method||'CASH', dp, req.user.id]);
+    // HPP barang yang keluar di POS (sisi biaya).
+    // ── Pendapatan POS diakui SAAT CHECKOUT (bukan menunggu tutup shift) ──────
+    // Dr Kas/Bank (yang dibayar) + Dr Piutang (sisa) · Cr Penjualan + Cr PPN.
+    // Tutup shift hanya merekonsiliasi kas fisik, tidak lagi mengakui pendapatan.
+    const paidNow = Math.max(0, Number(dp) || 0);
+    const unpaidNow = Math.max(0, Number(total) - paidNow);
+    const methodUp = String(payment_method || 'CASH').toUpperCase();
+    const debitCode = methodUp === 'CASH' ? '1-1010' : '1-1020';
+    const posLines = [];
+    if (paidNow > 0.5) posLines.push({ code: debitCode, debit: paidNow, description: `Terima ${methodUp} ${invNo}` });
+    if (unpaidNow > 0.5) posLines.push({ code: '1-1100', debit: unpaidNow, description: `Piutang POS ${invNo}` });
+    posLines.push({ code: '4-1000', credit: taxable, description: `Penjualan POS ${invNo}` });
+    if (tax > 0) posLines.push({ code: '2-1100', credit: tax, description: `PPN POS ${invNo}` });
+    await postJournal({ refType: 'POS_SALE', refId: invIns.rows[0].id, description: `Penjualan POS ${invNo}`,
+      lines: posLines, createdBy: req.user.id, client });
+
+    // HPP barang yang keluar di POS (sisi biaya, terpisah dari pendapatan).
+    const posCosts = await hppMap(client, items.map(it=>it.product_id), WH);
+    const posCogs = items.reduce((a,it)=> a + (parseFloat(it.qty)||0) * (posCosts.get(Number(it.product_id))||0), 0);
+    if(posCogs > 0.5){
+      await postJournal({ refType:'POS_COGS', refId:invIns.rows[0].id, description:'HPP POS '+invNo,
+        lines:[ { code:'5-1000', debit:posCogs, description:'HPP POS '+invNo },
+                { code:'1-1200', credit:posCogs, description:'Persediaan keluar POS '+invNo } ],
+        createdBy:req.user.id, client });
+    }
     await client.query('COMMIT');
     res.json({so_number, client_ref: client_ref||null, invoice_number: invNo, total, subtotal, discTotal, discPct, voucherAmt: vAmt, dp_amount: dp, remaining_amount: total - dp, status: invStatus, so_status: soStatus, dp_percent: dpPctValid});
   }catch(e){ try{ await client.query('ROLLBACK'); }catch{}; console.error('[POS] err',e); res.status(500).json({error:e.message}); }

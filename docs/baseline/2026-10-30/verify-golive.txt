@@ -1,0 +1,28 @@
+npm notice run erp-material@1.0.0 verify:golive
+npm notice run node scripts/production-cutover-check.mjs
+=== PRE-FLIGHT GO-LIVE ===
+
+PASS  JWT_SECRET bukan default & ≥32 karakter          panjang 64
+WARN  NODE_ENV=production                              development
+WARN  ALLOWED_ORIGINS diisi                            kosong
+WARN  Tidak ada akun demo aktif                        6 akun demo masih aktif
+PASS  Tidak ada stok minus                             0 baris
+PASS  Tidak ada stok ber-HPP 0                         0 baris
+PASS  Tidak ada baris stok kembar                      0 grup
+PASS  Semua baris stok punya kartu stok                0 baris tanpa riwayat
+PASS  Neraca saldo debit = kredit                      Rp 27.566.583.680 vs Rp 27.566.583.680
+PASS  GL Persediaan = nilai stok fisik                 stok Rp 20.000.344.584 · GL Rp 20.000.344.584 · selisih Rp 0
+PASS  Tidak ada jurnal tanpa baris                     0 jurnal
+PASS  Semua jurnal balance                             0 jurnal
+WARN  Tidak ada referensi jurnal ganda                 2 pasang
+PASS  Piutang GL = sisa tagihan invoice                Rp 270.746.236 vs Rp 270.746.236
+PASS  Hutang Usaha = invoice pemasok − pembayaran      selisih Rp 0
+WARN  Semua GRN sudah berjurnal                        2 GRN
+PASS  Trigger append-only terpasang (5 tabel)          5 trigger
+PASS  Constraint qty_on_hand >= 0 terpasang            ada
+PASS  Foreign key aktif                                224 FK
+PASS  Backup < 48 jam tersedia                         erp_20261030-190656.dump (1.7 jam lalu)
+PASS  REDIS_URL dikonfigurasi                          ada
+
+16/21 lulus · 0 kegagalan kritis
+Sistem SIAP untuk lalu lintas komersial (kriteria kritis terpenuhi).

@@ -201,7 +201,7 @@ export default function LandedCosts(){
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <PosStat icon={Receipt} tone="bg-[#0051d5]/10 text-[#0051d5]" label="TOTAL BIAYA IMPOR" value={rupiah(summary?.total_cost)} sub={(summary?.total||0)+' dokumen landed cost'}/>
+        <PosStat icon={Receipt} tone="bg-brand/10 text-brand" label="TOTAL BIAYA IMPOR" value={rupiah(summary?.total_cost)} sub={(summary?.total||0)+' dokumen landed cost'}/>
         <PosStat icon={Calculator} tone="bg-sky-50 text-sky-700" label="SIAP POSTING" value={rupiah(summary?.belum_posting)} sub={(summary?.calculated||0)+' sudah dikalkulasi'}/>
         <PosStat icon={BookCheck} tone="bg-emerald-50 text-emerald-700" label="SUDAH DIPOSTING" value={String(summary?.posted||0)+' dokumen'} sub="nilai persediaan terkunci"/>
         <PosStat icon={Percent} tone="bg-amber-50 text-amber-700" label="DRAFT" value={String(summary?.draft||0)+' dokumen'} sub="belum dikalkulasi"/>
@@ -210,7 +210,7 @@ export default function LandedCosts(){
       {!!(summary?.by_type||[]).length && (
         <PosCard>
           <PosCardBody className="flex flex-wrap items-center gap-2">
-            <span className="text-[11px] font-bold tracking-wider text-[#45464d]">KOMPONEN BIAYA</span>
+            <span className="text-[11px] font-bold tracking-wider text-ink-2">KOMPONEN BIAYA</span>
             {summary.by_type.map(t=>(
               <PosBadge key={t.cost_type} tone="slate" title={COST_LABEL[t.cost_type]||t.cost_type}>
                 {t.cost_type} • {rupiah(t.amount)}
@@ -222,9 +222,9 @@ export default function LandedCosts(){
 
       <PosCard>
         <PosCardBody className="flex items-start gap-3">
-          <span className="w-7 h-7 rounded-lg grid place-items-center bg-[#0051d5]/10 text-[#0051d5] shrink-0"><Info size={14}/></span>
-          <div className="text-xs text-[#45464d] leading-relaxed">
-            <b className="text-[#0b1c30]">Untuk apa?</b> Harga beli dari supplier bukan biaya sebenarnya barang sampai gudang. Biaya impor
+          <span className="w-7 h-7 rounded-lg grid place-items-center bg-brand/10 text-brand shrink-0"><Info size={14}/></span>
+          <div className="text-xs text-ink-2 leading-relaxed">
+            <b className="text-ink">Untuk apa?</b> Harga beli dari supplier bukan biaya sebenarnya barang sampai gudang. Biaya impor
             (freight, asuransi, bea masuk, PPh22, clearance, trucking) harus ikut masuk HPP - kalau tidak, margin penjualan terlihat
             lebih besar dari kenyataan. Alurnya: <b>1)</b> buat dokumen dari PO/GRN, <b>2)</b> Kalkulasi → biaya dibagi proporsional
             (VALUE / WEIGHT / VOLUME) dan menambah avg cost tiap produk, <b>3)</b> Posting jurnal (Debit Persediaan, Kredit Hutang Usaha/Hutang Pajak).
@@ -242,7 +242,7 @@ export default function LandedCosts(){
             <button onClick={openCreate} className={posBtnPrimary+' h-9 px-4 text-xs'}><Plus size={14}/> Landed Cost</button>
           </>}>
             <div className={posSearchWrap}>
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#76777d]"/>
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3"/>
               <input value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Enter'&&setAppliedQ(q)}
                 placeholder="Cari LC / PO / supplier / container / BL lalu Enter..." className={posInput+' pl-9'}/>
             </div>
@@ -252,7 +252,7 @@ export default function LandedCosts(){
             {['Semua','DRAFT','CALCULATED','POSTED'].map(s=>(
               <PosChip key={s} active={status===s} onClick={()=>setStatus(s)}>{s==='Semua'?'Semua':s}</PosChip>
             ))}
-            <span className="ml-auto text-[11px] text-[#45464d]">Total baris: <b className="text-[#0b1c30]">{rupiah(grandTotal)}</b></span>
+            <span className="ml-auto text-[11px] text-ink-2">Total baris: <b className="text-ink">{rupiah(grandTotal)}</b></span>
           </PosChipRow>
         </PosCardBody>
 
@@ -260,7 +260,7 @@ export default function LandedCosts(){
           <>
             <div className="overflow-auto">
               <table className="w-full text-sm">
-                <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                   <PosTh>LC</PosTh><PosTh>PO / SUPPLIER</PosTh><PosTh>DOKUMEN</PosTh>
                   <PosTh align="center">KOMPONEN</PosTh><PosTh>METODE</PosTh>
                   <PosTh align="right">TOTAL BIAYA</PosTh><PosTh align="center">STATUS</PosTh><PosTh align="right">AKSI</PosTh>
@@ -270,12 +270,12 @@ export default function LandedCosts(){
                     <tr key={l.id} className={posTr}>
                       <td className={posTd+' font-mono text-xs font-bold'}>#{l.id}</td>
                       <td className={posTd}>
-                        <div className="font-bold text-[#0b1c30]">{l.po_number||'-'}</div>
-                        <div className="text-xs text-[#45464d]">{l.supplier_name||'-'}</div>
+                        <div className="font-bold text-ink">{l.po_number||'-'}</div>
+                        <div className="text-xs text-ink-2">{l.supplier_name||'-'}</div>
                       </td>
-                      <td className={posTd+' text-xs text-[#45464d]'}>
-                        <div>Container: <span className="font-mono text-[#2b3445]">{l.container_no||'-'}</span></div>
-                        <div>BL: <span className="font-mono text-[#2b3445]">{l.bl_number||'-'}</span> • PIB: <span className="font-mono text-[#2b3445]">{l.pib_number||'-'}</span></div>
+                      <td className={posTd+' text-xs text-ink-2'}>
+                        <div>Container: <span className="font-mono text-ink-2">{l.container_no||'-'}</span></div>
+                        <div>BL: <span className="font-mono text-ink-2">{l.bl_number||'-'}</span> • PIB: <span className="font-mono text-ink-2">{l.pib_number||'-'}</span></div>
                       </td>
                       <td className={posTd+' text-center'}>{l.cost_lines||0} biaya</td>
                       <td className={posTd+' text-xs'}>{METHOD_LABEL[l.allocation_method]||l.allocation_method}</td>
@@ -317,32 +317,32 @@ export default function LandedCosts(){
           <div className="bg-white rounded-xl w-full max-w-4xl max-h-[92vh] flex flex-col border shadow-raised overflow-hidden animate-pop">
             <div className="p-4 border-b flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-bold text-[16px] text-[#0b1c30]">Landed Cost #{detail.id}</h3>
-                <div className="text-xs text-[#45464d] mt-1 flex items-center gap-2 flex-wrap">
+                <h3 className="font-bold text-[16px] text-ink">Landed Cost #{detail.id}</h3>
+                <div className="text-xs text-ink-2 mt-1 flex items-center gap-2 flex-wrap">
                   <span>{detail.po_number ? 'PO '+detail.po_number : 'PO -'}</span>
                   <span>•</span><span>{detail.supplier_name||'-'}</span>
                   <span>•</span><span>{METHOD_LABEL[detail.allocation_method]||detail.allocation_method}</span>
                   <PosBadge tone={STATUS_TONE[detail.status]||'slate'}>{detail.status}</PosBadge>
                 </div>
               </div>
-              <button onClick={()=>setDetail(null)} className="w-9 h-9 rounded-xl border border-[#e7ecf7] grid place-items-center text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
+              <button onClick={()=>setDetail(null)} className="w-9 h-9 rounded-xl border border-line grid place-items-center text-ink-2 hover:bg-surface-2"><X size={16}/></button>
             </div>
 
             <div className="p-4 space-y-4 overflow-auto">
               {detailBusy ? <PosSkeleton rows={5} cols={4}/> : (
                 <>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 text-xs">
-                    <div className="rounded-xl border border-[#e7ecf7] bg-[#eff4ff] p-2.5"><div className="text-[#45464d]">Container</div><div className="font-bold font-mono">{detail.container_no||'-'}</div></div>
-                    <div className="rounded-xl border border-[#e7ecf7] bg-[#eff4ff] p-2.5"><div className="text-[#45464d]">BL / PIB</div><div className="font-bold font-mono">{detail.bl_number||'-'} / {detail.pib_number||'-'}</div></div>
-                    <div className="rounded-xl border border-[#e7ecf7] bg-[#eff4ff] p-2.5"><div className="text-[#45464d]">Tiba / Clearance</div><div className="font-bold">{fmtDate(detail.arrival_date)} / {fmtDate(detail.clearance_date)}</div></div>
-                    <div className="rounded-xl border border-[#0051d5]/30 bg-[#0051d5]/5 p-2.5"><div className="text-[#0051d5]">Total Biaya Impor</div><div className="font-bold text-[#0b1c30]">{rupiah(detail.total_cost)}</div></div>
+                    <div className="rounded-xl border border-line bg-surface-2 p-2.5"><div className="text-ink-2">Container</div><div className="font-bold font-mono">{detail.container_no||'-'}</div></div>
+                    <div className="rounded-xl border border-line bg-surface-2 p-2.5"><div className="text-ink-2">BL / PIB</div><div className="font-bold font-mono">{detail.bl_number||'-'} / {detail.pib_number||'-'}</div></div>
+                    <div className="rounded-xl border border-line bg-surface-2 p-2.5"><div className="text-ink-2">Tiba / Clearance</div><div className="font-bold">{fmtDate(detail.arrival_date)} / {fmtDate(detail.clearance_date)}</div></div>
+                    <div className="rounded-xl border border-brand/30 bg-brand/5 p-2.5"><div className="text-brand">Total Biaya Impor</div><div className="font-bold text-ink">{rupiah(detail.total_cost)}</div></div>
                   </div>
 
                   <div>
-                    <div className="text-[11px] font-bold tracking-wider text-[#45464d] mb-2">KOMPONEN BIAYA ({(detail.details||[]).length})</div>
-                    <div className="overflow-auto rounded-xl border border-[#e7ecf7]">
+                    <div className="text-[11px] font-bold tracking-wider text-ink-2 mb-2">KOMPONEN BIAYA ({(detail.details||[]).length})</div>
+                    <div className="overflow-auto rounded-xl border border-line">
                       <table className="w-full text-sm">
-                        <thead><tr className="bg-[#e5eeff] border-b border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                        <thead><tr className="bg-surface-3 border-b border-line text-[11px] font-bold tracking-wider text-ink-2">
                           <PosTh>KOMPONEN</PosTh><PosTh>KETERANGAN</PosTh><PosTh align="center">VALUTA</PosTh>
                           <PosTh align="right">KURS</PosTh><PosTh align="right">JUMLAH</PosTh><PosTh align="right">IDR</PosTh>
                         </tr></thead>
@@ -350,7 +350,7 @@ export default function LandedCosts(){
                           {(detail.details||[]).map(d=>(
                             <tr key={d.id} className={posTr}>
                               <td className={posTd}><PosBadge tone="slate">{d.cost_type}</PosBadge></td>
-                              <td className={posTd+' text-xs text-[#45464d]'}>{d.description||COST_LABEL[d.cost_type]||'-'}</td>
+                              <td className={posTd+' text-xs text-ink-2'}>{d.description||COST_LABEL[d.cost_type]||'-'}</td>
                               <td className={posTd+' text-center text-xs'}>{d.currency||'IDR'}</td>
                               <td className={posTd+' text-right tabular-nums'}>{num(d.exchange_rate)||1}</td>
                               <td className={posTd+' text-right tabular-nums'}>{new Intl.NumberFormat('id-ID').format(num(d.amount))}</td>
@@ -364,10 +364,10 @@ export default function LandedCosts(){
                   </div>
 
                   <div>
-                    <div className="text-[11px] font-bold tracking-wider text-[#45464d] mb-2">ALOKASI KE ITEM PO ({(detail.allocations||[]).length} item)</div>
-                    <div className="overflow-auto rounded-xl border border-[#e7ecf7]">
+                    <div className="text-[11px] font-bold tracking-wider text-ink-2 mb-2">ALOKASI KE ITEM PO ({(detail.allocations||[]).length} item)</div>
+                    <div className="overflow-auto rounded-xl border border-line">
                       <table className="w-full text-sm">
-                        <thead><tr className="bg-[#e5eeff] border-b border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                        <thead><tr className="bg-surface-3 border-b border-line text-[11px] font-bold tracking-wider text-ink-2">
                           <PosTh>PRODUK</PosTh><PosTh align="right">QTY</PosTh><PosTh align="right">DASAR</PosTh>
                           <PosTh align="right">PORSI</PosTh><PosTh align="right">TAMBAHAN</PosTh><PosTh align="right">PER UNIT</PosTh>
                           <PosTh align="right">AVG COST</PosTh>
@@ -376,15 +376,15 @@ export default function LandedCosts(){
                           {(detail.allocations||[]).map(a=>(
                             <tr key={a.id} className={posTr}>
                               <td className={posTd}>
-                                <div className="font-bold text-[#0b1c30]">{a.product_name || ('Produk #'+a.product_id)}</div>
-                                <div className="text-xs text-[#76777d] font-mono">{a.sku||'-'}</div>
+                                <div className="font-bold text-ink">{a.product_name || ('Produk #'+a.product_id)}</div>
+                                <div className="text-xs text-ink-3 font-mono">{a.sku||'-'}</div>
                               </td>
                               <td className={posTd+' text-right tabular-nums'}>{num(a.qty)}</td>
                               <td className={posTd+' text-right tabular-nums'}>{new Intl.NumberFormat('id-ID').format(num(a.base))}</td>
                               <td className={posTd+' text-right tabular-nums'}>{((num(a.share))*100).toFixed(2)}%</td>
                               <td className={posTd+' text-right font-bold tabular-nums'}>{rupiah(a.extra)}</td>
                               <td className={posTd+' text-right tabular-nums'}>{rupiah(a.per_unit)}</td>
-                              <td className={posTd+' text-right text-xs text-[#45464d] tabular-nums'}>
+                              <td className={posTd+' text-right text-xs text-ink-2 tabular-nums'}>
                                 {(a.avg_cost_before===null || a.avg_cost_before===undefined)
                                   ? 'tanpa baris stok'
                                   : rupiah(a.avg_cost_before)+' → '+rupiah(a.avg_cost_after ?? a.avg_cost_before)}
@@ -422,23 +422,23 @@ export default function LandedCosts(){
           <form onSubmit={submit} className="bg-white rounded-xl w-full max-w-3xl max-h-[92vh] flex flex-col border shadow-raised overflow-hidden animate-pop">
             <div className="p-4 border-b flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-bold text-[16px] text-[#0b1c30]">Buat Landed Cost</h3>
-                <div className="text-xs text-[#45464d] mt-0.5">Pilih PO impor, isi biaya sampai gudang, lalu hitung alokasi</div>
+                <h3 className="font-bold text-[16px] text-ink">Buat Landed Cost</h3>
+                <div className="text-xs text-ink-2 mt-0.5">Pilih PO impor, isi biaya sampai gudang, lalu hitung alokasi</div>
               </div>
-              <button type="button" onClick={()=>setShow(false)} className="w-9 h-9 rounded-xl border border-[#e7ecf7] grid place-items-center text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
+              <button type="button" onClick={()=>setShow(false)} className="w-9 h-9 rounded-xl border border-line grid place-items-center text-ink-2 hover:bg-surface-2"><X size={16}/></button>
             </div>
 
             <div className="p-4 space-y-3 overflow-auto">
               {formErr && <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{formErr}</div>}
 
               <div className="grid sm:grid-cols-2 gap-2">
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">PO IMPORT *</span>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">PO IMPORT *</span>
                   <PosSelect size="md" value={form.po_id} onChange={v=>setForm({...form, po_id:v})}>
                     <option value="">Pilih PO</option>
                     {pos.map(p=> <option key={p.id} value={p.id}>{p.po_number} • {p.supplier_name||'-'}</option>)}
                   </PosSelect>
                 </label>
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">GRN (OPSIONAL)</span>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">GRN (OPSIONAL)</span>
                   <PosSelect size="md" value={form.grn_id} onChange={v=>setForm({...form, grn_id:v})}>
                     <option value="">Tanpa GRN</option>
                     {grns.map(g=> <option key={g.id} value={g.id}>{g.grn_number||('GRN #'+g.id)}</option>)}
@@ -447,20 +447,20 @@ export default function LandedCosts(){
               </div>
 
               <div className="grid sm:grid-cols-3 gap-2">
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">CONTAINER</span>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">CONTAINER</span>
                   <input value={form.container_no} onChange={e=>setForm({...form, container_no:e.target.value})} placeholder="MSKU1234567" className={posInput}/></label>
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">BL / B/L NO</span>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">BL / B/L NO</span>
                   <input value={form.bl_number} onChange={e=>setForm({...form, bl_number:e.target.value})} placeholder="BL-..." className={posInput}/></label>
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">PIB / PEB</span>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">PIB / PEB</span>
                   <input value={form.pib_number} onChange={e=>setForm({...form, pib_number:e.target.value})} placeholder="PIB-..." className={posInput}/></label>
               </div>
 
               <div className="grid sm:grid-cols-3 gap-2">
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">TGL TIBA</span>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">TGL TIBA</span>
                   <input type="date" value={form.arrival_date} onChange={e=>setForm({...form, arrival_date:e.target.value})} className={posInput}/></label>
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">TGL CLEARANCE</span>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">TGL CLEARANCE</span>
                   <input type="date" value={form.clearance_date} onChange={e=>setForm({...form, clearance_date:e.target.value})} className={posInput}/></label>
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">METODE ALOKASI</span>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">METODE ALOKASI</span>
                   <PosSelect size="md" value={form.allocation_method} onChange={v=>setForm({...form, allocation_method:v})}>
                     <option value="VALUE">VALUE - proporsional nilai barang</option>
                     <option value="WEIGHT">WEIGHT - proporsional berat/qty</option>
@@ -469,9 +469,9 @@ export default function LandedCosts(){
                 </label>
               </div>
 
-              <div className="rounded-xl border border-[#e7ecf7] overflow-hidden">
-                <div className="bg-[#eff4ff] px-3 py-2 flex items-center justify-between border-b border-[#e7ecf7]">
-                  <span className="text-[11px] font-bold tracking-wider text-[#45464d]">KOMPONEN BIAYA</span>
+              <div className="rounded-xl border border-line overflow-hidden">
+                <div className="bg-surface-2 px-3 py-2 flex items-center justify-between border-b border-line">
+                  <span className="text-[11px] font-bold tracking-wider text-ink-2">KOMPONEN BIAYA</span>
                   <button type="button" onClick={()=>setForm({...form, details:[...form.details, { cost_type:'OTHER', description:'', amount:'', currency:'IDR', exchange_rate:1 }]})}
                     className={posBtnSm}><Plus size={13}/> Tambah Baris</button>
                 </div>
@@ -479,29 +479,29 @@ export default function LandedCosts(){
                   {form.details.map((d,i)=>(
                     <div key={i} className="grid grid-cols-12 gap-2 items-end">
                       <div className="col-span-12 sm:col-span-3">
-                        <span className="text-[11px] font-bold tracking-wider text-[#76777d]">JENIS</span>
+                        <span className="text-[11px] font-bold tracking-wider text-ink-3">JENIS</span>
                         <PosSelect size="md" value={d.cost_type} onChange={v=>{ const c=[...form.details]; c[i]={...c[i], cost_type:v}; setForm({...form, details:c}); }}>
                           {COST_TYPES.map(t=> <option key={t} value={t}>{t}</option>)}
                         </PosSelect>
                       </div>
                       <div className="col-span-12 sm:col-span-3">
-                        <span className="text-[11px] font-bold tracking-wider text-[#76777d]">KETERANGAN</span>
+                        <span className="text-[11px] font-bold tracking-wider text-ink-3">KETERANGAN</span>
                         <input value={d.description} onChange={e=>{ const c=[...form.details]; c[i]={...c[i], description:e.target.value}; setForm({...form, details:c}); }}
                           placeholder={COST_LABEL[d.cost_type]} className={posInput}/>
                       </div>
                       <div className="col-span-4 sm:col-span-2">
-                        <span className="text-[11px] font-bold tracking-wider text-[#76777d]">VALUTA</span>
+                        <span className="text-[11px] font-bold tracking-wider text-ink-3">VALUTA</span>
                         <PosSelect size="md" value={d.currency} onChange={v=>{ const c=[...form.details]; c[i]={...c[i], currency:v}; setForm({...form, details:c}); }}>
                           <option value="IDR">IDR</option><option value="USD">USD</option><option value="SGD">SGD</option><option value="EUR">EUR</option>
                         </PosSelect>
                       </div>
                       <div className="col-span-4 sm:col-span-2">
-                        <span className="text-[11px] font-bold tracking-wider text-[#76777d]">KURS</span>
+                        <span className="text-[11px] font-bold tracking-wider text-ink-3">KURS</span>
                         <input type="number" step="0.01" value={d.exchange_rate} onChange={e=>{ const c=[...form.details]; c[i]={...c[i], exchange_rate:e.target.value}; setForm({...form, details:c}); }}
                           className={posInput+' text-right tabular-nums'}/>
                       </div>
                       <div className="col-span-4 sm:col-span-2">
-                        <span className="text-[11px] font-bold tracking-wider text-[#76777d]">JUMLAH</span>
+                        <span className="text-[11px] font-bold tracking-wider text-ink-3">JUMLAH</span>
                         <input type="number" value={d.amount} onChange={e=>{ const c=[...form.details]; c[i]={...c[i], amount:e.target.value}; setForm({...form, details:c}); }}
                           placeholder="0" className={posInput+' text-right tabular-nums'}/>
                       </div>
@@ -509,19 +509,19 @@ export default function LandedCosts(){
                         className="col-span-12 sm:col-span-1 h-9 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 grid place-items-center" title="Hapus baris">
                         <Trash2 size={14}/>
                       </button>
-                      <div className="col-span-12 text-[11px] text-[#76777d] text-right">
+                      <div className="col-span-12 text-[11px] text-ink-3 text-right">
                         = {rupiah(num(d.amount) * (num(d.exchange_rate)||1))}
                       </div>
                     </div>
                   ))}
                 </div>
-                <div className="px-3 py-2 bg-[#0051d5]/5 border-t border-[#0051d5]/20 flex items-center justify-between">
-                  <span className="text-[11px] font-bold tracking-wider text-[#0051d5]">TOTAL BIAYA IMPOR</span>
-                  <span className="font-bold text-[#0b1c30]">{rupiah(form.details.reduce((a,d)=> a + num(d.amount)*(num(d.exchange_rate)||1), 0))}</span>
+                <div className="px-3 py-2 bg-brand/5 border-t border-brand/20 flex items-center justify-between">
+                  <span className="text-[11px] font-bold tracking-wider text-brand">TOTAL BIAYA IMPOR</span>
+                  <span className="font-bold text-ink">{rupiah(form.details.reduce((a,d)=> a + num(d.amount)*(num(d.exchange_rate)||1), 0))}</span>
                 </div>
               </div>
 
-              <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">CATATAN</span>
+              <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-ink-2">CATATAN</span>
                 <input value={form.notes} onChange={e=>setForm({...form, notes:e.target.value})} placeholder="Dokumen: PIB, BL, packing list, COO..." className={posInput}/></label>
             </div>
 

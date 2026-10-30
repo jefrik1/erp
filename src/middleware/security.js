@@ -11,6 +11,10 @@
 const now = () => Date.now();
 
 export function createRateLimiter({ windowMs = 60_000, max = 120, name = 'rl', keyFn } = {}){
+  // RATE_LIMIT_DISABLED=1 hanya dihormati di luar produksi. Dipakai test otomatis
+  // dan verifikasi UI lokal: tanpa ini, 40+ login berturut-turut memicu 429 dan
+  // membuat test flaky (temuan INF-5/INF-7). Di produksi flag ini diabaikan.
+  const disabled = process.env.RATE_LIMIT_DISABLED === '1' && process.env.NODE_ENV !== 'production';
   const hits = new Map(); // key -> { count, reset }
   const timer = setInterval(()=>{
     const t = now();
@@ -19,6 +23,7 @@ export function createRateLimiter({ windowMs = 60_000, max = 120, name = 'rl', k
   if(timer.unref) timer.unref();
 
   return function rateLimiter(req, res, next){
+    if(disabled) return next();
     // Jangan batasi preflight CORS & health check.
     if(req.method === 'OPTIONS' || req.path === '/api/health') return next();
     const key = name + '|' + (keyFn ? keyFn(req) : (req.ip || req.socket?.remoteAddress || 'unknown'));

@@ -10,6 +10,7 @@ const routes = [...src.matchAll(/router\.(get|post|put|delete)\('([^']+)'(?:,\s*
 // Endpoint self-service yang memang boleh diakses semua user login (di-scope ke employee_id sendiri).
 const SELF_SERVICE = new Set([
   '/attendance/checkin','/attendance/checkout','/attendance/mine','/me',
+  '/attendance/policy',   // konfigurasi geofence/jam masuk untuk halaman /absen (read-only)
   '/leaves/mine','/leaves/attachment','/leaves/:id/attachment','/leaves/quota',
   '/leaves/request','/leaves/:id/cancel',
 ]);

@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+
+<html lang="id"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-error":"#ffffff","brand-primary-subtle":"#EEF3FF","primary-fixed-dim":"#b8c4ff","surface-container-high":"#e0e8ff","surface":"#f9f9ff","surface-container":"#e9edff","info-bg":"#F0F9FF","brand-primary-border":"#C7D5FE","surface-container-lowest":"#ffffff","on-primary-fixed":"#001453","on-primary":"#ffffff","danger-border":"#FECDCA","inverse-surface":"#293041","success-border":"#ABEFC6","inverse-primary":"#b8c4ff","secondary-fixed-dim":"#bec6e0","on-primary-container":"#a8b8ff","secondary-container":"#dae2fd","secondary-fixed":"#dae2fd","on-secondary-fixed":"#131b2e","surface-subtle":"#F4F6F8","sidebar-accent-border":"#1E293B","surface-container-low":"#f1f3ff","border-muted":"#D0D5DD","tertiary-fixed-dim":"#6cd8c7","danger-text":"#B42318","surface-variant":"#dbe2f9","on-secondary":"#ffffff","tertiary-fixed":"#89f5e3","on-surface-variant":"#444653","success-bg":"#ECFDF3","surface-inset":"#F8FAFC","ink-secondary":"#475467","primary":"#00288e","primary-container":"#1e40af","surface-container-highest":"#dbe2f9","surface-tint":"#3755c3","success-text":"#067647","background":"#f9f9ff","surface-bright":"#f9f9ff","outline-variant":"#c4c5d5","canvas-background":"#F7F8FA","on-background":"#141b2c","warning-bg":"#FFFAEB","info-border":"#B9E6FE","info-text":"#026AA2","on-tertiary-container":"#60cdbc","secondary":"#565e74","danger-bg":"#FEF3F2","on-primary-fixed-variant":"#173bab","surface-dim":"#d2daf0","tertiary-container":"#00554c","border-hairline":"#E4E7EC","on-surface":"#141b2c","tertiary":"#003c35","on-error-container":"#93000a","on-secondary-container":"#5c647a","brand-primary-hover":"#1B3A9C","ink-slate-light":"#94A3B8","ink-slate":"#64748B","on-tertiary-fixed-variant":"#005047","inverse-on-surface":"#edf0ff","on-secondary-fixed-variant":"#3f465c","on-tertiary":"#ffffff","warning-border":"#FEDF89","primary-fixed":"#dde1ff","accent-blue":"#3B82F6","surface-card":"#FFFFFF","outline":"#757684","error":"#ba1a1a","error-container":"#ffdad6","on-tertiary-fixed":"#00201c","warning-text":"#B54708","ink-muted":"#667085"},borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},spacing:{"space-xl":"1.5rem","margin-compact":"1rem","space-lg":"1rem",margin:"1.5rem",gutter:"1rem","space-md":"0.75rem","space-xs":"0.25rem","gutter-dense":"0.5rem","space-sm":"0.5rem"},fontFamily:{"body-md-medium":["Inter"],"body-sm-semibold":["Inter"],"label-mono-lg":["JetBrains Mono"],"label-mono-sm":["JetBrains Mono"],"label-mono-base":["JetBrains Mono"],"body-md":["Inter"],"headline-sm":["Inter"],"headline-lg":["Inter"],"caption-sidebar":["Inter"],"headline-md":["Inter"],"body-sm":["Inter"],"caption-meta":["Inter"],"caption-caps":["Inter"],"label-mono-metric":["JetBrains Mono"]},fontSize:{"body-md-medium":["14px",{lineHeight:"20px",fontWeight:"500"}],"body-sm-semibold":["13px",{lineHeight:"18px",fontWeight:"600"}],"label-mono-lg":["28px",{lineHeight:"32px",letterSpacing:"-0.02em",fontWeight:"700"}],"label-mono-sm":["12px",{lineHeight:"16px",fontWeight:"400"}],"label-mono-base":["13px",{lineHeight:"18px",fontWeight:"500"}],"body-md":["14px",{lineHeight:"20px",fontWeight:"400"}],"headline-sm":["16px",{lineHeight:"22px",letterSpacing:"-0.01em",fontWeight:"600"}],"headline-lg":["20px",{lineHeight:"28px",letterSpacing:"-0.02em",fontWeight:"700"}],"caption-sidebar":["10px",{lineHeight:"12px",letterSpacing:"0.08em",fontWeight:"600"}],"headline-md":["18px",{lineHeight:"24px",letterSpacing:"-0.015em",fontWeight:"700"}],"body-sm":["13px",{lineHeight:"18px",fontWeight:"400"}],"caption-meta":["12px",{lineHeight:"16px",fontWeight:"400"}],"caption-caps":["11px",{lineHeight:"14px",letterSpacing:"0.06em",fontWeight:"700"}],"label-mono-metric":["20px",{lineHeight:"24px",letterSpacing:"-0.02em",fontWeight:"700"}]}}}}</script></head><body class="bg-canvas-background font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-[240px] bg-[#0F172A] z-50 flex flex-col border-r border-sidebar-accent-border select-none"><div class="h-[52px] px-space-md flex items-center justify-between border-b border-sidebar-accent-border shrink-0"><div class="flex items-center gap-space-sm min-w-0"><div class="w-7 h-7 rounded bg-accent-blue flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-white text-[18px]">apartment</span></div><div class="min-w-0 leading-none"><div class="font-headline-sm text-white tracking-tight truncate text-[13px] font-bold">Sumber Material</div><div class="font-caption-sidebar text-ink-slate tracking-widest text-[9px] mt-0.5">ENTERPRISE ERP</div></div></div><span class="inline-flex items-center px-1.5 py-0.5 rounded bg-sidebar-accent-border text-[9px] font-label-mono-base text-ink-slate-light border border-slate-700">v4.2</span></div><div class="p-space-sm border-b border-sidebar-accent-border shrink-0"><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-2 text-ink-slate text-[16px]">search</span><input class="w-full h-7 pl-7 pr-2 bg-[#1E293B] text-white placeholder-ink-slate text-[12px] font-body-sm rounded border border-slate-700 focus:outline-none focus:border-accent-blue transition-colors" placeholder="Cari menu &amp; modul..." type="text"/></div></div><div class="flex-1 overflow-y-auto py-space-sm px-space-xs scrollbar-none"><nav class="space-y-4" data-active-classes="bg-primary-container text-white font-body-sm-semibold border-l-2 border-accent-blue"><div class="space-y-0.5"><div class="px-2.5 py-1 font-caption-sidebar text-ink-slate uppercase tracking-wider text-[10px]">OPERASIONAL UTAMA</div><a class="flex items-center h-8 px-2.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors group" data-path="penjualan" href="#"><span class="material-symbols-outlined text-[17px] mr-2.5 text-ink-slate group-hover:text-white shrink-0">point_of_sale</span><span class="font-body-sm text-[12.5px] truncate">Penjualan</span></a><a class="flex items-center h-8 px-2.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors group" data-path="proyek" href="#"><span class="material-symbols-outlined text-[17px] mr-2.5 text-ink-slate group-hover:text-white shrink-0">assignment</span><span class="font-body-sm text-[12.5px] truncate">Proyek</span></a><a class="flex items-center h-8 px-2.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors group" data-path="pembelian" href="#"><span class="material-symbols-outlined text-[17px] mr-2.5 text-ink-slate group-hover:text-white shrink-0">shopping_cart</span><span class="font-body-sm text-[12.5px] truncate">Pembelian</span></a><a class="flex items-center h-8 px-2.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors group" data-path="barang-dan-persediaan" href="#"><span class="material-symbols-outlined text-[17px] mr-2.5 text-ink-slate group-hover:text-white shrink-0">inventory_2</span><span class="font-body-sm text-[12.5px] truncate">Barang &amp; Persediaan</span></a><a class="flex items-center h-8 px-2.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors group" data-path="operasional" href="#"><span class="material-symbols-outlined text-[17px] mr-2.5 text-ink-slate group-hover:text-white shrink-0">local_shipping</span><span class="font-body-sm text-[12.5px] truncate">Operasional Logistik</span></a><a class="flex items-center h-8 px-2.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors group" data-path="keuangan" href="#"><span class="material-symbols-outlined text-[17px] mr-2.5 text-ink-slate group-hover:text-white shrink-0">account_balance</span><span class="font-body-sm text-[12.5px] truncate">Keuangan &amp; Akuntansi</span></a><a class="flex items-center h-8 px-2.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors group" data-path="loyalty" href="#"><span class="material-symbols-outlined text-[17px] mr-2.5 text-ink-slate group-hover:text-white shrink-0">loyalty</span><span class="font-body-sm text-[12.5px] truncate">Loyalty Program</span></a></div><div class="space-y-0.5"><div class="px-2.5 py-1 font-caption-sidebar text-ink-slate uppercase tracking-wider text-[10px]">SDM &amp; MASTER</div><a class="flex items-center h-8 px-2.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors group" data-path="karyawan-dan-hr" href="#"><span class="material-symbols-outlined text-[17px] mr-2.5 text-ink-slate group-hover:text-white shrink-0">badge</span><span class="font-body-sm text-[12.5px] truncate">Karyawan &amp; HR</span></a><a class="flex items-center h-8 px-2.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors group" data-path="pelanggan" href="#"><span class="material-symbols-outlined text-[17px] mr-2.5 text-ink-slate group-hover:text-white shrink-0">groups</span><span class="font-body-sm text-[12.5px] truncate">Pelanggan</span></a><a class="flex items-center h-8 px-2.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors group" data-path="supplier" href="#"><span class="material-symbols-outlined text-[17px] mr-2.5 text-ink-slate group-hover:text-white shrink-0">domain</span><span class="font-body-sm text-[12.5px] truncate">Supplier</span></a><a class="flex items-center h-8 px-2.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors group" data-path="audit-dan-grc" href="#"><span class="material-symbols-outlined text-[17px] mr-2.5 text-ink-slate group-hover:text-white shrink-0">verified_user</span><span class="font-body-sm text-[12.5px] truncate">Audit &amp; GRC</span></a><a class="flex items-center h-8 px-2.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors group" data-path="approval" href="#"><span class="material-symbols-outlined text-[17px] mr-2.5 text-ink-slate group-hover:text-white shrink-0">task_alt</span><span class="font-body-sm text-[12.5px] truncate">Approval</span></a><a class="flex items-center h-8 px-2.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors group" data-path="approval-matrix" href="#"><span class="material-symbols-outlined text-[17px] mr-2.5 text-ink-slate group-hover:text-white shrink-0">schema</span><span class="font-body-sm text-[12.5px] truncate">Approval Matrix</span></a><a class="flex items-center h-8 px-2.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors group" data-path="log-error" href="#"><span class="material-symbols-outlined text-[17px] mr-2.5 text-ink-slate group-hover:text-white shrink-0">bug_report</span><span class="font-body-sm text-[12.5px] truncate">Log Error</span></a><a class="flex items-center h-8 px-2.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors group" data-path="pusat-notifikasi" href="#"><span class="material-symbols-outlined text-[17px] mr-2.5 text-ink-slate group-hover:text-white shrink-0">notifications_active</span><span class="font-body-sm text-[12.5px] truncate">Pusat Notifikasi</span></a><a aria-current="page" class="flex items-center h-8 px-2.5 rounded transition-colors group bg-primary-container text-white font-body-sm-semibold border-l-2 border-accent-blue" data-path="pengaturan-sistem" href="#"><span class="material-symbols-outlined text-[17px] mr-2.5 text-ink-slate group-hover:text-white shrink-0">settings</span><span class="font-body-sm text-[12.5px] truncate">Pengaturan Sistem</span></a></div><div class="space-y-0.5"><div class="px-2.5 py-1 font-caption-sidebar text-ink-slate uppercase tracking-wider text-[10px]">SAYA</div><a class="flex items-center h-8 px-2.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors group" data-path="pengumuman" href="#"><span class="material-symbols-outlined text-[17px] mr-2.5 text-ink-slate group-hover:text-white shrink-0">campaign</span><span class="font-body-sm text-[12.5px] truncate">Pengumuman</span></a><a class="flex items-center h-8 px-2.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors group" data-path="absensi-saya" href="#"><span class="material-symbols-outlined text-[17px] mr-2.5 text-ink-slate group-hover:text-white shrink-0">fingerprint</span><span class="font-body-sm text-[12.5px] truncate">Absensi Saya</span></a><a class="flex items-center h-8 px-2.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors group" data-path="cuti-tahunan" href="#"><span class="material-symbols-outlined text-[17px] mr-2.5 text-ink-slate group-hover:text-white shrink-0">event_available</span><span class="font-body-sm text-[12.5px] truncate">Cuti Tahunan</span></a><a class="flex items-center h-8 px-2.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors group" data-path="izin-dan-sakit" href="#"><span class="material-symbols-outlined text-[17px] mr-2.5 text-ink-slate group-hover:text-white shrink-0">medical_services</span><span class="font-body-sm text-[12.5px] truncate">Izin &amp; Sakit</span></a><a class="flex items-center h-8 px-2.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors group" data-path="trip-saya" href="#"><span class="material-symbols-outlined text-[17px] mr-2.5 text-ink-slate group-hover:text-white shrink-0">commute</span><span class="font-body-sm text-[12.5px] truncate">Trip Saya</span></a><a class="flex items-center h-8 px-2.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors group" data-path="surat-jalan" href="#"><span class="material-symbols-outlined text-[17px] mr-2.5 text-ink-slate group-hover:text-white shrink-0">description</span><span class="font-body-sm text-[12.5px] truncate">Surat Jalan</span></a><a class="flex items-center h-8 px-2.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors group" data-path="profil-saya" href="#"><span class="material-symbols-outlined text-[17px] mr-2.5 text-ink-slate group-hover:text-white shrink-0">person</span><span class="font-body-sm text-[12.5px] truncate">Profil Saya</span></a><a class="flex items-center h-8 px-2.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors group" data-path="panduan-dan-bantuan" href="#"><span class="material-symbols-outlined text-[17px] mr-2.5 text-ink-slate group-hover:text-white shrink-0">help_center</span><span class="font-body-sm text-[12.5px] truncate">Panduan &amp; Bantuan</span></a></div></nav></div><div class="p-space-sm border-t border-sidebar-accent-border shrink-0 bg-[#0A0F1D]"><div class="flex items-center justify-between text-[11px] text-ink-slate font-label-mono-sm"><span>SERVER: PROD-JKT01</span><span class="w-1.5 h-1.5 rounded-full bg-success-text"></span></div></div></aside><div class="pl-[240px]"><header class="fixed top-0 left-[240px] right-0 h-[52px] bg-surface-card border-b border-border-hairline z-40 px-space-lg flex items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.02)]"><div class="flex items-center gap-space-md"><div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-success-bg border border-success-border"><span class="w-1.5 h-1.5 rounded-full bg-success-text"></span><span class="font-caption-caps text-success-text text-[10px] uppercase font-bold tracking-wider">Sistem normal</span></div><div class="h-4 w-px bg-border-hairline"></div><div class="flex items-center gap-1 px-2 py-1 rounded bg-surface-inset border border-border-hairline text-ink-secondary hover:text-on-surface cursor-pointer text-[12px] font-body-sm-semibold"><span class="material-symbols-outlined text-[16px] text-primary">warehouse</span><span>Gudang Pusat Bekasi</span><span class="material-symbols-outlined text-[15px]">expand_more</span></div><div class="h-4 w-px bg-border-hairline"></div><div class="flex items-center gap-1.5 text-ink-slate font-label-mono-sm text-[11px]"><span class="material-symbols-outlined text-[14px]">schedule</span><span>24 Okt 2024 • 14:32:08 WIB</span></div></div><div class="flex items-center gap-space-md"><div class="relative flex items-center w-[260px]"><span class="material-symbols-outlined absolute left-2.5 text-ink-slate text-[16px]">search</span><input class="w-full h-8 pl-8 pr-12 bg-surface-subtle border border-border-hairline rounded font-body-sm text-[12px] text-on-surface placeholder:text-ink-muted focus:outline-none focus:border-accent-blue focus:bg-surface-card transition-colors" placeholder="Cari transaksi, SO, SKU..." type="text"/><div class="absolute right-1.5 px-1 py-0.5 rounded border border-border-muted bg-surface-card text-[9px] font-label-mono-sm text-ink-slate leading-none">Ctrl K</div></div><div class="h-4 w-px bg-border-hairline"></div><button class="relative p-1.5 rounded text-ink-secondary hover:text-on-surface hover:bg-surface-subtle transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-error border-2 border-surface-card"></span></button><div class="flex items-center gap-2 pl-2 border-l border-border-hairline"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="hidden xl:flex flex-col text-left"><span class="font-body-sm-semibold text-[12px] leading-tight text-on-surface">Hendra Wijaya</span><span class="font-caption-meta text-ink-muted text-[10px] leading-tight">Super Administrator</span></div></div></div></header><main class="w-full pt-[52px] bg-canvas-background min-h-screen"><div class="flex flex-col w-full">
+<!-- Top Action Tier & Title Banner -->
+<div class="bg-surface-card px-space-lg py-space-md shadow-sm">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary shadow-sm shrink-0">
+<span class="material-symbols-outlined text-[24px]">manage_accounts</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-2">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight truncate">Master Data &amp; Pengaturan Sistem</h1>
+<span class="px-2 py-0.5 rounded-full bg-brand-primary-subtle text-primary-container font-caption-caps text-caption-caps border border-brand-primary-border">13 Pengguna</span>
+</div>
+<p class="font-body-sm text-body-sm text-ink-muted truncate mt-0.5">Kelola pengguna • peran (RBAC) • cakupan data gudang • matriks keamanan multi-cabang</p>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button class="h-8 px-3 rounded-lg bg-surface-subtle hover:bg-surface-container text-ink-secondary hover:text-on-surface font-body-sm-semibold text-body-sm-semibold flex items-center gap-1.5 transition-colors" type="button">
+<span class="material-symbols-outlined text-[17px] text-accent-blue">key</span>
+<span>Provisioning SDM <code class="font-label-mono-sm text-ink-muted text-[11px] ml-0.5">provision:accounts</code></span>
+</button>
+<button class="h-8 px-3.5 rounded-lg bg-primary-container hover:bg-brand-primary-hover text-on-primary font-body-sm-semibold text-body-sm-semibold flex items-center gap-1.5 shadow-sm transition-colors" onclick="document.getElementById('modal-tambah-user').classList.remove('hidden')" type="button">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>Tambah Pengguna Baru</span>
+</button>
+</div>
+</div>
+<!-- Segmented Navigation Tabs -->
+<div class="flex items-center gap-1 mt-4 overflow-x-auto pb-0.5">
+<button class="h-8 px-3 rounded-lg bg-primary-container text-on-primary font-body-sm-semibold text-body-sm-semibold flex items-center gap-2 whitespace-nowrap shadow-sm" type="button">
+<span class="material-symbols-outlined text-[16px]">group</span>
+<span>1. Pengguna, Role RBAC &amp; Cakupan Gudang</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-card/20 text-on-primary text-[10px] font-label-mono-base">13</span>
+</button>
+<button class="h-8 px-3 rounded-lg bg-transparent hover:bg-surface-subtle text-ink-secondary hover:text-on-surface font-body-sm text-body-sm flex items-center gap-2 whitespace-nowrap transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">shield</span>
+<span>2. Matriks Hak Akses Halaman (access.js · 17 Role)</span>
+</button>
+<button class="h-8 px-3 rounded-lg bg-transparent hover:bg-surface-subtle text-ink-secondary hover:text-on-surface font-body-sm text-body-sm flex items-center gap-2 whitespace-nowrap transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span>3. Lokasi Geofence &amp; Parameter Global</span>
+</button>
+<button class="h-8 px-3 rounded-lg bg-transparent hover:bg-surface-subtle text-ink-secondary hover:text-on-surface font-body-sm text-body-sm flex items-center gap-2 whitespace-nowrap transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">receipt_long</span>
+<span>4. Konfigurasi Pajak &amp; Penomoran Dokumen</span>
+</button>
+</div>
+</div>
+<!-- Operational Geofence Quick Context Banner -->
+<div class="px-space-lg pt-space-md">
+<div class="bg-surface-card rounded-xl p-3 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-info-bg text-info-text flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]">share_location</span>
+</div>
+<div class="min-w-0">
+<div class="font-caption-caps text-caption-caps text-ink-slate uppercase">Lokasi Operasional Utama (Satu Titik Sinkron)</div>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="font-headline-sm text-headline-sm text-on-surface">Gudang Pusat Bekasi (Hub Induk Jabodetabek)</span>
+<span class="px-2 py-0.5 rounded bg-surface-subtle font-label-mono-sm text-label-mono-sm text-ink-slate">-6.238270, 106.975571 • Radius Geofence 150m</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success-bg text-success-text text-caption-caps font-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-success-text animate-pulse"></span>
+          Sinkronisasi Realtime RBAC
+        </span>
+<button class="h-7 px-2.5 rounded bg-surface-subtle hover:bg-surface-container text-ink-secondary hover:text-on-surface font-body-sm text-body-sm flex items-center gap-1 transition-colors" type="button">
+<span class="material-symbols-outlined text-[15px]">map</span>
+<span>Lihat di Peta</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Identity & Security Metric Strip (4 Columns) -->
+<div class="px-space-lg pt-space-md">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- Col 1 -->
+<div class="bg-surface-card rounded-xl p-3.5 shadow-sm flex items-center justify-between">
+<div class="min-w-0">
+<div class="font-caption-caps text-caption-caps text-ink-muted uppercase">Pengguna Aktif Terdaftar</div>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-label-mono-lg text-label-mono-lg text-on-surface leading-none">13</span>
+<span class="font-body-sm-semibold text-body-sm-semibold text-success-text">Akun Aktif</span>
+</div>
+<div class="font-caption-meta text-caption-meta text-ink-slate truncate mt-1">Terhubung 13 record karyawan (EMP)</div>
+</div>
+<div class="w-9 h-9 rounded-lg bg-brand-primary-subtle text-primary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+</div>
+</div>
+<!-- Col 2 -->
+<div class="bg-surface-card rounded-xl p-3.5 shadow-sm flex items-center justify-between">
+<div class="min-w-0">
+<div class="font-caption-caps text-caption-caps text-ink-muted uppercase">Definisi Peran (RBAC Roles)</div>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-label-mono-lg text-label-mono-lg text-on-surface leading-none">17</span>
+<span class="font-body-sm-semibold text-body-sm-semibold text-primary">Role Standar</span>
+</div>
+<div class="font-caption-meta text-caption-meta text-ink-slate truncate mt-1">Single source: access.js</div>
+</div>
+<div class="w-9 h-9 rounded-lg bg-surface-subtle text-ink-secondary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">admin_panel_settings</span>
+</div>
+</div>
+<!-- Col 3 -->
+<div class="bg-surface-card rounded-xl p-3.5 shadow-sm flex items-center justify-between">
+<div class="min-w-0">
+<div class="font-caption-caps text-caption-caps text-ink-muted uppercase">Akses Global (Direktur/Superadmin)</div>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-label-mono-lg text-label-mono-lg text-warning-text leading-none">2</span>
+<span class="font-body-sm-semibold text-body-sm-semibold text-warning-text">Akses Penuh</span>
+</div>
+<div class="font-caption-meta text-caption-meta text-ink-slate truncate mt-1">11 akun dibatasi scope cabang</div>
+</div>
+<div class="w-9 h-9 rounded-lg bg-warning-bg text-warning-text flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">lock_open</span>
+</div>
+</div>
+<!-- Col 4 -->
+<div class="bg-surface-card rounded-xl p-3.5 shadow-sm flex items-center justify-between">
+<div class="min-w-0">
+<div class="font-caption-caps text-caption-caps text-ink-muted uppercase">Keamanan MFA (TOTP 2FA)</div>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-label-mono-metric text-label-mono-metric text-primary-container leading-none">4 Aktif</span>
+<span class="font-label-mono-sm text-label-mono-sm text-ink-muted">· 9 Belum</span>
+</div>
+<div class="font-caption-meta text-caption-meta text-ink-slate truncate mt-1">Lockout 5× login gagal (15m)</div>
+</div>
+<div class="w-9 h-9 rounded-lg bg-info-bg text-info-text flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">security</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Filter & Search Command Strip -->
+<div class="px-space-lg pt-space-md">
+<div class="bg-surface-card rounded-xl p-3 shadow-sm flex flex-col lg:flex-row items-center justify-between gap-3">
+<div class="flex flex-wrap items-center gap-2.5 w-full lg:w-auto flex-1">
+<!-- Search -->
+<div class="relative min-w-[280px] flex-1 max-w-md">
+<span class="material-symbols-outlined absolute left-2.5 top-2 text-ink-muted text-[17px]">search</span>
+<input class="w-full h-8 pl-8 pr-3 bg-surface-subtle hover:bg-surface-inset focus:bg-surface-card text-on-surface placeholder:text-ink-muted font-body-sm text-body-sm rounded-lg focus:outline-none focus:ring-1 focus:ring-accent-blue transition-colors" id="user-search-input" placeholder="Cari username, email, nama karyawan, atau role..." type="text"/>
+</div>
+<!-- Role Select -->
+<div class="relative">
+<select class="h-8 pl-2.5 pr-8 bg-surface-subtle hover:bg-surface-inset text-on-surface font-body-sm text-body-sm rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-accent-blue transition-colors">
+<option value="">Semua Role (17 Standar)</option>
+<option value="direktur">direktur (Direksi)</option>
+<option value="finance">finance (Keuangan)</option>
+<option value="sales">sales (Penjualan)</option>
+<option value="warehouse">warehouse (Gudang)</option>
+<option value="purchasing">purchasing (Pengadaan)</option>
+<option value="POS_CASHIER">POS_CASHIER (Kasir Toko)</option>
+<option value="auditor">auditor (Pengawas)</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-2 text-ink-muted text-[16px] pointer-events-none">unfold_more</span>
+</div>
+<!-- Warehouse Scope -->
+<div class="relative">
+<select class="h-8 pl-2.5 pr-8 bg-surface-subtle hover:bg-surface-inset text-on-surface font-body-sm text-body-sm rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-accent-blue transition-colors">
+<option value="">Semua Cakupan Gudang</option>
+<option value="global">🌐 Semua Cabang &amp; Gudang</option>
+<option value="bekasi">📍 Gudang Pusat Bekasi</option>
+<option value="surabaya">📍 Cabang Surabaya Rungkut</option>
+<option value="semarang">📍 Depo Logistik Semarang</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-2 text-ink-muted text-[16px] pointer-events-none">expand_more</span>
+</div>
+<!-- Status Filter -->
+<div class="relative">
+<select class="h-8 pl-2.5 pr-8 bg-surface-subtle hover:bg-surface-inset text-on-surface font-body-sm text-body-sm rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-accent-blue transition-colors">
+<option value="all">Semua Status (13)</option>
+<option value="active">Aktif (13)</option>
+<option value="locked">Terkunci / Lockout (0)</option>
+<option value="inactive">Nonaktif (0)</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-2 text-ink-muted text-[16px] pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="flex items-center gap-2 self-end lg:self-auto shrink-0">
+<button class="h-8 px-2.5 rounded-lg bg-surface-subtle hover:bg-surface-container text-ink-secondary hover:text-on-surface font-body-sm text-body-sm flex items-center gap-1.5 transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">refresh</span>
+<span>Muat Ulang</span>
+</button>
+<button class="h-8 px-2.5 rounded-lg bg-surface-subtle hover:bg-surface-container text-ink-secondary hover:text-on-surface font-body-sm text-body-sm flex items-center gap-1.5 transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">file_download</span>
+<span>Ekspor CSV</span>
+</button>
+</div>
+</div>
+</div>
+<!-- RBAC High-Density User Matrix Table -->
+<div class="px-space-lg py-space-md">
+<div class="bg-surface-card rounded-xl shadow-sm overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-subtle text-ink-secondary font-caption-caps text-caption-caps uppercase tracking-wider">
+<th class="py-2.5 px-3.5 w-[210px]">User &amp; Email</th>
+<th class="py-2.5 px-3 w-[190px]">Karyawan Terhubung</th>
+<th class="py-2.5 px-3 w-[150px]">Role (RBAC)</th>
+<th class="py-2.5 px-3 w-[190px]">Cakupan Data (Scope)</th>
+<th class="py-2.5 px-3 w-[120px]">Keamanan MFA</th>
+<th class="py-2.5 px-3 w-[160px]">Login Terakhir</th>
+<th class="py-2.5 px-3 w-[90px]">Status</th>
+<th class="py-2.5 px-3.5 text-right w-[150px]">Aksi</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-subtle font-body-sm text-body-sm">
+<!-- Row 1: Admin / Direktur -->
+<tr class="hover:bg-surface-inset transition-colors group">
+<td class="py-2 px-3.5">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-primary-container text-on-primary font-label-mono-base text-[11px] font-bold flex items-center justify-center shrink-0">
+                    AD
+                  </div>
+<div class="min-w-0">
+<div class="font-body-sm-semibold text-body-sm-semibold text-on-surface truncate flex items-center gap-1">
+                      admin
+                      <span class="material-symbols-outlined text-[14px] text-accent-blue" title="Super Administrator">verified</span>
+</div>
+<div class="font-label-mono-sm text-label-mono-sm text-ink-muted truncate">admin@erp.local</div>
+</div>
+</div>
+</td>
+<td class="py-2 px-3">
+<div class="flex flex-col">
+<span class="font-body-md-medium text-body-sm-semibold text-on-surface">Admin Utama</span>
+<span class="font-label-mono-sm text-label-mono-sm text-ink-slate">EMP-001 • Direksi</span>
+</div>
+</td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-body-sm-semibold bg-brand-primary-subtle text-primary-container border border-brand-primary-border">
+                  direktur
+                </span>
+</td>
+<td class="py-2 px-3">
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-surface-subtle text-on-surface font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[14px] text-accent-blue">public</span>
+<span class="truncate">Semua Cabang &amp; Gudang</span>
+</div>
+</td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-success-bg text-success-text text-[11px] font-body-sm-semibold">
+<span class="material-symbols-outlined text-[13px]">shield</span>
+                  MFA Aktif
+                </span>
+</td>
+<td class="py-2 px-3">
+<div class="font-label-mono-sm text-label-mono-sm text-on-surface">31 Okt 2026 00:11</div>
+<div class="font-label-mono-sm text-[11px] text-ink-muted">192.168.1.14 (LAN)</div>
+</td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-bg text-success-text text-caption-caps font-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-success-text"></span>
+                  Aktif
+                </span>
+</td>
+<td class="py-2 px-3.5 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1.5 rounded hover:bg-surface-subtle text-ink-secondary hover:text-primary transition-colors" title="Edit Scope &amp; Peran" type="button">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+</button>
+<button class="p-1.5 rounded hover:bg-surface-subtle text-ink-secondary hover:text-warning-text transition-colors" title="Reset Sandi" type="button">
+<span class="material-symbols-outlined text-[16px]">lock_reset</span>
+</button>
+<button class="p-1.5 rounded hover:bg-surface-subtle text-ink-secondary hover:text-danger-text transition-colors" title="Opsi Keamanan" type="button">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Finance -->
+<tr class="hover:bg-surface-inset transition-colors group">
+<td class="py-2 px-3.5">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-surface-container text-ink-secondary font-label-mono-base text-[11px] font-bold flex items-center justify-center shrink-0">
+                    FN
+                  </div>
+<div class="min-w-0">
+<div class="font-body-sm-semibold text-body-sm-semibold text-on-surface truncate">finance</div>
+<div class="font-label-mono-sm text-label-mono-sm text-ink-muted truncate">finance@erp.local</div>
+</div>
+</div>
+</td>
+<td class="py-2 px-3">
+<div class="flex flex-col">
+<span class="font-body-md-medium text-body-sm-semibold text-on-surface">Siti Rahma</span>
+<span class="font-label-mono-sm text-label-mono-sm text-ink-slate">EMP-002 • Finance Dept</span>
+</div>
+</td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-body-sm-semibold bg-success-bg text-success-text border border-success-border">
+                  finance
+                </span>
+</td>
+<td class="py-2 px-3">
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-surface-subtle text-on-surface font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[14px] text-accent-blue">public</span>
+<span class="truncate">Semua Cabang &amp; Gudang</span>
+</div>
+</td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-success-bg text-success-text text-[11px] font-body-sm-semibold">
+<span class="material-symbols-outlined text-[13px]">shield</span>
+                  MFA Aktif
+                </span>
+</td>
+<td class="py-2 px-3">
+<div class="font-label-mono-sm text-label-mono-sm text-on-surface">30 Okt 2026 17:45</div>
+<div class="font-label-mono-sm text-[11px] text-ink-muted">192.168.1.32</div>
+</td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-bg text-success-text text-caption-caps font-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-success-text"></span>
+                  Aktif
+                </span>
+</td>
+<td class="py-2 px-3.5 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1.5 rounded hover:bg-surface-subtle text-ink-secondary hover:text-primary transition-colors" title="Edit Scope &amp; Peran" type="button">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+</button>
+<button class="p-1.5 rounded hover:bg-surface-subtle text-ink-secondary hover:text-warning-text transition-colors" title="Reset Sandi" type="button">
+<span class="material-symbols-outlined text-[16px]">lock_reset</span>
+</button>
+<button class="p-1.5 rounded hover:bg-surface-subtle text-ink-secondary hover:text-danger-text transition-colors" title="Opsi Keamanan" type="button">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Sales -->
+<tr class="hover:bg-surface-inset transition-colors group">
+<td class="py-2 px-3.5">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-surface-container text-ink-secondary font-label-mono-base text-[11px] font-bold flex items-center justify-center shrink-0">
+                    SL
+                  </div>
+<div class="min-w-0">
+<div class="font-body-sm-semibold text-body-sm-semibold text-on-surface truncate">sales</div>
+<div class="font-label-mono-sm text-label-mono-sm text-ink-muted truncate">sales@erp.local</div>
+</div>
+</div>
+</td>
+<td class="py-2 px-3">
+<div class="flex flex-col">
+<span class="font-body-md-medium text-body-sm-semibold text-on-surface">Budi Sales</span>
+<span class="font-label-mono-sm text-label-mono-sm text-ink-slate">EMP-003 • Penjualan Retail</span>
+</div>
+</td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-body-sm-semibold bg-info-bg text-info-text border border-info-border">
+                  sales
+                </span>
+</td>
+<td class="py-2 px-3">
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-surface-subtle text-ink-secondary font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[14px] text-ink-slate">warehouse</span>
+<span class="truncate">Gudang Pusat Bekasi</span>
+</div>
+</td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-subtle text-ink-muted text-[11px] font-body-sm">
+                  Belum Aktif
+                </span>
+</td>
+<td class="py-2 px-3">
+<div class="font-label-mono-sm text-label-mono-sm text-on-surface">30 Okt 2026 16:20</div>
+<div class="font-label-mono-sm text-[11px] text-ink-muted">192.168.1.55</div>
+</td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-bg text-success-text text-caption-caps font-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-success-text"></span>
+                  Aktif
+                </span>
+</td>
+<td class="py-2 px-3.5 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1.5 rounded hover:bg-surface-subtle text-ink-secondary hover:text-primary transition-colors" title="Edit Scope &amp; Peran" type="button">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+</button>
+<button class="p-1.5 rounded hover:bg-surface-subtle text-ink-secondary hover:text-warning-text transition-colors" title="Reset Sandi" type="button">
+<span class="material-symbols-outlined text-[16px]">lock_reset</span>
+</button>
+<button class="p-1.5 rounded hover:bg-surface-subtle text-ink-secondary hover:text-danger-text transition-colors" title="Opsi Keamanan" type="button">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Gudang / Warehouse -->
+<tr class="hover:bg-surface-inset transition-colors group">
+<td class="py-2 px-3.5">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-surface-container text-ink-secondary font-label-mono-base text-[11px] font-bold flex items-center justify-center shrink-0">
+                    GD
+                  </div>
+<div class="min-w-0">
+<div class="font-body-sm-semibold text-body-sm-semibold text-on-surface truncate">gudang</div>
+<div class="font-label-mono-sm text-label-mono-sm text-ink-muted truncate">gudang@erp.local</div>
+</div>
+</div>
+</td>
+<td class="py-2 px-3">
+<div class="flex flex-col">
+<span class="font-body-md-medium text-body-sm-semibold text-on-surface">Agus Gudang</span>
+<span class="font-label-mono-sm text-label-mono-sm text-ink-slate">EMP-004 • Kepala Logistik</span>
+</div>
+</td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-body-sm-semibold bg-warning-bg text-warning-text border border-warning-border">
+                  warehouse
+                </span>
+</td>
+<td class="py-2 px-3">
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-surface-subtle text-ink-secondary font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[14px] text-ink-slate">warehouse</span>
+<span class="truncate">Gudang Pusat Bekasi</span>
+</div>
+</td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-subtle text-ink-muted text-[11px] font-body-sm">
+                  Belum Aktif
+                </span>
+</td>
+<td class="py-2 px-3">
+<div class="font-label-mono-sm text-label-mono-sm text-on-surface">30 Okt 2026 15:02</div>
+<div class="font-label-mono-sm text-[11px] text-ink-muted">192.168.1.70</div>
+</td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-bg text-success-text text-caption-caps font-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-success-text"></span>
+                  Aktif
+                </span>
+</td>
+<td class="py-2 px-3.5 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1.5 rounded hover:bg-surface-subtle text-ink-secondary hover:text-primary transition-colors" title="Edit Scope &amp; Peran" type="button">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+</button>
+<button class="p-1.5 rounded hover:bg-surface-subtle text-ink-secondary hover:text-warning-text transition-colors" title="Reset Sandi" type="button">
+<span class="material-symbols-outlined text-[16px]">lock_reset</span>
+</button>
+<button class="p-1.5 rounded hover:bg-surface-subtle text-ink-secondary hover:text-danger-text transition-colors" title="Opsi Keamanan" type="button">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5: Purchasing -->
+<tr class="hover:bg-surface-inset transition-colors group">
+<td class="py-2 px-3.5">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-surface-container text-ink-secondary font-label-mono-base text-[11px] font-bold flex items-center justify-center shrink-0">
+                    PC
+                  </div>
+<div class="min-w-0">
+<div class="font-body-sm-semibold text-body-sm-semibold text-on-surface truncate">purchasing</div>
+<div class="font-label-mono-sm text-label-mono-sm text-ink-muted truncate">purchasing@erp.local</div>
+</div>
+</div>
+</td>
+<td class="py-2 px-3">
+<div class="flex flex-col">
+<span class="font-body-md-medium text-body-sm-semibold text-on-surface">Dewi Procurement</span>
+<span class="font-label-mono-sm text-label-mono-sm text-ink-slate">EMP-005 • Buyer Material</span>
+</div>
+</td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-body-sm-semibold bg-surface-container-high text-on-primary-fixed-variant border border-brand-primary-border">
+                  purchasing
+                </span>
+</td>
+<td class="py-2 px-3">
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-surface-subtle text-on-surface font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[14px] text-accent-blue">public</span>
+<span class="truncate">Semua Cabang &amp; Gudang</span>
+</div>
+</td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-success-bg text-success-text text-[11px] font-body-sm-semibold">
+<span class="material-symbols-outlined text-[13px]">shield</span>
+                  MFA Aktif
+                </span>
+</td>
+<td class="py-2 px-3">
+<div class="font-label-mono-sm text-label-mono-sm text-on-surface">30 Okt 2026 14:18</div>
+<div class="font-label-mono-sm text-[11px] text-ink-muted">192.168.1.84</div>
+</td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-bg text-success-text text-caption-caps font-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-success-text"></span>
+                  Aktif
+                </span>
+</td>
+<td class="py-2 px-3.5 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1.5 rounded hover:bg-surface-subtle text-ink-secondary hover:text-primary transition-colors" title="Edit Scope &amp; Peran" type="button">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+</button>
+<button class="p-1.5 rounded hover:bg-surface-subtle text-ink-secondary hover:text-warning-text transition-colors" title="Reset Sandi" type="button">
+<span class="material-symbols-outlined text-[16px]">lock_reset</span>
+</button>
+<button class="p-1.5 rounded hover:bg-surface-subtle text-ink-secondary hover:text-danger-text transition-colors" title="Opsi Keamanan" type="button">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 6: POS Cashier -->
+<tr class="hover:bg-surface-inset transition-colors group">
+<td class="py-2 px-3.5">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-surface-container text-ink-secondary font-label-mono-base text-[11px] font-bold flex items-center justify-center shrink-0">
+                    K1
+                  </div>
+<div class="min-w-0">
+<div class="font-body-sm-semibold text-body-sm-semibold text-on-surface truncate">kasir01</div>
+<div class="font-label-mono-sm text-label-mono-sm text-ink-muted truncate">kasir@erp.local</div>
+</div>
+</div>
+</td>
+<td class="py-2 px-3">
+<div class="flex flex-col">
+<span class="font-body-md-medium text-body-sm-semibold text-on-surface">Rian Kasir Toko</span>
+<span class="font-label-mono-sm text-label-mono-sm text-ink-slate">EMP-006 • POS Storefront</span>
+</div>
+</td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-body-sm-semibold bg-surface-container text-on-secondary-fixed border border-secondary-fixed-dim">
+                  POS_CASHIER
+                </span>
+</td>
+<td class="py-2 px-3">
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-surface-subtle text-ink-secondary font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[14px] text-ink-slate">storefront</span>
+<span class="truncate">Gudang Pusat Bekasi</span>
+</div>
+</td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-subtle text-ink-muted text-[11px] font-body-sm">
+                  Belum Aktif
+                </span>
+</td>
+<td class="py-2 px-3">
+<div class="font-label-mono-sm text-label-mono-sm text-on-surface">30 Okt 2026 13:40</div>
+<div class="font-label-mono-sm text-[11px] text-ink-muted">192.168.1.112</div>
+</td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-bg text-success-text text-caption-caps font-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-success-text"></span>
+                  Aktif
+                </span>
+</td>
+<td class="py-2 px-3.5 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1.5 rounded hover:bg-surface-subtle text-ink-secondary hover:text-primary transition-colors" title="Edit Scope &amp; Peran" type="button">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+</button>
+<button class="p-1.5 rounded hover:bg-surface-subtle text-ink-secondary hover:text-warning-text transition-colors" title="Reset Sandi" type="button">
+<span class="material-symbols-outlined text-[16px]">lock_reset</span>
+</button>
+<button class="p-1.5 rounded hover:bg-surface-subtle text-ink-secondary hover:text-danger-text transition-colors" title="Opsi Keamanan" type="button">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 7: Auditor / Compliance -->
+<tr class="hover:bg-surface-inset transition-colors group">
+<td class="py-2 px-3.5">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-surface-container text-ink-secondary font-label-mono-base text-[11px] font-bold flex items-center justify-center shrink-0">
+                    AU
+                  </div>
+<div class="min-w-0">
+<div class="font-body-sm-semibold text-body-sm-semibold text-on-surface truncate">auditor</div>
+<div class="font-label-mono-sm text-label-mono-sm text-ink-muted truncate">auditor@erp.local</div>
+</div>
+</div>
+</td>
+<td class="py-2 px-3">
+<div class="flex flex-col">
+<span class="font-body-md-medium text-body-sm-semibold text-on-surface">Gunawan Internal Audit</span>
+<span class="font-label-mono-sm text-label-mono-sm text-ink-slate">EMP-007 • GRC Unit</span>
+</div>
+</td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-body-sm-semibold bg-surface-subtle text-on-surface-variant border border-outline-variant">
+                  auditor
+                </span>
+</td>
+<td class="py-2 px-3">
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-surface-subtle text-on-surface font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[14px] text-accent-blue">public</span>
+<span class="truncate">Semua Cabang (Read-Only)</span>
+</div>
+</td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-success-bg text-success-text text-[11px] font-body-sm-semibold">
+<span class="material-symbols-outlined text-[13px]">shield</span>
+                  MFA Aktif
+                </span>
+</td>
+<td class="py-2 px-3">
+<div class="font-label-mono-sm text-label-mono-sm text-on-surface">29 Okt 2026 11:15</div>
+<div class="font-label-mono-sm text-[11px] text-ink-muted">192.168.1.99</div>
+</td>
+<td class="py-2 px-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-bg text-success-text text-caption-caps font-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-success-text"></span>
+                  Aktif
+                </span>
+</td>
+<td class="py-2 px-3.5 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1.5 rounded hover:bg-surface-subtle text-ink-secondary hover:text-primary transition-colors" title="Edit Scope &amp; Peran" type="button">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+</button>
+<button class="p-1.5 rounded hover:bg-surface-subtle text-ink-secondary hover:text-warning-text transition-colors" title="Reset Sandi" type="button">
+<span class="material-symbols-outlined text-[16px]">lock_reset</span>
+</button>
+<button class="p-1.5 rounded hover:bg-surface-subtle text-ink-secondary hover:text-danger-text transition-colors" title="Opsi Keamanan" type="button">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Compact Footer Pagination & Audit Stamp -->
+<div class="px-space-md py-space-sm bg-surface-card flex flex-col sm:flex-row items-center justify-between gap-2">
+<div class="flex items-center gap-2 text-ink-slate font-label-mono-sm text-label-mono-sm">
+<span>Menampilkan 1-7 dari 13 total akun terdaftar</span>
+<span>•</span>
+<span class="text-success-text flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">verified_user</span>
+            Kebijakan RBAC Synced: v4.2.1-hash-88fa
+          </span>
+</div>
+<div class="flex items-center gap-1.5">
+<button class="h-7 px-2.5 rounded bg-surface-subtle text-ink-muted font-body-sm text-body-sm cursor-not-allowed" disabled="" type="button">Sebelumnya</button>
+<button class="h-7 w-7 rounded bg-primary-container text-on-primary font-label-mono-sm text-label-mono-sm flex items-center justify-center" type="button">1</button>
+<button class="h-7 w-7 rounded hover:bg-surface-subtle text-ink-secondary font-label-mono-sm text-label-mono-sm flex items-center justify-center" type="button">2</button>
+<button class="h-7 px-2.5 rounded hover:bg-surface-subtle text-ink-secondary font-body-sm text-body-sm" type="button">Selanjutnya</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Master-Detail Technical RBAC Policy Reference & Security Notes -->
+<div class="px-space-lg pb-space-lg">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-space-md">
+<!-- Card 1: Role Definition Summary -->
+<div class="bg-surface-card rounded-xl p-4 shadow-sm">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[19px]">schema</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Hierarki Peran (access.js)</h3>
+</div>
+<span class="font-label-mono-sm text-label-mono-sm text-ink-muted">17 Role IDs</span>
+</div>
+<div class="space-y-2 text-ink-secondary font-body-sm text-body-sm">
+<div class="p-2 rounded bg-surface-subtle flex items-center justify-between">
+<span class="font-body-sm-semibold text-on-surface">direktur, superadmin</span>
+<span class="font-caption-caps text-primary text-[10px]">ALL_ROUTES : RWED</span>
+</div>
+<div class="p-2 rounded bg-surface-subtle flex items-center justify-between">
+<span class="font-body-sm-semibold text-on-surface">finance, tax_specialist</span>
+<span class="font-caption-caps text-success-text text-[10px]">FIN_LEDGER : RWE</span>
+</div>
+<div class="p-2 rounded bg-surface-subtle flex items-center justify-between">
+<span class="font-body-sm-semibold text-on-surface">warehouse, inv_admin</span>
+<span class="font-caption-caps text-warning-text text-[10px]">INV_STOCKS : RW</span>
+</div>
+</div>
+</div>
+<!-- Card 2: Security & Geofence Policy -->
+<div class="bg-surface-card rounded-xl p-4 shadow-sm">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-warning-text text-[19px]">security_update_good</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Kebijakan Otentikasi</h3>
+</div>
+<span class="px-2 py-0.5 rounded bg-warning-bg text-warning-text text-[11px] font-body-sm-semibold">Enforced</span>
+</div>
+<div class="space-y-2 text-ink-secondary font-body-sm text-body-sm">
+<div class="flex items-start gap-2">
+<span class="material-symbols-outlined text-primary text-[16px] mt-0.5">check_circle</span>
+<span>Brute-force protection: Akun otomatis di-lockout setelah <strong>5 percobaan gagal</strong> selama 15 menit.</span>
+</div>
+<div class="flex items-start gap-2">
+<span class="material-symbols-outlined text-primary text-[16px] mt-0.5">check_circle</span>
+<span>MFA TOTP (Google Authenticator) diwajibkan untuk role <code>direktur</code> dan <code>finance</code>.</span>
+</div>
+</div>
+</div>
+<!-- Card 3: Warehouse Isolation Rules -->
+<div class="bg-surface-card rounded-xl p-4 shadow-sm">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-info-text text-[19px]">domain_verification</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Isolasi Cakupan Data (Scope)</h3>
+</div>
+<span class="font-label-mono-sm text-label-mono-sm text-ink-muted">Strict SQL Scope</span>
+</div>
+<p class="font-body-sm text-body-sm text-ink-secondary leading-relaxed">
+          Semua query dokumen (Surat Jalan, SO, Stok Masuk/Keluar) menyematkan parameter <code class="bg-surface-subtle px-1 rounded font-label-mono-sm text-ink-slate">WHERE warehouse_id = user.scope</code> secara otomatis, mencegah kebocoran data antar gudang regional.
+        </p>
+<div class="mt-3 flex items-center justify-between pt-2 border-t border-surface-subtle font-caption-meta text-caption-meta text-ink-slate">
+<span>Tingkat Isolasi: Zero Cross-Leakage</span>
+<a class="text-primary hover:underline font-body-sm-semibold" href="#">Dokumentasi RBAC →</a>
+</div>
+</div>
+</div>
+</div>
+<!-- Modal: Tambah / Edit Pengguna Baru (Hidden by default) -->
+<div class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" id="modal-tambah-user">
+<div class="bg-surface-card rounded-xl max-w-lg w-full p-5 shadow-xl">
+<div class="flex items-center justify-between pb-3 border-b border-surface-subtle">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded bg-brand-primary-subtle text-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">person_add</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Tambah Pengguna Baru &amp; Hak Akses</h2>
+</div>
+<button class="p-1 rounded hover:bg-surface-subtle text-ink-muted hover:text-on-surface" onclick="document.getElementById('modal-tambah-user').classList.add('hidden')" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<div class="py-4 space-y-3.5">
+<div>
+<label class="block font-caption-caps text-caption-caps text-ink-muted mb-1">Tautkan ke Master Karyawan</label>
+<select class="w-full h-8 px-2.5 bg-surface-subtle rounded-lg text-on-surface font-body-sm text-body-sm focus:outline-none focus:ring-1 focus:ring-accent-blue">
+<option value="">Pilih Karyawan Terdaftar (EMP-xxx)...</option>
+<option value="EMP-008">EMP-008 - Dani Kurniawan (Logistik Ekspedisi)</option>
+<option value="EMP-009">EMP-009 - Maya Sari (Tax Accounting)</option>
+</select>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div>
+<label class="block font-caption-caps text-caption-caps text-ink-muted mb-1">Username ERP</label>
+<input class="w-full h-8 px-2.5 bg-surface-subtle rounded-lg text-on-surface font-body-sm text-body-sm focus:outline-none focus:ring-1 focus:ring-accent-blue" placeholder="misal: dani.kurniawan" type="text"/>
+</div>
+<div>
+<label class="block font-caption-caps text-caption-caps text-ink-muted mb-1">Email Resmi</label>
+<input class="w-full h-8 px-2.5 bg-surface-subtle rounded-lg text-on-surface font-body-sm text-body-sm focus:outline-none focus:ring-1 focus:ring-accent-blue" placeholder="dani@erp.local" type="email"/>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div>
+<label class="block font-caption-caps text-caption-caps text-ink-muted mb-1">Peran Akses (RBAC Role)</label>
+<select class="w-full h-8 px-2.5 bg-surface-subtle rounded-lg text-on-surface font-body-sm text-body-sm focus:outline-none focus:ring-1 focus:ring-accent-blue">
+<option value="warehouse">warehouse (Staf Gudang)</option>
+<option value="sales">sales (Penjualan)</option>
+<option value="finance">finance (Keuangan)</option>
+<option value="POS_CASHIER">POS_CASHIER (Kasir)</option>
+</select>
+</div>
+<div>
+<label class="block font-caption-caps text-caption-caps text-ink-muted mb-1">Cakupan Data Gudang</label>
+<select class="w-full h-8 px-2.5 bg-surface-subtle rounded-lg text-on-surface font-body-sm text-body-sm focus:outline-none focus:ring-1 focus:ring-accent-blue">
+<option value="bekasi">Gudang Pusat Bekasi</option>
+<option value="surabaya">Cabang Surabaya Rungkut</option>
+<option value="semarang">Depo Logistik Semarang</option>
+<option value="global">Semua Gudang (Hanya Direksi)</option>
+</select>
+</div>
+</div>
+<div class="pt-2">
+<div class="flex items-center gap-2">
+<input checked="" class="rounded text-primary focus:ring-primary h-4 w-4" id="mfa-enforce" type="checkbox"/>
+<label class="font-body-sm text-body-sm text-on-surface" for="mfa-enforce">Wajibkan pengaturan 2FA / TOTP pada login perdana</label>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-end gap-2 pt-3 border-t border-surface-subtle">
+<button class="h-8 px-3.5 rounded-lg bg-surface-subtle hover:bg-surface-container text-ink-secondary hover:text-on-surface font-body-sm-semibold text-body-sm-semibold transition-colors" onclick="document.getElementById('modal-tambah-user').classList.add('hidden')" type="button">
+          Batal
+        </button>
+<button class="h-8 px-4 rounded-lg bg-primary-container hover:bg-brand-primary-hover text-on-primary font-body-sm-semibold text-body-sm-semibold shadow-sm transition-colors" onclick="document.getElementById('modal-tambah-user').classList.add('hidden')" type="button">
+          Simpan &amp; Terbitkan Kredensial
+        </button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    const searchInput = document.getElementById('user-search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', function(e) {
+        const val = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+          const text = row.innerText.toLowerCase();
+          row.style.display = text.includes(val) ? '' : 'none';
+        });
+      });
+    }
+  })();
+</script></main></div></body></html>

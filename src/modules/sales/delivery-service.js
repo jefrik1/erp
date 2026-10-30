@@ -4,6 +4,8 @@
 // Semua validasi armada, overload, estimasi zona, stok, dan status SO ada di sini
 // supaya kedua jalur tidak pernah berbeda perilaku.
 import { pool } from '../../config/db.js';
+import { mutateStock, cogsValue, BusinessError } from '../../lib/stock-service.js';
+import { postJournal } from '../../lib/journal.js';
 
 const ORIGIN = { lat: -6.8392646, lng: 111.9838451 };
 
@@ -303,9 +305,25 @@ export async function createDelivery(p){
         await client.query("INSERT INTO stock_movements (product_id, warehouse_id, movement_type, reference_type, reference_id, qty_out, balance_qty, created_by) VALUES ($1,$2,'OUT','DO',$3,$4,$5,$6)",[it.product_id, wh, doId, it.qty, bal.rows[0]?.qty_on_hand ?? 0, created_by||null]);
       }
     } else {
+      // Stok keluar lewat pintu tunggal mutateStock (kunci baris + tolak stok minus).
+      let cogs = 0;
+      const costs = await cogsValue(client, items, wh);
       for(const it of items){
-        const up=await client.query('UPDATE stocks SET qty_on_hand = qty_on_hand - $1, qty_reserved = GREATEST(qty_reserved - $1,0) WHERE product_id=$2 AND warehouse_id=$3 RETURNING qty_on_hand',[it.qty, it.product_id, wh]);
-        await client.query("INSERT INTO stock_movements (product_id, warehouse_id, movement_type, reference_type, reference_id, qty_out, balance_qty, created_by) VALUES ($1,$2,'OUT','DO',$3,$4,$5,$6)",[it.product_id, wh, doId, it.qty, up.rows[0]?.qty_on_hand ?? 0, created_by||null]);
+        const mv = await mutateStock(client, {
+          productId: it.product_id, warehouseId: wh, qtyDelta: -Math.abs(Number(it.qty)),
+          refType: 'DO', refId: doId, userId: created_by || null,
+          notes: `Pengiriman ${do_number}`,
+        });
+        // Reservasi ikut dilepas saat barang keluar
+        await client.query('UPDATE stocks SET qty_reserved = GREATEST(COALESCE(qty_reserved,0) - $1, 0) WHERE id=$2', [Math.abs(Number(it.qty)), mv.stock_id]);
+        cogs += Math.abs(Number(it.qty)) * (Number(costs.get(Number(it.product_id))) || 0);
+      }
+      // HPP diakui saat barang keluar gudang (DO), bukan saat invoice dibuat.
+      if(cogs > 0.5){
+        await postJournal({ refType:'DO', refId:doId, description:`HPP pengiriman ${do_number}`,
+          lines:[ { code:'5-1000', debit:cogs, description:`HPP ${do_number}` },
+                  { code:'1-1200', credit:cogs, description:`Persediaan keluar ${do_number}` } ],
+          createdBy: created_by || null, client });
       }
     }
     await client.query("UPDATE vehicles SET status='IN_TRANSIT' WHERE plat_no=$1",[plat]);
@@ -314,6 +332,7 @@ export async function createDelivery(p){
   }catch(e){
     try{ await client.query('ROLLBACK'); }catch{}
     if(e instanceof DeliveryError) throw e;
+    if(e instanceof BusinessError) throw new DeliveryError(e.status || 422, e.message);
     console.error('[createDelivery]',e);
     throw new DeliveryError(500, e.message);
   }finally{ client.release(); }

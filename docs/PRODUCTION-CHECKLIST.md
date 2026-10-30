@@ -3,6 +3,9 @@
 Dokumen ini memisahkan **apa yang sudah ada**, **apa yang wajib sebelum go-live (P0)**,
 dan **apa yang menyusul (P1/P2)**. Update setiap kali ada perubahan arsitektur.
 
+> Peta lengkap semua fitur (modul, halaman, endpoint, alur bisnis, RBAC, konvensi kode):
+> **[`docs/FITUR-LENGKAP.md`](./FITUR-LENGKAP.md)**
+
 ---
 
 ## Status kesiapan (ringkas)
@@ -120,6 +123,16 @@ dan **apa yang menyusul (P1/P2)**. Update setiap kali ada perubahan arsitektur.
 | Bug diperbaiki | ✅ | `products.name_id` tidak ada (POS lookup, steel, manager report → 500), Redis client dipakai sebelum siap, error 5xx dari route kini tercatat |
 
 ### Masih terbuka
+- **Hutang Usaha bersaldo debit Rp 1,13 M**: pembayaran PO/PINV dijurnal, penerimaan barang historis tidak. Perlu jurnal koreksi (Dr Modal / Cr Hutang Usaha) atau backdate jurnal GRN.
+- **Kas di GL (Rp 1,26 M) vs master bank (Rp 1,17 M)**: penerimaan AR belum menambah `bank_accounts`/`cash_movements`.
+- **Pendapatan POS non-tunai** belum masuk GL (hanya sisi tunai saat tutup shift).
+- **Penjualan di bawah HPP**: `BJR-C75` Rp 65.000 vs HPP Rp 82.551 (−21,3%) — keputusan harga.
 - **PgBouncer / partisi tabel**: belum dipasang (butuh perubahan koneksi & migrasi data besar).
 - **Multi-outlet** (satu instalasi banyak cabang dengan stok terpisah) dan **portal pelanggan**: belum dibangun — perlu desain skema & keputusan bisnis.
 - **Sentry**: opsional; saat ini memakai error-log internal + webhook.
+
+> Status data persediaan & buku besar (apa yang sudah dibereskan, apa yang tersisa) ada di
+> [`docs/FITUR-LENGKAP.md`](./FITUR-LENGKAP.md) §8. Alat kerjanya: `npm run audit:data`,
+> `npm run fix:data`, `npm run repair:ledger`.
+
+> Status terkini: lihat `docs/STATUS.generated.md` (dihasilkan `npm run status:report`).

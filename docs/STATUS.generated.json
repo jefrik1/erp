@@ -1,0 +1,91 @@
+{
+  "generated_at": "2026-10-30T13:54:02.041Z",
+  "commit": "3e35fcb",
+  "tests": {
+    "pass": 40,
+    "fail": 0,
+    "ok": true
+  },
+  "audit": {
+    "ok": true,
+    "p1": 0
+  },
+  "recon": {
+    "ok": true,
+    "p1": 0,
+    "p2": 3,
+    "checks": [
+      {
+        "key": "AR",
+        "status": "OK",
+        "gl": 270746236,
+        "subledger": 270746236
+      },
+      {
+        "key": "AP",
+        "status": "OK",
+        "gl": -3075600,
+        "subledger": -3075600
+      },
+      {
+        "key": "GRIR",
+        "status": "P2",
+        "gl": 3005000,
+        "subledger": 1575000
+      },
+      {
+        "key": "INVENTORY",
+        "status": "OK",
+        "gl": 20000344583.7,
+        "subledger": 20000344583.7
+      },
+      {
+        "key": "CASH",
+        "status": "P2",
+        "gl": 1613867460,
+        "subledger": 1613567460
+      },
+      {
+        "key": "TAX",
+        "status": "OK",
+        "gl": 70476296,
+        "subledger": 70476296
+      },
+      {
+        "key": "JOURNALS",
+        "status": "P2",
+        "gl": 0,
+        "subledger": 0
+      },
+      {
+        "key": "ORPHANS",
+        "status": "OK",
+        "gl": 0,
+        "subledger": 0
+      }
+    ]
+  },
+  "golive": {
+    "ok": true,
+    "fail": [],
+    "warn": [
+      "NODE_ENV=production",
+      "ALLOWED_ORIGINS diisi",
+      "Tidak ada akun demo aktif",
+      "Tidak ada referensi jurnal ganda",
+      "Semua GRN sudah berjurnal"
+    ]
+  },
+  "golive_production": {
+    "ok": false,
+    "fail": [
+      "NODE_ENV=production",
+      "ALLOWED_ORIGINS diisi",
+      "Tidak ada akun demo aktif",
+      "Tidak ada referensi jurnal ganda",
+      "Semua GRN sudah berjurnal"
+    ],
+    "warn": []
+  },
+  "verdict": "BELUM SIAP (profil produksi)"
+}

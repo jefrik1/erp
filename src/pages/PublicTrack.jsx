@@ -25,27 +25,27 @@ export default function PublicTrack(){
   const doneCount = (data?.timeline||[]).filter(t=>t.done).length;
 
   return (
-    <div className="min-h-screen bg-[#f7f9fd] text-[#0b1c30]">
-      <header className="bg-white border-b border-[#e7ecf7]">
+    <div className="min-h-screen bg-[#f7f9fd] text-ink">
+      <header className="bg-white border-b border-line">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center gap-3">
-          <div className="h-8 w-8 rounded-lg bg-[#0b1c30] text-white grid place-items-center font-bold text-sm">SM</div>
+          <div className="h-8 w-8 rounded-lg bg-navy text-white grid place-items-center font-bold text-sm">SM</div>
           <div>
             <div className="font-bold text-sm leading-tight">Lacak Pesanan</div>
-            <div className="text-[11px] text-[#76777d] leading-tight">PT Sumber Material Jaya</div>
+            <div className="text-[11px] text-ink-3 leading-tight">PT Sumber Material Jaya</div>
           </div>
-          <Link to="/panduan" className="ml-auto text-[11px] font-bold text-[#0051d5] hover:underline">Panduan</Link>
+          <Link to="/panduan" className="ml-auto text-[11px] font-bold text-brand hover:underline">Panduan</Link>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-4">
-        {loading && <div className="bg-white rounded-2xl border border-[#e7ecf7] p-10 text-center text-sm text-[#76777d]">Memuat status pesanan…</div>}
+        {loading && <div className="bg-white rounded-2xl border border-line p-10 text-center text-sm text-ink-3">Memuat status pesanan…</div>}
 
         {!loading && err && (
-          <div className="bg-white rounded-2xl border border-[#e7ecf7] p-10 text-center">
+          <div className="bg-white rounded-2xl border border-line p-10 text-center">
             <div className="h-12 w-12 rounded-full bg-amber-50 border border-amber-200 text-amber-700 grid place-items-center mx-auto"><AlertTriangle size={22}/></div>
             <div className="font-bold mt-3">Tidak bisa menampilkan pesanan</div>
-            <div className="text-xs text-[#45464d] mt-1 max-w-md mx-auto">{err}</div>
-            <div className="text-[11px] text-[#76777d] mt-3">Minta link terbaru ke sales/CS kami bila tautan sudah kedaluwarsa.</div>
+            <div className="text-xs text-ink-2 mt-1 max-w-md mx-auto">{err}</div>
+            <div className="text-[11px] text-ink-3 mt-3">Minta link terbaru ke sales/CS kami bila tautan sudah kedaluwarsa.</div>
           </div>
         )}
 
@@ -75,10 +75,10 @@ export default function PublicTrack(){
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-[#e7ecf7] p-5">
+            <div className="bg-white rounded-2xl border border-line p-5">
               <div className="flex items-center justify-between">
                 <div className="font-bold text-sm">Perjalanan pesanan</div>
-                <div className="text-[11px] text-[#76777d]">{doneCount}/{data.timeline?.length||0} tahap</div>
+                <div className="text-[11px] text-ink-3">{doneCount}/{data.timeline?.length||0} tahap</div>
               </div>
               <ol className="mt-4 space-y-3">
                 {(data.timeline||[]).map((t,i)=>{
@@ -86,14 +86,14 @@ export default function PublicTrack(){
                   return (
                     <li key={t.key} className="flex gap-3">
                       <div className="flex flex-col items-center">
-                        <span className={'h-6 w-6 rounded-full grid place-items-center shrink-0 '+(t.done? 'bg-emerald-500 text-white':'bg-[#eef2fa] text-[#9aa4b5] border border-[#e7ecf7]')}>
+                        <span className={'h-6 w-6 rounded-full grid place-items-center shrink-0 '+(t.done? 'bg-emerald-500 text-white':'bg-[#eef2fa] text-[#9aa4b5] border border-line')}>
                           {t.done? <CheckCircle2 size={13}/> : <Circle size={11}/>}
                         </span>
                         {!last && <span className={'w-px flex-1 my-1 '+(t.done? 'bg-emerald-200':'bg-[#e7ecf7]')}/>}
                       </div>
                       <div className="pb-1">
-                        <div className={'text-xs font-bold '+(t.done? 'text-[#0b1c30]':'text-[#76777d]')}>{t.label}</div>
-                        <div className="text-[11px] text-[#76777d]">{t.at ? tgl(t.at) : (t.done? 'selesai':'menunggu')}</div>
+                        <div className={'text-xs font-bold '+(t.done? 'text-ink':'text-ink-3')}>{t.label}</div>
+                        <div className="text-[11px] text-ink-3">{t.at ? tgl(t.at) : (t.done? 'selesai':'menunggu')}</div>
                       </div>
                     </li>
                   );
@@ -102,18 +102,18 @@ export default function PublicTrack(){
             </div>
 
             {(data.deliveries||[]).length>0 && (
-              <div className="bg-white rounded-2xl border border-[#e7ecf7] p-5">
+              <div className="bg-white rounded-2xl border border-line p-5">
                 <div className="font-bold text-sm flex items-center gap-1.5"><Truck size={15}/> Pengiriman</div>
                 <div className="mt-3 space-y-2">
                   {data.deliveries.map(d=>(
-                    <div key={d.do_number} className="flex items-center justify-between gap-2 rounded-xl border border-[#e7ecf7] bg-[#f7f9fd] px-3 py-2">
+                    <div key={d.do_number} className="flex items-center justify-between gap-2 rounded-xl border border-line bg-[#f7f9fd] px-3 py-2">
                       <div>
                         <div className="font-mono text-xs font-bold">{d.do_number}</div>
-                        <div className="text-[11px] text-[#76777d] flex items-center gap-1"><MapPin size={10}/>{d.vehicle||'armada'} • {tgl(d.date)}</div>
+                        <div className="text-[11px] text-ink-3 flex items-center gap-1"><MapPin size={10}/>{d.vehicle||'armada'} • {tgl(d.date)}</div>
                       </div>
                       <div className="text-right">
                         <div className="text-[11px] font-bold">{d.status}</div>
-                        <div className={'text-[10px] '+(d.received? 'text-emerald-600':'text-[#76777d]')}>{d.received? 'sudah diterima':'belum diterima'}</div>
+                        <div className={'text-[10px] '+(d.received? 'text-emerald-600':'text-ink-3')}>{d.received? 'sudah diterima':'belum diterima'}</div>
                       </div>
                     </div>
                   ))}
@@ -122,20 +122,20 @@ export default function PublicTrack(){
             )}
 
             {data.invoice && (
-              <div className="bg-white rounded-2xl border border-[#e7ecf7] p-5">
+              <div className="bg-white rounded-2xl border border-line p-5">
                 <div className="font-bold text-sm flex items-center gap-1.5"><Receipt size={15}/> Invoice</div>
                 <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                  <div><div className="text-[10px] uppercase font-bold text-[#76777d]">Nomor</div><div className="font-mono font-bold">{data.invoice.number}</div></div>
-                  <div><div className="text-[10px] uppercase font-bold text-[#76777d]">Status</div><div className="font-bold">{data.invoice.status}</div></div>
-                  <div><div className="text-[10px] uppercase font-bold text-[#76777d]">Jatuh tempo</div><div className="font-bold">{tgl(data.invoice.due_date)}</div></div>
-                  <div><div className="text-[10px] uppercase font-bold text-[#76777d]">Terbayar</div><div className="font-bold">{rupiah(data.invoice.paid)}</div></div>
+                  <div><div className="text-[10px] uppercase font-bold text-ink-3">Nomor</div><div className="font-mono font-bold">{data.invoice.number}</div></div>
+                  <div><div className="text-[10px] uppercase font-bold text-ink-3">Status</div><div className="font-bold">{data.invoice.status}</div></div>
+                  <div><div className="text-[10px] uppercase font-bold text-ink-3">Jatuh tempo</div><div className="font-bold">{tgl(data.invoice.due_date)}</div></div>
+                  <div><div className="text-[10px] uppercase font-bold text-ink-3">Terbayar</div><div className="font-bold">{rupiah(data.invoice.paid)}</div></div>
                 </div>
               </div>
             )}
 
-            <div className="text-center text-[11px] text-[#76777d] py-4">
+            <div className="text-center text-[11px] text-ink-3 py-4">
               Halaman ini diperbarui otomatis dari sistem kami. Untuk perubahan alamat atau jadwal, hubungi sales Anda.
-              <div className="mt-2"><Link to="/login" className="text-[#0051d5] font-bold hover:underline inline-flex items-center gap-1"><ArrowLeft size={11}/> Masuk ERP</Link></div>
+              <div className="mt-2"><Link to="/login" className="text-brand font-bold hover:underline inline-flex items-center gap-1"><ArrowLeft size={11}/> Masuk ERP</Link></div>
             </div>
           </>
         )}

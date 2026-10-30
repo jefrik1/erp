@@ -137,7 +137,7 @@ export default function MyLeave(){
                 </div>
               </div>
 
-              {formErr && <div className="rounded-lg bg-danger-soft text-[#93000a] text-body-sm px-3 py-2" role="alert">{formErr}</div>}
+              {formErr && <div className="rounded-lg bg-danger-soft text-danger text-body-sm px-3 py-2" role="alert">{formErr}</div>}
 
               <form onSubmit={submit} className="space-y-3">
                 <div className="grid grid-cols-2 gap-2">

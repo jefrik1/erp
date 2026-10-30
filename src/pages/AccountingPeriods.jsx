@@ -78,26 +78,26 @@ export default function AccountingPeriods(){
         {loading ? <PosSkeleton rows={8} cols={5}/> : err ? <PosError message={err} onRetry={load}/> : (
           <div className="overflow-auto">
             <table className="w-full text-sm">
-              <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+              <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                 <PosTh>PERIODE</PosTh><PosTh align="center">STATUS</PosTh><PosTh align="right">JURNAL</PosTh>
                 <PosTh align="right">NILAI DEBIT</PosTh><PosTh align="center">DITUTUP</PosTh><PosTh align="center">AKSI</PosTh>
               </tr></thead>
               <tbody>
                 {rows.map(r=>(
                   <tr key={r.period} className={posTr}>
-                    <td className={posTd+' font-semibold'}>{label(r.period)} <span className="text-[10px] font-mono text-[#76777d]">{r.period}</span></td>
+                    <td className={posTd+' font-semibold'}>{label(r.period)} <span className="text-[10px] font-mono text-ink-3">{r.period}</span></td>
                     <td className={posTd+' text-center'}>
                       <PosBadge tone={r.status==='CLOSED'?'red':'emerald'}>{r.status}</PosBadge>
                     </td>
                     <td className={posTd+' text-center tabular-nums'}>{nf(r.journals)}</td>
                     <td className={posTd+' text-right tabular-nums'}>{rupiah(r.debit)}</td>
-                    <td className={posTd+' text-center text-[11px] text-[#76777d]'}>{r.closed_at? String(r.closed_at).slice(0,10):'-'}</td>
+                    <td className={posTd+' text-center text-[11px] text-ink-3'}>{r.closed_at? String(r.closed_at).slice(0,10):'-'}</td>
                     <td className={posTd+' text-center whitespace-nowrap'}>
                       {r.status==='OPEN'
-                        ? <button onClick={()=>close(r)} disabled={busy===r.period} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#131b2e] text-white text-[11px] font-bold disabled:opacity-50"><Lock size={11}/> Tutup buku</button>
+                        ? <button onClick={()=>close(r)} disabled={busy===r.period} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-navy text-white text-[11px] font-bold disabled:opacity-50"><Lock size={11}/> Tutup buku</button>
                         : (canReopen
-                            ? <button onClick={()=>reopen(r)} disabled={busy===r.period} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white border text-[11px] font-bold text-[#0051d5] disabled:opacity-50"><Unlock size={11}/> Buka kembali</button>
-                            : <span className="text-[11px] text-[#76777d]">Hanya Direktur</span>)}
+                            ? <button onClick={()=>reopen(r)} disabled={busy===r.period} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white border text-[11px] font-bold text-brand disabled:opacity-50"><Unlock size={11}/> Buka kembali</button>
+                            : <span className="text-[11px] text-ink-3">Hanya Direktur</span>)}
                     </td>
                   </tr>
                 ))}

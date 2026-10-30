@@ -347,7 +347,7 @@ export default function HR(){
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <PosStat icon={Users} tone="bg-[#0051d5]/10 text-[#0051d5]" label="KARYAWAN AKTIF" value={empSummary? nf(empSummary.aktif) : '-'} sub={empSummary? 'dari '+empSummary.total+' terdaftar' : ''}/>
+        <PosStat icon={Users} tone="bg-brand/10 text-brand" label="KARYAWAN AKTIF" value={empSummary? nf(empSummary.aktif) : '-'} sub={empSummary? 'dari '+empSummary.total+' terdaftar' : ''}/>
         <PosStat icon={CalendarCheck} tone="bg-emerald-50 text-emerald-700" label="HADIR HARI INI"
           value={attSummary? nf(attSummary.hadir) : '-'} sub={attSummary? (attSummary.terlambat+' terlambat • '+attSummary.belum_checkin+' belum absen') : ''}/>
         <PosStat icon={Coins} tone="bg-sky-50 text-sky-700" label="GAJI POKOK / BULAN" value={empSummary? rupiah(empSummary.total_gaji) : '-'} sub={empSummary? 'rata-rata '+rupiah(empSummary.rata_gaji) : ''}/>
@@ -364,7 +364,7 @@ export default function HR(){
             </button>
           </>}>
             <div className={posSearchWrap}>
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#76777d]"/>
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3"/>
               <input value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Enter'&&setAppliedQ(q)}
                 placeholder="Cari nama / kode / jabatan lalu Enter..." className={posInput+' pl-9'}/>
             </div>
@@ -404,7 +404,7 @@ export default function HR(){
             <PosChip active={tab==='payroll'} onClick={()=>setTab('payroll')}>Payroll</PosChip>
             <PosChip active={tab==='cuti'} onClick={()=>setTab('cuti')}>Cuti &amp; Izin</PosChip>
             {tab!=='keterlambatan' && (<>
-            <span className="text-[11px] font-bold tracking-wider text-[#45464d] ml-3">STATUS</span>
+            <span className="text-[11px] font-bold tracking-wider text-ink-2 ml-3">STATUS</span>
             {(tab==='karyawan' ? ['Semua','AKTIF','NONAKTIF']
               : tab==='absensi' ? ['Semua','PRESENT','ABSENT','LEAVE']
               : tab==='payroll' ? ['Semua','DRAFT','APPROVED','PAID']
@@ -429,7 +429,7 @@ export default function HR(){
               <span className="px-2.5 py-1 rounded-full bg-white border font-bold">{late.summary?.days||0} kejadian</span>
               <span className="px-2.5 py-1 rounded-full bg-white border font-bold">Total {late.summary?.minutes||0} menit</span>
               <span className="px-2.5 py-1 rounded-full bg-white border font-bold">Rata-rata {late.summary?.avg_minutes||0} menit/kejadian</span>
-              <span className="ml-auto text-[11px] text-[#76777d]">Periode {late.month||lateMonth} • data dari absensi (check-in lewat batas)</span>
+              <span className="ml-auto text-[11px] text-ink-3">Periode {late.month||lateMonth} • data dari absensi (check-in lewat batas)</span>
             </div>
           )}
         </PosCardBody>
@@ -439,7 +439,7 @@ export default function HR(){
             <div className="overflow-auto">
               <table className="w-full text-sm">
                 {tab==='karyawan' && (<>
-                  <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                  <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                     <PosTh>KARYAWAN</PosTh><PosTh>JABATAN / DEPARTEMEN</PosTh>
                     <PosTh align="right">GAJI POKOK</PosTh><PosTh align="center">HADIR 30 HARI</PosTh>
                     <PosTh align="center">STATUS</PosTh><PosTh align="right">AKSI</PosTh>
@@ -448,8 +448,8 @@ export default function HR(){
                     {employees.map(e=>(
                       <tr key={e.id} className={posTr}>
                         <td className={posTd}>
-                          <div className="font-bold text-[#0b1c30]">{e.name}</div>
-                          <div className="text-[11px] text-[#45464d] font-mono">{e.employee_code} • {e.phone||'tanpa telepon'}</div>
+                          <div className="font-bold text-ink">{e.name}</div>
+                          <div className="text-[11px] text-ink-2 font-mono">{e.employee_code} • {e.phone||'tanpa telepon'}</div>
                           <div className="mt-1">
                             {e.username
                               ? <PosBadge tone={e.account_active===false?'amber':'emerald'}><KeyRound size={11}/> {e.username} • {((e.roles||[])[0])||'tanpa role'}</PosBadge>
@@ -457,8 +457,8 @@ export default function HR(){
                           </div>
                         </td>
                         <td className={posTd}>
-                          <div className="text-[#2b3445]">{e.position||'-'}</div>
-                          <div className="text-[11px] text-[#76777d]">{e.department||'-'}</div>
+                          <div className="text-ink-2">{e.position||'-'}</div>
+                          <div className="text-[11px] text-ink-3">{e.department||'-'}</div>
                         </td>
                         <td className={posTd+' text-right tabular-nums'}>{rupiah(e.basic_salary)}</td>
                         <td className={posTd+' text-center'}>
@@ -481,7 +481,7 @@ export default function HR(){
                 </>)}
 
                 {tab==='absensi' && (<>
-                  <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                  <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                     <PosTh>KARYAWAN</PosTh><PosTh align="center">TANGGAL</PosTh><PosTh align="center">MASUK</PosTh>
                     <PosTh align="center">PULANG</PosTh><PosTh align="center">JAM KERJA</PosTh>
                     <PosTh align="center">KETERANGAN</PosTh>
@@ -490,8 +490,8 @@ export default function HR(){
                     {attendance.map(a=>(
                       <tr key={a.id} className={posTr}>
                         <td className={posTd}>
-                          <div className="font-bold text-[#0b1c30]">{a.name}</div>
-                          <div className="text-[11px] text-[#45464d] font-mono">{a.employee_code} • {a.position||'-'}</div>
+                          <div className="font-bold text-ink">{a.name}</div>
+                          <div className="text-[11px] text-ink-2 font-mono">{a.employee_code} • {a.position||'-'}</div>
                         </td>
                         <td className={posTd+' text-center text-xs'}>{iso(a.date)}</td>
                         <td className={posTd+' text-center tabular-nums'}>{jam(a.check_in)}</td>
@@ -501,7 +501,7 @@ export default function HR(){
                           {a.terlambat ? <PosBadge tone="amber"><Clock size={11}/> Terlambat{parseInt(a.late_minutes||0)>0? ' '+a.late_minutes+' mnt':''}</PosBadge>
                             : a.check_in ? <PosBadge tone="emerald"><CheckCircle2 size={11}/> Tepat waktu</PosBadge>
                             : <PosBadge tone="slate">{a.status||'-'}</PosBadge>}
-                          {a.check_in_distance_m!=null && <div className="text-[10px] text-[#76777d] mt-0.5">{a.check_in_distance_m} m dari pusat</div>}
+                          {a.check_in_distance_m!=null && <div className="text-[10px] text-ink-3 mt-0.5">{a.check_in_distance_m} m dari pusat</div>}
                           {a.note && <div className="text-[10px] text-amber-700 mt-0.5 leading-snug">{a.note}</div>}
                         </td>
                       </tr>
@@ -511,7 +511,7 @@ export default function HR(){
                 </>)}
 
                 {tab==='keterlambatan' && (<>
-                  <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                  <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                     <PosTh>KARYAWAN</PosTh><PosTh align="center">HARI TERLAMBAT</PosTh><PosTh align="right">TOTAL MENIT</PosTh>
                     <PosTh align="right">RATA-RATA</PosTh><PosTh align="center">TERAKHIR</PosTh>
                   </tr></thead>
@@ -519,8 +519,8 @@ export default function HR(){
                     {(late.rows||[]).map(r=>(
                       <tr key={r.employee_id} className={posTr}>
                         <td className={posTd}>
-                          <div className="font-bold text-[#0b1c30]">{r.name}</div>
-                          <div className="text-[11px] text-[#45464d] font-mono">{r.employee_code} • {r.position||'-'}</div>
+                          <div className="font-bold text-ink">{r.name}</div>
+                          <div className="text-[11px] text-ink-2 font-mono">{r.employee_code} • {r.position||'-'}</div>
                         </td>
                         <td className={posTd+' text-center'}><PosBadge tone="amber">{r.days_late} hari</PosBadge></td>
                         <td className={posTd+' text-right font-bold tabular-nums'}>{nf(r.total_minutes)} mnt</td>
@@ -533,7 +533,7 @@ export default function HR(){
                 </>)}
 
                 {tab==='payroll' && (<>
-                  <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                  <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                     <PosTh>KARYAWAN</PosTh><PosTh align="center">PERIODE</PosTh><PosTh align="right">GAJI POKOK</PosTh>
                     <PosTh align="right">TUNJANGAN</PosTh><PosTh align="right">BPJS</PosTh><PosTh align="right">PPh21</PosTh>
                     <PosTh align="right">GAJI BERSIH</PosTh><PosTh align="center">STATUS</PosTh><PosTh align="right">AKSI</PosTh>
@@ -542,8 +542,8 @@ export default function HR(){
                     {payrolls.map(p=>(
                       <tr key={p.id} className={posTr}>
                         <td className={posTd}>
-                          <div className="font-bold text-[#0b1c30]">{p.name}</div>
-                          <div className="text-[11px] text-[#45464d] font-mono">{p.employee_code} • {p.position||'-'}</div>
+                          <div className="font-bold text-ink">{p.name}</div>
+                          <div className="text-[11px] text-ink-2 font-mono">{p.employee_code} • {p.position||'-'}</div>
                         </td>
                         <td className={posTd+' text-center text-xs font-mono'}>{p.period}</td>
                         <td className={posTd+' text-right tabular-nums'}>{rupiah(p.basic_salary)}</td>
@@ -556,7 +556,7 @@ export default function HR(){
                           <div className="flex justify-end gap-1.5">
                             {p.status==='DRAFT' && <button onClick={()=>setPayrollStatus(p,'APPROVED')} className={posBtnSm+' bg-sky-50 border-sky-200 text-sky-700 hover:bg-sky-100'}><BadgeCheck size={13}/> Setujui</button>}
                             {p.status!=='PAID' && <button onClick={()=>setPayrollStatus(p,'PAID')} className={posBtnSm+' bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'}><Wallet size={13}/> Bayar</button>}
-                            {p.status==='PAID' && <span className="text-xs text-[#76777d]">sudah dibayar</span>}
+                            {p.status==='PAID' && <span className="text-xs text-ink-3">sudah dibayar</span>}
                           </div>
                         </td>
                       </tr>
@@ -564,7 +564,7 @@ export default function HR(){
                     {!payrolls.length && <PosEmpty colSpan={9} text="Belum ada payroll - tekan Generate Payroll"/>}
                   </tbody>
                   {payTotals && !!payrolls.length && (
-                    <tfoot><tr className="bg-[#eff4ff] border-t-2 border-[#e7ecf7] font-bold">
+                    <tfoot><tr className="bg-surface-2 border-t-2 border-line font-bold">
                       <td className={posTd} colSpan={2}>TOTAL (semua halaman filter ini)</td>
                       <td className={posTd+' text-right tabular-nums'}>{rupiah(payTotals.basic)}</td>
                       <td className={posTd+' text-right tabular-nums'}>{rupiah(payTotals.tunjangan)}</td>
@@ -577,7 +577,7 @@ export default function HR(){
                 </>)}
 
                 {tab==='cuti' && (<>
-                  <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                  <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                     <PosTh>KARYAWAN</PosTh><PosTh align="center">JENIS</PosTh><PosTh align="center">PERIODE</PosTh>
                     <PosTh align="center">HARI</PosTh><PosTh>ALASAN</PosTh><PosTh align="center">STATUS</PosTh><PosTh align="right">AKSI</PosTh>
                   </tr></thead>
@@ -585,23 +585,23 @@ export default function HR(){
                     {leaves.map(l=>(
                       <tr key={l.id} className={posTr}>
                         <td className={posTd}>
-                          <div className="font-bold text-[#0b1c30]">{l.name}</div>
-                          <div className="text-[11px] text-[#45464d] font-mono">{l.employee_code} • {l.position||'-'}</div>
+                          <div className="font-bold text-ink">{l.name}</div>
+                          <div className="text-[11px] text-ink-2 font-mono">{l.employee_code} • {l.position||'-'}</div>
                         </td>
                         <td className={posTd+' text-center text-xs'}>{LEAVE_TYPE[l.type]||l.type||'-'}</td>
                         <td className={posTd+' text-center text-xs'}>{iso(l.start_date)} → {iso(l.end_date)}</td>
                         <td className={posTd+' text-center tabular-nums'}>{l.jumlah_hari||'-'}</td>
-                        <td className={posTd+' text-xs text-[#45464d]'}>{(l.reason||'-').slice(0,60)}</td>
+                        <td className={posTd+' text-xs text-ink-2'}>{(l.reason||'-').slice(0,60)}</td>
                         <td className={posTd+' text-center'}>
                           <PosBadge tone={LEAVE_TONE[l.status]||'slate'}>{l.status||'-'}</PosBadge>
-                          {l.approved_by_name && <div className="text-[11px] text-[#76777d] mt-1">oleh {l.approved_by_name}</div>}
+                          {l.approved_by_name && <div className="text-[11px] text-ink-3 mt-1">oleh {l.approved_by_name}</div>}
                         </td>
                         <td className={posTd}>
                           <div className="flex justify-end gap-1.5">
                             {l.status==='PENDING' ? (<>
                               <button onClick={()=>decideLeave(l,'APPROVED')} className={posBtnSm+' bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'}><CheckCircle2 size={13}/> Setujui</button>
                               <button onClick={()=>decideLeave(l,'REJECTED')} className={posBtnSm+' bg-white border-red-200 text-red-600 hover:bg-red-50'}>Tolak</button>
-                            </>) : <span className="text-xs text-[#76777d]">selesai</span>}
+                            </>) : <span className="text-xs text-ink-3">selesai</span>}
                           </div>
                         </td>
                       </tr>
@@ -625,12 +625,12 @@ export default function HR(){
       {tab==='keterlambatan' && (
         <PosCard>
           <PosCardBody className="flex flex-wrap items-center gap-2">
-            <span className="text-[11px] font-bold tracking-wider text-[#45464d]">DETAIL HARIAN KETERLAMBATAN</span>
-            <span className="text-[11px] text-[#76777d]">{(late.details||[]).length} baris • jam masuk, menit terlambat, jarak absen, catatan</span>
+            <span className="text-[11px] font-bold tracking-wider text-ink-2">DETAIL HARIAN KETERLAMBATAN</span>
+            <span className="text-[11px] text-ink-3">{(late.details||[]).length} baris • jam masuk, menit terlambat, jarak absen, catatan</span>
           </PosCardBody>
           <div className="overflow-auto max-h-[440px]">
             <table className="w-full text-sm">
-              <thead className="sticky top-0"><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+              <thead className="sticky top-0"><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                 <PosTh>TANGGAL</PosTh><PosTh>KARYAWAN</PosTh><PosTh align="center">MASUK</PosTh>
                 <PosTh align="right">TERLAMBAT</PosTh><PosTh align="center">JARAK</PosTh><PosTh>CATATAN</PosTh>
               </tr></thead>
@@ -639,13 +639,13 @@ export default function HR(){
                   <tr key={d.id} className={posTr}>
                     <td className={posTd+' text-xs whitespace-nowrap'}>{iso(d.date)}</td>
                     <td className={posTd}>
-                      <div className="font-semibold text-[#0b1c30]">{d.name}</div>
-                      <div className="text-[11px] text-[#45464d] font-mono">{d.employee_code}</div>
+                      <div className="font-semibold text-ink">{d.name}</div>
+                      <div className="text-[11px] text-ink-2 font-mono">{d.employee_code}</div>
                     </td>
                     <td className={posTd+' text-center tabular-nums'}>{jam(d.check_in)}</td>
                     <td className={posTd+' text-right font-bold tabular-nums text-amber-700'}>{nf(d.late_minutes)} mnt</td>
                     <td className={posTd+' text-center text-xs'}>{d.check_in_distance_m!=null? nf(d.check_in_distance_m)+' m' : '-'}</td>
-                    <td className={posTd+' text-[11px] text-[#45464d]'}>{d.note||'-'}</td>
+                    <td className={posTd+' text-[11px] text-ink-2'}>{d.note||'-'}</td>
                   </tr>
                 ))}
                 {!(late.details||[]).length && <PosEmpty colSpan={6} text="Belum ada keterlambatan pada periode ini"/>}
@@ -661,64 +661,64 @@ export default function HR(){
           <form onSubmit={submitEmployee} className="bg-white rounded-xl p-5 w-full max-w-2xl max-h-[92vh] overflow-auto space-y-3 border shadow-raised animate-pop">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-bold text-[16px] text-[#0b1c30]">{editing? 'Edit Karyawan':'Karyawan Baru'}</h3>
-                <div className="text-xs text-[#45464d] mt-0.5">{editing? editing.name : 'Gaji pokok dipakai untuk generate payroll bulanan'}</div>
+                <h3 className="font-bold text-[16px] text-ink">{editing? 'Edit Karyawan':'Karyawan Baru'}</h3>
+                <div className="text-xs text-ink-2 mt-0.5">{editing? editing.name : 'Gaji pokok dipakai untuk generate payroll bulanan'}</div>
               </div>
-              <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-[#e7ecf7] grid place-items-center text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
+              <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-line grid place-items-center text-ink-2 hover:bg-surface-2"><X size={16}/></button>
             </div>
             {formErr && <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{formErr}</div>}
             <div className="grid sm:grid-cols-2 gap-2">
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">KODE KARYAWAN *</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">KODE KARYAWAN *</span>
                 <input value={empForm.employee_code} onChange={e=>setEmpForm({...empForm, employee_code:e.target.value})} placeholder="EMP-009" className={posInput}/></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">NAMA *</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">NAMA *</span>
                 <input value={empForm.name} onChange={e=>setEmpForm({...empForm, name:e.target.value})} placeholder="Nama lengkap" className={posInput}/></label>
             </div>
             <div className="grid sm:grid-cols-2 gap-2">
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">JABATAN</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">JABATAN</span>
                 <input value={empForm.position} onChange={e=>setEmpForm({...empForm, position:e.target.value, role_name:''})}
                   list="hr-positions" placeholder="mis. Kasir" className={posInput} autoComplete="off"/>
                 <datalist id="hr-positions">{POSITION_OPTIONS.map(x=><option key={x} value={x}/>)}</datalist>
-                <span className="block text-[11px] text-[#76777d]">Role: <b className="text-[#0051d5]">{empForm.role_name || roleForPosition(empForm.position)}</b>{empForm.role_name? ' (dipilih manual)':(empForm.position? ' (otomatis)':'')}</span></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">DEPARTEMEN</span>
+                <span className="block text-[11px] text-ink-3">Role: <b className="text-brand">{empForm.role_name || roleForPosition(empForm.position)}</b>{empForm.role_name? ' (dipilih manual)':(empForm.position? ' (otomatis)':'')}</span></label>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">DEPARTEMEN</span>
                 <input value={empForm.department} onChange={e=>setEmpForm({...empForm, department:e.target.value})} placeholder="mis. Sales" className={posInput}/></label>
             </div>
             <div className="grid sm:grid-cols-3 gap-2">
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">TANGGAL MASUK</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">TANGGAL MASUK</span>
                 <input type="date" value={empForm.join_date} onChange={e=>setEmpForm({...empForm, join_date:e.target.value})} className={posInput}/></label>
-              <label className="block space-y-1.5"><span className="text-[11px] font-bold tracking-wide text-[#45464d]">KUOTA CUTI TAHUNAN (HARI)</span>
+              <label className="block space-y-1.5"><span className="text-[11px] font-bold tracking-wide text-ink-2">KUOTA CUTI TAHUNAN (HARI)</span>
                 <input type="number" min="0" value={empForm.leave_quota} onChange={e=>setEmpForm({...empForm, leave_quota:e.target.value})} className={posInput+' text-right tabular-nums'}/></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">GAJI POKOK Rp</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">GAJI POKOK Rp</span>
                 <input type="number" value={empForm.basic_salary} onChange={e=>setEmpForm({...empForm, basic_salary:e.target.value})} className={posInput+' text-right tabular-nums'}/></label>
             </div>
             <div className="grid sm:grid-cols-3 gap-2">
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">TELEPON</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">TELEPON</span>
                 <input value={empForm.phone} onChange={e=>setEmpForm({...empForm, phone:e.target.value})} className={posInput}/></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">NPWP</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">NPWP</span>
                 <input value={empForm.npwp} onChange={e=>setEmpForm({...empForm, npwp:e.target.value})} className={posInput}/></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">NO. BPJS</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">NO. BPJS</span>
                 <input value={empForm.bpjs_number} onChange={e=>setEmpForm({...empForm, bpjs_number:e.target.value})} className={posInput}/></label>
             </div>
             {!editing && (
-              <div className="rounded-xl border border-[#e7ecf7] bg-[#f7faff] p-3 space-y-2">
-                <label className="inline-flex items-center gap-2 text-sm font-semibold text-[#0b1c30]">
+              <div className="rounded-xl border border-line bg-[#f7faff] p-3 space-y-2">
+                <label className="inline-flex items-center gap-2 text-sm font-semibold text-ink">
                   <input type="checkbox" checked={!!empForm.create_account} onChange={e=>setEmpForm({...empForm, create_account:e.target.checked})}/>
                   Buat akun login sekaligus
                 </label>
                 {empForm.create_account && (
                   <>
                     <div className="grid sm:grid-cols-2 gap-2">
-                      <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">USERNAME *</span>
+                      <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">USERNAME *</span>
                         <input value={empForm.username} onChange={e=>setEmpForm({...empForm, username:e.target.value})} placeholder="mis. budi.santoso" autoComplete="off" className={posInput}/></label>
-                      <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">PASSWORD AWAL *</span>
+                      <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">PASSWORD AWAL *</span>
                         <input type="password" value={empForm.password} onChange={e=>setEmpForm({...empForm, password:e.target.value})} placeholder="minimal 8 karakter" autoComplete="new-password" className={posInput}/></label>
                     </div>
-                    <label className="block space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">ROLE AKUN</span>
+                    <label className="block space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">ROLE AKUN</span>
                       <select value={empForm.role_name} onChange={e=>setEmpForm({...empForm, role_name:e.target.value})} className={posInput}>
                         <option value="">Otomatis dari jabatan ({roleForPosition(empForm.position)})</option>
                         {ASSIGNABLE_ROLES.map(r=><option key={r} value={r}>{r}</option>)}
                       </select></label>
-                    <div className="text-[11px] text-[#45464d]">
-                      Role efektif: <b className="text-[#0051d5]">{empForm.role_name || roleForPosition(empForm.position)}</b>. Menu &amp; API mengikuti role ini. Password disimpan sebagai hash bcrypt dan tidak bisa dilihat lagi.
+                    <div className="text-[11px] text-ink-2">
+                      Role efektif: <b className="text-brand">{empForm.role_name || roleForPosition(empForm.position)}</b>. Menu &amp; API mengikuti role ini. Password disimpan sebagai hash bcrypt dan tidak bisa dilihat lagi.
                     </div>
                   </>
                 )}
@@ -730,7 +730,7 @@ export default function HR(){
                 Karyawan aktif (muncul di pilihan absensi &amp; payroll)
               </label>
             )}
-            <div className="text-[11px] text-[#45464d] bg-[#eff4ff] border border-[#e7ecf7] rounded-xl p-2">
+            <div className="text-[11px] text-ink-2 bg-surface-2 border border-line rounded-xl p-2">
               Payroll bulanan dihitung: tunjangan 10% dari gaji pokok, BPJS karyawan 2%, BPJS perusahaan 4%, PPh21 5%.
             </div>
             <div className="flex justify-end gap-2 pt-1">
@@ -749,23 +749,23 @@ export default function HR(){
           <form onSubmit={submitAccount} className="bg-white rounded-xl p-5 w-full max-w-md space-y-3 border shadow-raised animate-pop">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-bold text-[16px] text-[#0b1c30]">Buat Akun Login</h3>
-                <div className="text-xs text-[#45464d] mt-0.5">{accTarget.name} • {accTarget.employee_code} • {accTarget.position||'tanpa jabatan'}</div>
+                <h3 className="font-bold text-[16px] text-ink">Buat Akun Login</h3>
+                <div className="text-xs text-ink-2 mt-0.5">{accTarget.name} • {accTarget.employee_code} • {accTarget.position||'tanpa jabatan'}</div>
               </div>
-              <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-[#e7ecf7] grid place-items-center text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
+              <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-line grid place-items-center text-ink-2 hover:bg-surface-2"><X size={16}/></button>
             </div>
             {formErr && <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{formErr}</div>}
-            <label className="block space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">USERNAME *</span>
+            <label className="block space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">USERNAME *</span>
               <input value={accForm.username} onChange={e=>setAccForm({...accForm, username:e.target.value})} placeholder="mis. budi.santoso" autoComplete="off" className={posInput}/></label>
-            <label className="block space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">PASSWORD AWAL *</span>
+            <label className="block space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">PASSWORD AWAL *</span>
               <input type="password" value={accForm.password} onChange={e=>setAccForm({...accForm, password:e.target.value})} placeholder="minimal 8 karakter" autoComplete="new-password" className={posInput}/></label>
-            <label className="block space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">ROLE AKUN</span>
+            <label className="block space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">ROLE AKUN</span>
               <select value={accForm.role_name} onChange={e=>setAccForm({...accForm, role_name:e.target.value})} className={posInput}>
                 <option value="">Otomatis dari jabatan ({roleForPosition(accTarget.position)})</option>
                 {ASSIGNABLE_ROLES.map(r=><option key={r} value={r}>{r}</option>)}
               </select></label>
-            <div className="text-[11px] text-[#45464d] bg-[#eff4ff] border border-[#e7ecf7] rounded-xl p-2">
-              Role efektif: <b className="text-[#0051d5]">{accForm.role_name || roleForPosition(accTarget.position)}</b>. Password disimpan sebagai hash dan tidak ditampilkan lagi.
+            <div className="text-[11px] text-ink-2 bg-surface-2 border border-line rounded-xl p-2">
+              Role efektif: <b className="text-brand">{accForm.role_name || roleForPosition(accTarget.position)}</b>. Password disimpan sebagai hash dan tidak ditampilkan lagi.
             </div>
             <div className="flex justify-end gap-2 pt-1">
               <button type="button" onClick={()=>setModal('')} className={posBtnSecondary+' h-9 px-4 text-xs'}>Batal</button>
@@ -783,10 +783,10 @@ export default function HR(){
           <div className="bg-white rounded-xl p-5 w-full max-w-lg space-y-3 border shadow-raised animate-pop">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-bold text-[16px] text-[#0b1c30]">Absen Manual</h3>
-                <div className="text-xs text-[#45464d] mt-0.5">Untuk karyawan yang lupa absen - pilih karyawan lalu Check-in / Check-out</div>
+                <h3 className="font-bold text-[16px] text-ink">Absen Manual</h3>
+                <div className="text-xs text-ink-2 mt-0.5">Untuk karyawan yang lupa absen - pilih karyawan lalu Check-in / Check-out</div>
               </div>
-              <button onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-[#e7ecf7] grid place-items-center text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
+              <button onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-line grid place-items-center text-ink-2 hover:bg-surface-2"><X size={16}/></button>
             </div>
             {attSummary?.belum_checkin_list?.length > 0 && (
               <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
@@ -794,12 +794,12 @@ export default function HR(){
                 {attSummary.belum_checkin_list.length>8? ' dan lainnya':''}
               </div>
             )}
-            <div className="max-h-[50vh] overflow-auto divide-y divide-[#e5eeff] border border-[#e7ecf7] rounded-xl">
+            <div className="max-h-[50vh] overflow-auto divide-y divide-[#e5eeff] border border-line rounded-xl">
               {employees.filter(e=> e.is_active!==false).map(e=>(
                 <div key={e.id} className="p-3 flex items-center justify-between gap-2">
                   <div>
-                    <div className="font-bold text-sm text-[#0b1c30]">{e.name}</div>
-                    <div className="text-[11px] text-[#45464d] font-mono">{e.employee_code} • {e.position||'-'}</div>
+                    <div className="font-bold text-sm text-ink">{e.name}</div>
+                    <div className="text-[11px] text-ink-2 font-mono">{e.employee_code} • {e.position||'-'}</div>
                   </div>
                   <div className="flex gap-1.5">
                     <button onClick={()=>checkAction(e.id,'in')} className={posBtnSm+' bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'}><CalendarCheck size={13}/> Masuk</button>
@@ -807,7 +807,7 @@ export default function HR(){
                   </div>
                 </div>
               ))}
-              {!employees.length && <div className="p-4 text-center text-xs text-[#76777d]">Belum ada karyawan</div>}
+              {!employees.length && <div className="p-4 text-center text-xs text-ink-3">Belum ada karyawan</div>}
             </div>
             <div className="flex justify-end"><button onClick={()=>setModal('')} className={posBtnSecondary+' h-9 px-4 text-xs'}>Tutup</button></div>
           </div>
@@ -820,15 +820,15 @@ export default function HR(){
           <form onSubmit={generatePayroll} className="bg-white rounded-xl p-5 w-full max-w-md space-y-3 border shadow-raised animate-pop">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-bold text-[16px] text-[#0b1c30]">Generate Payroll</h3>
-                <div className="text-xs text-[#45464d] mt-0.5">Menghitung gaji semua karyawan aktif untuk periode terpilih</div>
+                <h3 className="font-bold text-[16px] text-ink">Generate Payroll</h3>
+                <div className="text-xs text-ink-2 mt-0.5">Menghitung gaji semua karyawan aktif untuk periode terpilih</div>
               </div>
-              <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-[#e7ecf7] grid place-items-center text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
+              <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-line grid place-items-center text-ink-2 hover:bg-surface-2"><X size={16}/></button>
             </div>
             {formErr && <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{formErr}</div>}
-            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">PERIODE (YYYY-MM)</span>
+            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-ink-2">PERIODE (YYYY-MM)</span>
               <input value={genPeriod} onChange={e=>setGenPeriod(e.target.value)} placeholder="2026-10" className={posInput+' font-mono'}/></label>
-            <div className="text-[11px] text-[#45464d] bg-[#eff4ff] border border-[#e7ecf7] rounded-xl p-2">
+            <div className="text-[11px] text-ink-2 bg-surface-2 border border-line rounded-xl p-2">
               Payroll yang sudah <b>PAID</b> tidak akan ditimpa. Yang masih DRAFT akan dihitung ulang.
             </div>
             <div className="flex justify-end gap-2 pt-1">
@@ -847,28 +847,28 @@ export default function HR(){
           <form onSubmit={submitLeave} className="bg-white rounded-xl p-5 w-full max-w-lg space-y-3 border shadow-raised animate-pop">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-bold text-[16px] text-[#0b1c30]">Pengajuan Cuti / Izin</h3>
-                <div className="text-xs text-[#45464d] mt-0.5">Pengajuan masuk sebagai PENDING, menunggu persetujuan</div>
+                <h3 className="font-bold text-[16px] text-ink">Pengajuan Cuti / Izin</h3>
+                <div className="text-xs text-ink-2 mt-0.5">Pengajuan masuk sebagai PENDING, menunggu persetujuan</div>
               </div>
-              <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-[#e7ecf7] grid place-items-center text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
+              <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-line grid place-items-center text-ink-2 hover:bg-surface-2"><X size={16}/></button>
             </div>
             {formErr && <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{formErr}</div>}
-            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">KARYAWAN *</span>
+            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-ink-2">KARYAWAN *</span>
               <PosSelect size="md" value={leaveForm.employee_id} onChange={v=>setLeaveForm({...leaveForm, employee_id:v})}>
                 <option value="">Pilih karyawan</option>
                 {employees.filter(e=> e.is_active!==false).map(e=> <option key={e.id} value={e.id}>{e.name} • {e.employee_code}</option>)}
               </PosSelect></label>
             <div className="grid grid-cols-3 gap-2">
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">JENIS</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">JENIS</span>
                 <PosSelect size="md" value={leaveForm.type} onChange={v=>setLeaveForm({...leaveForm, type:v})}>
                   {Object.entries(LEAVE_TYPE).map(([k,v])=> <option key={k} value={k}>{v}</option>)}
                 </PosSelect></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">MULAI *</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">MULAI *</span>
                 <input type="date" value={leaveForm.start_date} onChange={e=>setLeaveForm({...leaveForm, start_date:e.target.value})} className={posInput}/></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">SELESAI *</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">SELESAI *</span>
                 <input type="date" value={leaveForm.end_date} onChange={e=>setLeaveForm({...leaveForm, end_date:e.target.value})} className={posInput}/></label>
             </div>
-            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">ALASAN</span>
+            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-ink-2">ALASAN</span>
               <input value={leaveForm.reason} onChange={e=>setLeaveForm({...leaveForm, reason:e.target.value})} placeholder="mis. acara keluarga" className={posInput}/></label>
             <div className="flex justify-end gap-2 pt-1">
               <button type="button" onClick={()=>setModal('')} className={posBtnSecondary+' h-9 px-4 text-xs'}>Batal</button>
@@ -886,45 +886,45 @@ export default function HR(){
           <div className="bg-white rounded-xl w-full max-w-3xl max-h-[92vh] flex flex-col border shadow-raised overflow-hidden animate-pop">
             <div className="p-4 border-b flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-bold text-[16px] text-[#0b1c30]">{detail.name||'Karyawan'}</h3>
-                <div className="text-xs text-[#45464d] mt-1 flex items-center gap-2 flex-wrap">
+                <h3 className="font-bold text-[16px] text-ink">{detail.name||'Karyawan'}</h3>
+                <div className="text-xs text-ink-2 mt-1 flex items-center gap-2 flex-wrap">
                   <span className="font-mono">{detail.employee_code}</span><span>•</span>
                   <span>{detail.position||'-'}</span><span>•</span>
                   <span>{detail.department||'-'}</span>
                   <PosBadge tone={detail.is_active?'emerald':'slate'}>{detail.is_active?'AKTIF':'NONAKTIF'}</PosBadge>
                 </div>
               </div>
-              <button onClick={()=>setDetail(null)} className="w-9 h-9 rounded-xl border border-[#e7ecf7] grid place-items-center text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
+              <button onClick={()=>setDetail(null)} className="w-9 h-9 rounded-xl border border-line grid place-items-center text-ink-2 hover:bg-surface-2"><X size={16}/></button>
             </div>
             <div className="p-4 space-y-4 overflow-auto">
               {detailBusy ? <PosSkeleton rows={5} cols={4}/> : (<>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 text-xs">
-                  <div className="rounded-xl border border-[#e7ecf7] bg-[#eff4ff] p-2.5"><div className="text-[#45464d]">Gaji Pokok</div><div className="font-bold text-[#0b1c30]">{rupiah(detail.basic_salary)}</div></div>
-                  <div className="rounded-xl border border-[#e7ecf7] bg-[#eff4ff] p-2.5"><div className="text-[#45464d]">Tgl Masuk</div><div className="font-bold">{iso(detail.join_date)||'-'}</div></div>
-                  <div className="rounded-xl border border-[#e7ecf7] bg-[#eff4ff] p-2.5"><div className="text-[#45464d]">Hadir Bulan Ini</div><div className="font-bold">{detail.hadir_bulan_ini||0} hari</div></div>
-                  <div className="rounded-xl border border-[#e7ecf7] bg-[#eff4ff] p-2.5"><div className="text-[#45464d]">Kontak</div><div className="font-bold">{detail.phone||'-'}</div></div>
+                  <div className="rounded-xl border border-line bg-surface-2 p-2.5"><div className="text-ink-2">Gaji Pokok</div><div className="font-bold text-ink">{rupiah(detail.basic_salary)}</div></div>
+                  <div className="rounded-xl border border-line bg-surface-2 p-2.5"><div className="text-ink-2">Tgl Masuk</div><div className="font-bold">{iso(detail.join_date)||'-'}</div></div>
+                  <div className="rounded-xl border border-line bg-surface-2 p-2.5"><div className="text-ink-2">Hadir Bulan Ini</div><div className="font-bold">{detail.hadir_bulan_ini||0} hari</div></div>
+                  <div className="rounded-xl border border-line bg-surface-2 p-2.5"><div className="text-ink-2">Kontak</div><div className="font-bold">{detail.phone||'-'}</div></div>
                 </div>
-                <div className="rounded-xl border border-[#e7ecf7] p-3 flex flex-wrap items-center justify-between gap-2">
+                <div className="rounded-xl border border-line p-3 flex flex-wrap items-center justify-between gap-2">
                   <div className="text-xs">
-                    <div className="text-[11px] font-bold tracking-wider text-[#45464d]">AKUN LOGIN</div>
+                    <div className="text-[11px] font-bold tracking-wider text-ink-2">AKUN LOGIN</div>
                     {detail.account
                       ? <div className="flex items-center gap-2 mt-1">
-                          <KeyRound size={13} className="text-[#0051d5]"/>
+                          <KeyRound size={13} className="text-brand"/>
                           <span className="font-bold">{detail.account.username}</span>
                           <PosBadge tone="sky">{(detail.account.roles||[])[0]||'tanpa role'}</PosBadge>
                           <PosBadge tone={detail.account.account_active?'emerald':'slate'}>{detail.account.account_active?'AKTIF':'NONAKTIF'}</PosBadge>
                         </div>
-                      : <div className="text-[#76777d] mt-1">Belum punya akun login.</div>}
+                      : <div className="text-ink-3 mt-1">Belum punya akun login.</div>}
                   </div>
                   {!detail.account && (
                     <button onClick={()=>openAccount(detail)} className={posBtnPrimary+' h-8 px-3 text-xs'}><KeyRound size={13}/> Buat Akun</button>
                   )}
                 </div>
                 <div>
-                  <div className="text-[11px] font-bold tracking-wider text-[#45464d] mb-2">PAYROLL TERAKHIR ({(detail.payrolls||[]).length})</div>
-                  <div className="overflow-auto rounded-xl border border-[#e7ecf7]">
+                  <div className="text-[11px] font-bold tracking-wider text-ink-2 mb-2">PAYROLL TERAKHIR ({(detail.payrolls||[]).length})</div>
+                  <div className="overflow-auto rounded-xl border border-line">
                     <table className="w-full text-sm">
-                      <thead><tr className="bg-[#e5eeff] border-b border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                      <thead><tr className="bg-surface-3 border-b border-line text-[11px] font-bold tracking-wider text-ink-2">
                         <PosTh>PERIODE</PosTh><PosTh align="right">POKOK</PosTh><PosTh align="right">BERSIH</PosTh><PosTh align="center">STATUS</PosTh>
                       </tr></thead>
                       <tbody>
@@ -942,10 +942,10 @@ export default function HR(){
                   </div>
                 </div>
                 <div>
-                  <div className="text-[11px] font-bold tracking-wider text-[#45464d] mb-2">ABSENSI TERAKHIR ({(detail.attendance||[]).length})</div>
-                  <div className="overflow-auto rounded-xl border border-[#e7ecf7] max-h-[220px]">
+                  <div className="text-[11px] font-bold tracking-wider text-ink-2 mb-2">ABSENSI TERAKHIR ({(detail.attendance||[]).length})</div>
+                  <div className="overflow-auto rounded-xl border border-line max-h-[220px]">
                     <table className="w-full text-sm">
-                      <thead><tr className="bg-[#e5eeff] border-b border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                      <thead><tr className="bg-surface-3 border-b border-line text-[11px] font-bold tracking-wider text-ink-2">
                         <PosTh>TANGGAL</PosTh><PosTh align="center">MASUK</PosTh><PosTh align="center">PULANG</PosTh><PosTh align="center">STATUS</PosTh>
                       </tr></thead>
                       <tbody>
@@ -964,10 +964,10 @@ export default function HR(){
                 </div>
                 {!!(detail.leaves||[]).length && (
                   <div>
-                    <div className="text-[11px] font-bold tracking-wider text-[#45464d] mb-2">CUTI &amp; IZIN</div>
+                    <div className="text-[11px] font-bold tracking-wider text-ink-2 mb-2">CUTI &amp; IZIN</div>
                     <div className="space-y-2">
                       {detail.leaves.map(l=>(
-                        <div key={l.id} className="rounded-xl border border-[#e7ecf7] bg-[#eff4ff] p-2.5 flex items-center justify-between gap-2 text-sm">
+                        <div key={l.id} className="rounded-xl border border-line bg-surface-2 p-2.5 flex items-center justify-between gap-2 text-sm">
                           <span>{LEAVE_TYPE[l.type]||l.type} • {iso(l.start_date)} → {iso(l.end_date)}</span>
                           <PosBadge tone={LEAVE_TONE[l.status]||'slate'}>{l.status}</PosBadge>
                         </div>

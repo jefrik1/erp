@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+
+<html lang="id"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"outline-variant":"#c4c5d5","danger-border":"#FECDCA","tertiary-fixed-dim":"#6cd8c7","surface":"#f9f9ff","border-muted":"#D0D5DD","error":"#ba1a1a","info-border":"#B9E6FE","warning-border":"#FEDF89","brand-primary-hover":"#1B3A9C","on-primary-container":"#a8b8ff","on-tertiary":"#ffffff","success-text":"#067647","background":"#f9f9ff","tertiary-fixed":"#89f5e3","ink-slate":"#64748B","surface-container-high":"#e0e8ff","warning-bg":"#FFFAEB","accent-blue":"#3B82F6","surface-dim":"#d2daf0","secondary":"#565e74","primary-fixed-dim":"#b8c4ff","on-surface-variant":"#444653","on-tertiary-fixed":"#00201c","surface-container-lowest":"#ffffff","on-secondary":"#ffffff","surface-card":"#FFFFFF","surface-variant":"#dbe2f9","surface-tint":"#3755c3","danger-text":"#B42318","ink-muted":"#667085","ink-secondary":"#475467","on-secondary-fixed-variant":"#3f465c","on-secondary-fixed":"#131b2e","warning-text":"#B54708","surface-container-low":"#f1f3ff","on-secondary-container":"#5c647a","inverse-surface":"#293041","surface-subtle":"#F4F6F8","on-error":"#ffffff","border-hairline":"#E4E7EC","surface-container-highest":"#dbe2f9","surface-inset":"#F8FAFC","inverse-primary":"#b8c4ff","on-surface":"#141b2c","on-primary":"#ffffff","error-container":"#ffdad6","inverse-on-surface":"#edf0ff","on-tertiary-fixed-variant":"#005047","primary":"#00288e","on-error-container":"#93000a","on-primary-fixed":"#001453","secondary-fixed-dim":"#bec6e0","brand-primary-subtle":"#EEF3FF","sidebar-accent-border":"#1E293B","canvas-background":"#F7F8FA","secondary-container":"#dae2fd","info-bg":"#F0F9FF","primary-fixed":"#dde1ff","outline":"#757684","ink-slate-light":"#94A3B8","primary-container":"#1e40af","info-text":"#026AA2","danger-bg":"#FEF3F2","surface-bright":"#f9f9ff","surface-container":"#e9edff","brand-primary-border":"#C7D5FE","on-tertiary-container":"#60cdbc","success-bg":"#ECFDF3","tertiary-container":"#00554c","tertiary":"#003c35","success-border":"#ABEFC6","on-background":"#141b2c","secondary-fixed":"#dae2fd","on-primary-fixed-variant":"#173bab"},borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},spacing:{"gutter-dense":"0.5rem",margin:"1.5rem",gutter:"1rem","space-lg":"1rem","space-sm":"0.5rem","space-xl":"1.5rem","space-xs":"0.25rem","space-md":"0.75rem","margin-compact":"1rem"},fontFamily:{"label-mono-metric":["JetBrains Mono"],"headline-lg":["Inter"],"body-md-medium":["Inter"],"label-mono-sm":["JetBrains Mono"],"caption-meta":["Inter"],"label-mono-lg":["JetBrains Mono"],"headline-sm":["Inter"],"label-mono-base":["JetBrains Mono"],"caption-caps":["Inter"],"body-md":["Inter"],"body-sm":["Inter"],"headline-md":["Inter"],"caption-sidebar":["Inter"],"body-sm-semibold":["Inter"]},fontSize:{"label-mono-metric":["20px",{lineHeight:"24px",letterSpacing:"-0.02em",fontWeight:"700"}],"headline-lg":["20px",{lineHeight:"28px",letterSpacing:"-0.02em",fontWeight:"700"}],"body-md-medium":["14px",{lineHeight:"20px",fontWeight:"500"}],"label-mono-sm":["12px",{lineHeight:"16px",fontWeight:"400"}],"caption-meta":["12px",{lineHeight:"16px",fontWeight:"400"}],"label-mono-lg":["28px",{lineHeight:"32px",letterSpacing:"-0.02em",fontWeight:"700"}],"headline-sm":["16px",{lineHeight:"22px",letterSpacing:"-0.01em",fontWeight:"600"}],"label-mono-base":["13px",{lineHeight:"18px",fontWeight:"500"}],"caption-caps":["11px",{lineHeight:"14px",letterSpacing:"0.06em",fontWeight:"700"}],"body-md":["14px",{lineHeight:"20px",fontWeight:"400"}],"body-sm":["13px",{lineHeight:"18px",fontWeight:"400"}],"headline-md":["18px",{lineHeight:"24px",letterSpacing:"-0.015em",fontWeight:"700"}],"caption-sidebar":["10px",{lineHeight:"12px",letterSpacing:"0.08em",fontWeight:"600"}],"body-sm-semibold":["13px",{lineHeight:"18px",fontWeight:"600"}]}}}</script></head><body class="bg-canvas-background font-body-sm text-body-sm text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-60 bg-[#0F172A] border-r border-sidebar-accent-border z-50 flex flex-col"><div class="h-[52px] px-4 flex items-center gap-3 border-b border-sidebar-accent-border shrink-0"><div class="w-7 h-7 rounded bg-primary-container flex items-center justify-center text-on-primary font-headline-sm text-headline-sm font-bold tracking-tight">SM</div><div class="flex flex-col min-w-0"><span class="font-headline-sm text-headline-sm text-white font-bold leading-none truncate">Sumber Material</span><span class="font-caption-sidebar text-caption-sidebar uppercase tracking-wider text-ink-slate font-semibold mt-0.5">ENTERPRISE ERP</span></div></div><div class="p-3 border-b border-sidebar-accent-border shrink-0"><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-2 text-ink-slate text-[16px]">search</span><input class="w-full bg-[#1E293B] text-white placeholder-ink-slate font-body-sm text-body-sm pl-7 pr-2 py-1.5 rounded border border-[#334155] focus:outline-none focus:border-accent-blue" placeholder="Cari menu..." type="text"/></div></div><div class="flex-1 overflow-y-auto py-2 px-2 space-y-4"><nav class="space-y-4" data-active-classes="bg-primary-container text-white font-semibold"><div class="space-y-1"><div class="px-2 py-1 font-caption-sidebar text-caption-sidebar uppercase font-bold tracking-wider text-ink-slate">PENJUALAN</div><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="dashboard-penjualan" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">monitoring</span>Dashboard</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="sales-order" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">receipt_long</span>Sales Order</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="riwayat-order" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">history</span>Riwayat Order</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="invoice-ar" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">request_quote</span>Invoice (AR)</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="pos-kasir" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">point_of_sale</span>POS Kasir</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="kalkulator-material" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">calculate</span>Kalkulator Material</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="crm-leads" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">contacts</span>CRM &amp; Leads</a></div><div class="space-y-1"><div class="px-2 py-1 font-caption-sidebar text-caption-sidebar uppercase font-bold tracking-wider text-ink-slate">PROYEK</div><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="proyek-tender" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">engineering</span>Proyek &amp; Tender</a></div><div class="space-y-1"><div class="px-2 py-1 font-caption-sidebar text-caption-sidebar uppercase font-bold tracking-wider text-ink-slate">PEMBELIAN</div><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="purchase-request" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">post_add</span>Purchase Request</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="rfq-supplier" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">request_page</span>RFQ Supplier</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="purchase-order" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">shopping_cart</span>Purchase Order</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="goods-receipt" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">input</span>Goods Receipt</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="landed-cost" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">attach_money</span>Landed Cost</a></div><div class="space-y-1"><div class="px-2 py-1 font-caption-sidebar text-caption-sidebar uppercase font-bold tracking-wider text-ink-slate">BARANG &amp; PERSEDIAAN</div><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="katalog-produk" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">inventory_2</span>Katalog Produk</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="stok-per-gudang" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">warehouse</span>Stok per Gudang</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="penambahan-stok" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">add_box</span>Penambahan Stok</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="kartu-stok" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">table_rows</span>Kartu Stok</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="stock-opname" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">fact_check</span>Stock Opname</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="transfer-gudang" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">move_down</span>Transfer Gudang</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="konsinyasi" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">handshake</span>Konsinyasi</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="susut-pecah" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">broken_image</span>Susut &amp; Pecah</a></div><div class="space-y-1"><div class="px-2 py-1 font-caption-sidebar text-caption-sidebar uppercase font-bold tracking-wider text-ink-slate">OPERASIONAL</div><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="logistik-do" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">local_shipping</span>Logistik (DO)</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="armada-trip" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">commute</span>Armada &amp; Trip</a></div><div class="space-y-1"><div class="px-2 py-1 font-caption-sidebar text-caption-sidebar uppercase font-bold tracking-wider text-ink-slate">KEUANGAN</div><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="coa-jurnal" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">account_tree</span>COA &amp; Jurnal</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="jurnal-umum" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">menu_book</span>Jurnal Umum</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="ar-ap" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">payments</span>AR / AP</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="kolektibilitas" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">timer</span>Kolektibilitas</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="pajak-e-faktur" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">receipt</span>Pajak &amp; e-Faktur</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="tutup-buku" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">lock_clock</span>Tutup Buku</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="rekonsiliasi-bank" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">sync_alt</span>Rekonsiliasi Bank</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="laporan-bi" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">analytics</span>Laporan BI</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="laporan-persediaan" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">summarize</span>Laporan Persediaan</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="budget-cashflow" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">savings</span>Budget &amp; Cashflow</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="aset-tetap" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">domain</span>Aset Tetap</a></div><div class="space-y-1"><div class="px-2 py-1 font-caption-sidebar text-caption-sidebar uppercase font-bold tracking-wider text-ink-slate">LOYALTY</div><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="loyalty-tier" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">stars</span>Loyalty &amp; Tier</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="pricing-engine" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">price_change</span>Pricing Engine</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="retur-klaim" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">assignment_return</span>Retur &amp; Klaim</a></div><div class="space-y-1"><div class="px-2 py-1 font-caption-sidebar text-caption-sidebar uppercase font-bold tracking-wider text-ink-slate">SDM &amp; MASTER</div><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="karyawan-hr" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">badge</span>Karyawan &amp; HR</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="pelanggan" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">group</span>Pelanggan</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="supplier" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">store</span>Supplier</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="audit-grc" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">policy</span>Audit &amp; GRC</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="approval" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">check_circle</span>Approval</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="approval-matrix" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">schema</span>Approval Matrix</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="log-error" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">bug_report</span>Log Error</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="pusat-notifikasi" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">notifications</span>Pusat Notifikasi</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="pengaturan-sistem" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">settings</span>Pengaturan Sistem</a></div><div class="space-y-1"><div class="px-2 py-1 font-caption-sidebar text-caption-sidebar uppercase font-bold tracking-wider text-ink-slate">SAYA</div><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="pengumuman" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">campaign</span>Pengumuman</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="absensi-saya" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">schedule</span>Absensi Saya</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="cuti-tahunan" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">event_available</span>Cuti Tahunan</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="izin-sakit" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">medical_services</span>Izin &amp; Sakit</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="trip-saya" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">navigation</span>Trip Saya</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="surat-jalan" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">description</span>Surat Jalan</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="profil-saya" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">account_circle</span>Profil Saya</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="panduan-bantuan" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">help_outline</span>Panduan &amp; Bantuan</a></div></nav></div></aside><div class="pl-60"><header class="fixed top-0 left-60 right-0 h-[52px] bg-surface-card border-b border-border-hairline z-40 px-4 flex items-center justify-between"><div class="flex items-center gap-3"><div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-success-bg border border-success-border text-success-text font-caption-caps text-caption-caps"><span class="w-1.5 h-1.5 rounded-full bg-success-text"></span>Sistem normal</div><div class="h-4 w-px bg-border-hairline"></div><button class="flex items-center gap-1 font-body-sm text-body-sm text-ink-secondary hover:text-on-surface"><span class="text-[14px]">📍</span><span class="font-medium">Gudang Pusat Bekasi</span><span class="material-symbols-outlined text-[16px]">arrow_drop_down</span></button><div class="h-4 w-px bg-border-hairline"></div><div class="font-label-mono-sm text-label-mono-sm text-ink-muted flex items-center gap-1.5"><span class="material-symbols-outlined text-[15px]">schedule</span>Sabtu, 31 Okt 2026 · 00.17 WIB</div></div><div class="flex items-center gap-3"><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-2.5 text-ink-muted text-[16px]">search</span><input class="h-8 w-64 bg-surface-subtle font-body-sm text-body-sm text-on-surface placeholder-ink-muted pl-8 pr-3 rounded border border-border-muted focus:outline-none focus:border-primary-container focus:bg-surface-card" placeholder="Pencarian pintar... [Ctrl K]" type="text"/><span class="absolute right-2 font-label-mono-sm text-caption-caps px-1 py-0.5 rounded bg-surface-container text-ink-muted border border-border-hairline">⌘K</span></div><button class="w-8 h-8 rounded flex items-center justify-center text-ink-secondary hover:bg-surface-subtle transition-colors relative"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-error"></span></button><div class="h-4 w-px bg-border-hairline"></div><div class="flex items-center gap-2 pl-1"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="flex flex-col text-left"><span class="font-body-sm-semibold text-body-sm-semibold leading-none text-on-surface">admin</span><span class="font-caption-meta text-caption-meta text-ink-muted leading-tight mt-0.5">(Direktur)</span></div></div></div></header><main class="w-full pt-[52px] bg-canvas-background min-h-screen"><div class="flex flex-col w-full">
+<!-- Top Command Sub-Header -->
+<div class="px-6 py-3 flex items-center justify-between bg-surface-card">
+<div class="flex items-center gap-3">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Invoice Penjualan &amp; Tagihan Piutang (AR)</h1>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-container-high text-primary font-caption-caps text-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-accent-blue"></span>
+        99 Invoice Terdaftar · Terkoneksi Surat Jalan
+      </span>
+</div>
+<div class="flex items-center gap-2">
+<button class="h-8 px-3 rounded bg-surface-subtle hover:bg-surface-container text-ink-secondary font-body-sm-semibold text-body-sm-semibold flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px] text-accent-blue">receipt_long</span>
+        + Buat dari Surat Jalan <span class="px-1.5 py-0.2 rounded-full bg-brand-primary-border text-primary font-label-mono-sm text-label-mono-sm">3 Siap Tagih</span>
+</button>
+<button class="h-8 px-3 rounded bg-surface-subtle hover:bg-surface-container text-ink-secondary font-body-sm-semibold text-body-sm-semibold flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[16px]">file_download</span>
+        Ekspor Rekap
+        <span class="material-symbols-outlined text-[16px]">arrow_drop_down</span>
+</button>
+<button class="h-8 px-3.5 rounded bg-primary-container hover:bg-brand-primary-hover text-on-primary font-body-sm-semibold text-body-sm-semibold flex items-center gap-1.5 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+        + Terbitkan Invoice Baru
+      </button>
+</div>
+</div>
+<div class="p-6 space-y-4">
+<!-- 5-Segment AR Aging & Status Filter Strip -->
+<div class="grid grid-cols-5 gap-2 bg-surface-card p-1.5 rounded-xl">
+<!-- Segment 1: All -->
+<button class="flex flex-col justify-center px-4 py-2 text-left rounded-lg bg-brand-primary-subtle transition-all">
+<div class="flex items-center justify-between w-full">
+<span class="font-caption-caps text-caption-caps text-primary">SEMUA INVOICE</span>
+<span class="font-label-mono-sm text-label-mono-sm px-1.5 py-0.5 rounded bg-brand-primary-border text-primary font-semibold">99</span>
+</div>
+<div class="font-label-mono-metric text-label-mono-metric text-on-surface mt-1">Rp 405.872.166</div>
+</button>
+<!-- Segment 2: Current -->
+<button class="flex flex-col justify-center px-4 py-2 text-left rounded-lg bg-surface-subtle hover:bg-surface-container transition-all">
+<div class="flex items-center justify-between w-full">
+<span class="font-caption-caps text-caption-caps text-success-text">BELUM JATUH TEMPO</span>
+<span class="font-label-mono-sm text-label-mono-sm px-1.5 py-0.5 rounded bg-success-bg text-success-text font-semibold">12</span>
+</div>
+<div class="font-label-mono-metric text-label-mono-metric text-success-text mt-1">Rp 135.085.930</div>
+</button>
+<!-- Segment 3: 1-30 Days -->
+<button class="flex flex-col justify-center px-4 py-2 text-left rounded-lg bg-surface-subtle hover:bg-surface-container transition-all">
+<div class="flex items-center justify-between w-full">
+<span class="font-caption-caps text-caption-caps text-warning-text">JATUH TEMPO 1–30 HARI</span>
+<span class="font-label-mono-sm text-label-mono-sm px-1.5 py-0.5 rounded bg-warning-bg text-warning-text font-semibold">6</span>
+</div>
+<div class="font-label-mono-metric text-label-mono-metric text-warning-text mt-1">Rp 39.960.000</div>
+</button>
+<!-- Segment 4: Overdue >30 / >90 Days -->
+<button class="flex flex-col justify-center px-4 py-2 text-left rounded-lg bg-danger-bg hover:opacity-95 transition-all relative overflow-hidden">
+<div class="flex items-center justify-between w-full">
+<span class="font-caption-caps text-caption-caps text-danger-text flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+            MACET &gt;30 / &gt;90 HARI
+          </span>
+<span class="font-label-mono-sm text-label-mono-sm px-1.5 py-0.5 rounded bg-error text-on-error font-semibold">4</span>
+</div>
+<div class="font-label-mono-metric text-label-mono-metric text-danger-text mt-1">Rp 230.786.236</div>
+</button>
+<!-- Segment 5: Paid -->
+<button class="flex flex-col justify-center px-4 py-2 text-left rounded-lg bg-surface-subtle hover:bg-surface-container transition-all">
+<div class="flex items-center justify-between w-full">
+<span class="font-caption-caps text-caption-caps text-ink-muted">LUNAS / PAID</span>
+<span class="font-label-mono-sm text-label-mono-sm px-1.5 py-0.5 rounded bg-surface-container-high text-ink-slate font-semibold">77</span>
+</div>
+<div class="font-label-mono-metric text-label-mono-metric text-ink-secondary mt-1">Rp 134.125.000</div>
+</button>
+</div>
+<!-- Interactive AR Ledger Filter Controls -->
+<div class="flex items-center justify-between gap-3 bg-surface-card p-2 rounded-lg">
+<div class="flex items-center gap-2 flex-1">
+<div class="relative flex items-center w-80">
+<span class="material-symbols-outlined absolute left-2.5 text-ink-muted text-[17px]">search</span>
+<input class="h-9 w-full bg-surface-subtle font-body-sm text-body-sm text-on-surface placeholder-ink-muted pl-8 pr-3 rounded focus:outline-none focus:bg-surface-card focus:ring-1 focus:ring-primary-container" placeholder="Cari no invoice, nama pelanggan, nomor DO..." type="text"/>
+</div>
+<div class="relative">
+<button class="h-9 px-3 rounded bg-surface-subtle hover:bg-surface-container text-ink-secondary font-body-sm text-body-sm flex items-center gap-2">
+<span>Pelanggan: <strong class="text-on-surface font-medium">Semua Segmen (B2B, Retail, BUMN)</strong></span>
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+</div>
+<div class="inline-flex p-0.5 rounded bg-surface-subtle">
+<button class="px-2.5 py-1 rounded font-body-sm-semibold text-body-sm-semibold bg-surface-card text-primary shadow-sm">Semua</button>
+<button class="px-2.5 py-1 rounded font-body-sm text-body-sm text-ink-secondary hover:text-on-surface">Hanya B2B DO</button>
+<button class="px-2.5 py-1 rounded font-body-sm text-body-sm text-ink-secondary hover:text-on-surface">Hanya POS Kasir</button>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-caption-meta text-caption-meta text-ink-muted">Urutkan:</span>
+<button class="h-9 px-2.5 rounded bg-surface-subtle text-ink-secondary font-body-sm text-body-sm flex items-center gap-1.5 hover:bg-surface-container">
+<span>Jatuh Tempo Terdekat</span>
+<span class="material-symbols-outlined text-[16px]">swap_vert</span>
+</button>
+</div>
+</div>
+<!-- Main High-Density AR Ledger Workbench Table -->
+<div class="bg-surface-card rounded-xl overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full border-collapse text-left">
+<thead>
+<tr class="bg-surface-subtle h-9">
+<th class="w-10 px-3 py-2 text-center">
+<input class="rounded bg-surface-card accent-primary-container w-4 h-4 cursor-pointer" id="check-all" type="checkbox"/>
+</th>
+<th class="px-3 py-2 font-caption-caps text-caption-caps text-ink-muted uppercase">No. Invoice &amp; Ref DO</th>
+<th class="px-3 py-2 font-caption-caps text-caption-caps text-ink-muted uppercase">Pelanggan &amp; Kontak</th>
+<th class="px-3 py-2 font-caption-caps text-caption-caps text-ink-muted uppercase">Tgl Terbit</th>
+<th class="px-3 py-2 font-caption-caps text-caption-caps text-ink-muted uppercase">Tgl Jatuh Tempo</th>
+<th class="px-3 py-2 font-caption-caps text-caption-caps text-ink-muted uppercase text-right">Total Tagihan</th>
+<th class="px-3 py-2 font-caption-caps text-caption-caps text-ink-muted uppercase text-right">Terbayar</th>
+<th class="px-3 py-2 font-caption-caps text-caption-caps text-ink-muted uppercase text-right">Sisa Piutang</th>
+<th class="px-3 py-2 font-caption-caps text-caption-caps text-ink-muted uppercase text-center">Status</th>
+<th class="px-3 py-2 font-caption-caps text-caption-caps text-ink-muted uppercase text-right">Aksi Penagihan</th>
+</tr>
+</thead>
+<tbody class="divide-y-0 text-on-surface">
+<!-- Row 1: Retail Paid -->
+<tr class="h-10 hover:bg-surface-subtle transition-colors group">
+<td class="px-3 py-1.5 text-center">
+<input class="row-checkbox rounded bg-surface-card accent-primary-container w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-1.5">
+<div class="flex items-center gap-1.5">
+<span class="font-label-mono-base text-label-mono-base text-primary font-semibold">INV-POS-1793354196011</span>
+<span class="font-label-mono-sm text-caption-caps text-ink-muted bg-surface-subtle px-1 rounded">SO-1793354</span>
+</div>
+</td>
+<td class="px-3 py-1.5">
+<div class="flex items-center gap-2">
+<span class="font-body-sm-semibold text-body-sm-semibold text-on-surface">Budi Santoso</span>
+<span class="px-1.5 py-0.2 rounded font-caption-caps text-caption-caps bg-surface-container text-ink-secondary">Retail</span>
+</div>
+</td>
+<td class="px-3 py-1.5 font-label-mono-sm text-label-mono-sm text-ink-secondary">30 Okt 2026</td>
+<td class="px-3 py-1.5 font-label-mono-sm text-label-mono-sm text-ink-muted">30 Okt 2026</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base">Rp 55.500</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base text-success-text">Rp 55.500</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base text-ink-muted">Rp 0</td>
+<td class="px-3 py-1.5 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-bg text-success-text font-caption-caps text-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-success-text"></span>PAID
+                </span>
+</td>
+<td class="px-3 py-1.5 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="h-7 px-2 rounded bg-surface-subtle hover:bg-success-bg hover:text-success-text text-ink-secondary font-body-sm text-body-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">chat</span> WA
+                  </button>
+<button class="w-7 h-7 rounded hover:bg-surface-subtle flex items-center justify-center text-ink-muted">
+<span class="material-symbols-outlined text-[16px]">more_horiz</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: B2B Sent -->
+<tr class="h-10 hover:bg-surface-subtle transition-colors bg-brand-primary-subtle/30">
+<td class="px-3 py-1.5 text-center">
+<input checked="" class="row-checkbox rounded bg-surface-card accent-primary-container w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-1.5">
+<div class="flex items-center gap-1.5">
+<span class="font-label-mono-base text-label-mono-base text-primary font-bold">INV-PRJ-67-1-555861</span>
+<span class="font-label-mono-sm text-caption-caps text-accent-blue bg-surface-container-high px-1 rounded">Ref: DO-7020</span>
+</div>
+</td>
+<td class="px-3 py-1.5">
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-body-sm-semibold text-body-sm-semibold text-on-surface">PT Kontraktor Jaya</span>
+<span class="px-1.5 py-0.2 rounded font-caption-caps text-caption-caps bg-brand-primary-border text-primary">B2B</span>
+</div>
+<span class="font-label-mono-sm text-caption-meta text-ink-slate">0816-000-003</span>
+</div>
+</td>
+<td class="px-3 py-1.5 font-label-mono-sm text-label-mono-sm text-ink-secondary">30 Okt 2026</td>
+<td class="px-3 py-1.5">
+<div class="flex items-center gap-1">
+<span class="font-label-mono-sm text-label-mono-sm text-on-surface font-medium">13 Nov 2026</span>
+<span class="px-1 rounded bg-info-bg text-info-text font-caption-caps text-caption-caps">H-14</span>
+</div>
+</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base font-semibold">Rp 39.960.000</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base text-ink-muted">Rp 0</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base font-bold text-primary">Rp 39.960.000</td>
+<td class="px-3 py-1.5 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-info-bg text-info-text font-caption-caps text-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-info-text"></span>SENT
+                </span>
+</td>
+<td class="px-3 py-1.5 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="h-7 px-2 rounded bg-primary-container text-on-primary font-body-sm-semibold text-body-sm flex items-center gap-1 hover:bg-brand-primary-hover shadow-sm">
+<span class="material-symbols-outlined text-[14px]">payments</span> Catat Bayar
+                  </button>
+<button class="h-7 px-2 rounded bg-surface-subtle hover:bg-success-bg hover:text-success-text text-ink-secondary font-body-sm text-body-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">chat</span> WA
+                  </button>
+<button class="w-7 h-7 rounded hover:bg-surface-subtle flex items-center justify-center text-ink-muted">
+<span class="material-symbols-outlined text-[16px]">more_horiz</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3: BUMN Critical Overdue -->
+<tr class="h-10 hover:bg-surface-subtle transition-colors bg-danger-bg/20">
+<td class="px-3 py-1.5 text-center">
+<input checked="" class="row-checkbox rounded bg-surface-card accent-primary-container w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-1.5">
+<div class="flex items-center gap-1.5">
+<span class="font-label-mono-base text-label-mono-base text-danger-text font-bold">INV-2024-0003</span>
+<span class="font-label-mono-sm text-caption-caps text-danger-text bg-danger-bg px-1 rounded">Ref: DO-2024-08</span>
+</div>
+</td>
+<td class="px-3 py-1.5">
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-body-sm-semibold text-body-sm-semibold text-danger-text">PT Waskita Beton</span>
+<span class="px-1.5 py-0.2 rounded font-caption-caps text-caption-caps bg-warning-bg text-warning-text">BUMN</span>
+</div>
+<span class="font-label-mono-sm text-caption-meta text-ink-slate">0811-111-111</span>
+</div>
+</td>
+<td class="px-3 py-1.5 font-label-mono-sm text-label-mono-sm text-ink-secondary">24 Sep 2024</td>
+<td class="px-3 py-1.5">
+<div class="flex flex-col">
+<span class="font-label-mono-sm text-label-mono-sm text-danger-text font-bold">24 Okt 2024</span>
+<span class="font-caption-caps text-caption-caps text-danger-text font-bold">766 hr Macet</span>
+</div>
+</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base font-semibold text-danger-text">Rp 94.350.000</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base text-ink-muted">Rp 0</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base font-bold text-danger-text">Rp 94.350.000</td>
+<td class="px-3 py-1.5 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-danger-bg text-danger-text font-caption-caps text-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-danger-text"></span>OVERDUE
+                </span>
+</td>
+<td class="px-3 py-1.5 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="h-7 px-2 rounded bg-danger-bg hover:bg-error hover:text-on-error text-danger-text font-body-sm-semibold text-body-sm flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]">gavel</span> Somasi SP3
+                  </button>
+<button class="h-7 px-2 rounded bg-surface-subtle hover:bg-success-bg hover:text-success-text text-ink-secondary font-body-sm text-body-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">chat</span> WA
+                  </button>
+<button class="w-7 h-7 rounded hover:bg-surface-subtle flex items-center justify-center text-ink-muted">
+<span class="material-symbols-outlined text-[16px]">more_horiz</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Retail Paid Small -->
+<tr class="h-10 hover:bg-surface-subtle transition-colors">
+<td class="px-3 py-1.5 text-center">
+<input class="row-checkbox rounded bg-surface-card accent-primary-container w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-1.5">
+<span class="font-label-mono-base text-label-mono-base text-primary font-semibold">INV-POS-1793342262559</span>
+</td>
+<td class="px-3 py-1.5">
+<div class="flex items-center gap-2">
+<span class="font-body-sm-semibold text-body-sm-semibold text-on-surface">Budi Santoso</span>
+<span class="px-1.5 py-0.2 rounded font-caption-caps text-caption-caps bg-surface-container text-ink-secondary">Retail</span>
+</div>
+</td>
+<td class="px-3 py-1.5 font-label-mono-sm text-label-mono-sm text-ink-secondary">30 Okt 2026</td>
+<td class="px-3 py-1.5 font-label-mono-sm text-label-mono-sm text-ink-muted">30 Okt 2026</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base">Rp 44.400</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base text-success-text">Rp 44.400</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base text-ink-muted">Rp 0</td>
+<td class="px-3 py-1.5 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-bg text-success-text font-caption-caps text-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-success-text"></span>PAID
+                </span>
+</td>
+<td class="px-3 py-1.5 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="h-7 px-2 rounded bg-surface-subtle hover:bg-success-bg hover:text-success-text text-ink-secondary font-body-sm text-body-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">chat</span> WA
+                  </button>
+<button class="w-7 h-7 rounded hover:bg-surface-subtle flex items-center justify-center text-ink-muted">
+<span class="material-symbols-outlined text-[16px]">more_horiz</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5: B2B Active Large -->
+<tr class="h-10 hover:bg-surface-subtle transition-colors">
+<td class="px-3 py-1.5 text-center">
+<input checked="" class="row-checkbox rounded bg-surface-card accent-primary-container w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-1.5">
+<div class="flex items-center gap-1.5">
+<span class="font-label-mono-base text-label-mono-base text-primary font-bold">INV-20261029-9941</span>
+<span class="font-label-mono-sm text-caption-caps text-accent-blue bg-surface-container-high px-1 rounded">Ref: DO-883</span>
+</div>
+</td>
+<td class="px-3 py-1.5">
+<div class="flex items-center gap-2">
+<span class="font-body-sm-semibold text-body-sm-semibold text-on-surface">PT Summarecon Agung Tbk</span>
+<span class="px-1.5 py-0.2 rounded font-caption-caps text-caption-caps bg-brand-primary-border text-primary">B2B</span>
+</div>
+</td>
+<td class="px-3 py-1.5 font-label-mono-sm text-label-mono-sm text-ink-secondary">29 Okt 2026</td>
+<td class="px-3 py-1.5">
+<div class="flex items-center gap-1">
+<span class="font-label-mono-sm text-label-mono-sm text-on-surface font-medium">28 Nov 2026</span>
+<span class="px-1 rounded bg-success-bg text-success-text font-caption-caps text-caption-caps">Current</span>
+</div>
+</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base font-semibold">Rp 99.850.000</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base text-ink-muted">Rp 0</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base font-bold text-on-surface">Rp 99.850.000</td>
+<td class="px-3 py-1.5 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-info-bg text-info-text font-caption-caps text-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-info-text"></span>ACTIVE
+                </span>
+</td>
+<td class="px-3 py-1.5 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="h-7 px-2 rounded bg-surface-subtle hover:bg-surface-container text-ink-secondary font-body-sm-semibold text-body-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">notifications_active</span> Reminder
+                  </button>
+<button class="w-7 h-7 rounded hover:bg-surface-subtle flex items-center justify-center text-ink-muted">
+<span class="material-symbols-outlined text-[16px]">more_horiz</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 6: B2B Overdue SP1 -->
+<tr class="h-10 hover:bg-surface-subtle transition-colors">
+<td class="px-3 py-1.5 text-center">
+<input checked="" class="row-checkbox rounded bg-surface-card accent-primary-container w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-1.5">
+<div class="flex items-center gap-1.5">
+<span class="font-label-mono-base text-label-mono-base text-danger-text font-bold">INV-2024-0012</span>
+<span class="font-label-mono-sm text-caption-caps text-ink-muted bg-surface-subtle px-1 rounded">Ref: DO-2024-11</span>
+</div>
+</td>
+<td class="px-3 py-1.5">
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-body-sm-semibold text-body-sm-semibold text-on-surface">PT Adhi Karya Persero Tbk</span>
+<span class="px-1.5 py-0.2 rounded font-caption-caps text-caption-caps bg-warning-bg text-warning-text">BUMN</span>
+</div>
+<span class="font-label-mono-sm text-caption-meta text-ink-slate">0812-4455-889</span>
+</div>
+</td>
+<td class="px-3 py-1.5 font-label-mono-sm text-label-mono-sm text-ink-secondary">10 Ags 2025</td>
+<td class="px-3 py-1.5">
+<div class="flex flex-col">
+<span class="font-label-mono-sm text-label-mono-sm text-danger-text font-medium">10 Sep 2025</span>
+<span class="font-caption-caps text-caption-caps text-danger-text">416 hr Macet</span>
+</div>
+</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base font-semibold">Rp 36.586.236</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base text-ink-muted">Rp 0</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base font-bold text-danger-text">Rp 36.586.236</td>
+<td class="px-3 py-1.5 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-danger-bg text-danger-text font-caption-caps text-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-danger-text"></span>OVERDUE
+                </span>
+</td>
+<td class="px-3 py-1.5 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="h-7 px-2 rounded bg-danger-bg hover:bg-error hover:text-on-error text-danger-text font-body-sm-semibold text-body-sm flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]">outgoing_mail</span> Surat SP2
+                  </button>
+<button class="w-7 h-7 rounded hover:bg-surface-subtle flex items-center justify-center text-ink-muted">
+<span class="material-symbols-outlined text-[16px]">more_horiz</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 7: Retail Paid Batch -->
+<tr class="h-10 hover:bg-surface-subtle transition-colors">
+<td class="px-3 py-1.5 text-center">
+<input class="row-checkbox rounded bg-surface-card accent-primary-container w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-1.5">
+<span class="font-label-mono-base text-label-mono-base text-primary font-semibold">INV-POS-1793310029141</span>
+</td>
+<td class="px-3 py-1.5">
+<div class="flex items-center gap-2">
+<span class="font-body-sm-semibold text-body-sm-semibold text-on-surface">Toko Bangunan Subur</span>
+<span class="px-1.5 py-0.2 rounded font-caption-caps text-caption-caps bg-surface-container text-ink-secondary">Retail</span>
+</div>
+</td>
+<td class="px-3 py-1.5 font-label-mono-sm text-label-mono-sm text-ink-secondary">28 Okt 2026</td>
+<td class="px-3 py-1.5 font-label-mono-sm text-label-mono-sm text-ink-muted">28 Okt 2026</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base">Rp 12.450.000</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base text-success-text">Rp 12.450.000</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base text-ink-muted">Rp 0</td>
+<td class="px-3 py-1.5 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-bg text-success-text font-caption-caps text-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-success-text"></span>PAID
+                </span>
+</td>
+<td class="px-3 py-1.5 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="h-7 px-2 rounded bg-surface-subtle hover:bg-surface-container text-ink-secondary font-body-sm text-body-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">receipt</span> Cetak
+                  </button>
+<button class="w-7 h-7 rounded hover:bg-surface-subtle flex items-center justify-center text-ink-muted">
+<span class="material-symbols-outlined text-[16px]">more_horiz</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 8: Current Project B2B -->
+<tr class="h-10 hover:bg-surface-subtle transition-colors">
+<td class="px-3 py-1.5 text-center">
+<input class="row-checkbox rounded bg-surface-card accent-primary-container w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-1.5">
+<div class="flex items-center gap-1.5">
+<span class="font-label-mono-base text-label-mono-base text-primary font-bold">INV-PRJ-2026-0819</span>
+<span class="font-label-mono-sm text-caption-caps text-accent-blue bg-surface-container-high px-1 rounded">Ref: DO-7140</span>
+</div>
+</td>
+<td class="px-3 py-1.5">
+<div class="flex items-center gap-2">
+<span class="font-body-sm-semibold text-body-sm-semibold text-on-surface">Sinarmas Land Developer</span>
+<span class="px-1.5 py-0.2 rounded font-caption-caps text-caption-caps bg-brand-primary-border text-primary">B2B</span>
+</div>
+</td>
+<td class="px-3 py-1.5 font-label-mono-sm text-label-mono-sm text-ink-secondary">27 Okt 2026</td>
+<td class="px-3 py-1.5">
+<div class="flex items-center gap-1">
+<span class="font-label-mono-sm text-label-mono-sm text-on-surface font-medium">10 Nov 2026</span>
+<span class="px-1 rounded bg-info-bg text-info-text font-caption-caps text-caption-caps">H-11</span>
+</div>
+</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base font-semibold">Rp 35.235.930</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base text-ink-muted">Rp 0</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base font-bold text-on-surface">Rp 35.235.930</td>
+<td class="px-3 py-1.5 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-info-bg text-info-text font-caption-caps text-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-info-text"></span>SENT
+                </span>
+</td>
+<td class="px-3 py-1.5 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="h-7 px-2 rounded bg-primary-container text-on-primary font-body-sm-semibold text-body-sm flex items-center gap-1 hover:bg-brand-primary-hover shadow-sm">
+<span class="material-symbols-outlined text-[14px]">payments</span> Bayar
+                  </button>
+<button class="w-7 h-7 rounded hover:bg-surface-subtle flex items-center justify-center text-ink-muted">
+<span class="material-symbols-outlined text-[16px]">more_horiz</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 9: Overdue Bad Debt 90d -->
+<tr class="h-10 hover:bg-surface-subtle transition-colors bg-danger-bg/20">
+<td class="px-3 py-1.5 text-center">
+<input class="row-checkbox rounded bg-surface-card accent-primary-container w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-1.5">
+<div class="flex items-center gap-1.5">
+<span class="font-label-mono-base text-label-mono-base text-danger-text font-bold">INV-2025-0044</span>
+<span class="font-label-mono-sm text-caption-caps text-danger-text bg-danger-bg px-1 rounded">Ref: DO-2025-19</span>
+</div>
+</td>
+<td class="px-3 py-1.5">
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-body-sm-semibold text-body-sm-semibold text-danger-text">PT Megah Graha Utama</span>
+<span class="px-1.5 py-0.2 rounded font-caption-caps text-caption-caps bg-brand-primary-border text-primary">B2B</span>
+</div>
+<span class="font-label-mono-sm text-caption-meta text-ink-slate">0819-9922-114</span>
+</div>
+</td>
+<td class="px-3 py-1.5 font-label-mono-sm text-label-mono-sm text-ink-secondary">15 Mei 2025</td>
+<td class="px-3 py-1.5">
+<div class="flex flex-col">
+<span class="font-label-mono-sm text-label-mono-sm text-danger-text font-medium">15 Jun 2025</span>
+<span class="font-caption-caps text-caption-caps text-danger-text font-bold">503 hr Macet</span>
+</div>
+</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base font-semibold text-danger-text">Rp 99.850.000</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base text-ink-muted">Rp 0</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base font-bold text-danger-text">Rp 99.850.000</td>
+<td class="px-3 py-1.5 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-danger-bg text-danger-text font-caption-caps text-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-danger-text"></span>OVERDUE
+                </span>
+</td>
+<td class="px-3 py-1.5 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="h-7 px-2 rounded bg-danger-bg hover:bg-error hover:text-on-error text-danger-text font-body-sm-semibold text-body-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">campaign</span> Legal Dunning
+                  </button>
+<button class="w-7 h-7 rounded hover:bg-surface-subtle flex items-center justify-center text-ink-muted">
+<span class="material-symbols-outlined text-[16px]">more_horiz</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 10: Cash Retail Paid -->
+<tr class="h-10 hover:bg-surface-subtle transition-colors">
+<td class="px-3 py-1.5 text-center">
+<input class="row-checkbox rounded bg-surface-card accent-primary-container w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-1.5">
+<span class="font-label-mono-base text-label-mono-base text-primary font-semibold">INV-POS-1793299102482</span>
+</td>
+<td class="px-3 py-1.5">
+<div class="flex items-center gap-2">
+<span class="font-body-sm-semibold text-body-sm-semibold text-on-surface">Pak Hendra (Mandor)</span>
+<span class="px-1.5 py-0.2 rounded font-caption-caps text-caption-caps bg-surface-container text-ink-secondary">Retail</span>
+</div>
+</td>
+<td class="px-3 py-1.5 font-label-mono-sm text-label-mono-sm text-ink-secondary">26 Okt 2026</td>
+<td class="px-3 py-1.5 font-label-mono-sm text-label-mono-sm text-ink-muted">26 Okt 2026</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base">Rp 8.120.000</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base text-success-text">Rp 8.120.000</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base text-ink-muted">Rp 0</td>
+<td class="px-3 py-1.5 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-bg text-success-text font-caption-caps text-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-success-text"></span>PAID
+                </span>
+</td>
+<td class="px-3 py-1.5 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="h-7 px-2 rounded bg-surface-subtle hover:bg-success-bg hover:text-success-text text-ink-secondary font-body-sm text-body-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">chat</span> WA
+                  </button>
+<button class="w-7 h-7 rounded hover:bg-surface-subtle flex items-center justify-center text-ink-muted">
+<span class="material-symbols-outlined text-[16px]">more_horiz</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 11: Paid B2B Large -->
+<tr class="h-10 hover:bg-surface-subtle transition-colors">
+<td class="px-3 py-1.5 text-center">
+<input class="row-checkbox rounded bg-surface-card accent-primary-container w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-1.5">
+<div class="flex items-center gap-1.5">
+<span class="font-label-mono-base text-label-mono-base text-primary font-semibold">INV-20261020-0019</span>
+<span class="font-label-mono-sm text-caption-caps text-ink-muted bg-surface-subtle px-1 rounded">Ref: DO-801</span>
+</div>
+</td>
+<td class="px-3 py-1.5">
+<div class="flex items-center gap-2">
+<span class="font-body-sm-semibold text-body-sm-semibold text-on-surface">PT Ciputra Development</span>
+<span class="px-1.5 py-0.2 rounded font-caption-caps text-caption-caps bg-brand-primary-border text-primary">B2B</span>
+</div>
+</td>
+<td class="px-3 py-1.5 font-label-mono-sm text-label-mono-sm text-ink-secondary">20 Okt 2026</td>
+<td class="px-3 py-1.5 font-label-mono-sm text-label-mono-sm text-ink-muted">27 Okt 2026</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base">Rp 113.505.100</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base text-success-text">Rp 113.505.100</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base text-ink-muted">Rp 0</td>
+<td class="px-3 py-1.5 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-bg text-success-text font-caption-caps text-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-success-text"></span>PAID
+                </span>
+</td>
+<td class="px-3 py-1.5 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="h-7 px-2 rounded bg-surface-subtle hover:bg-surface-container text-ink-secondary font-body-sm text-body-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">receipt_long</span> Kwitansi
+                  </button>
+<button class="w-7 h-7 rounded hover:bg-surface-subtle flex items-center justify-center text-ink-muted">
+<span class="material-symbols-outlined text-[16px]">more_horiz</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 12: Retail Cash -->
+<tr class="h-10 hover:bg-surface-subtle transition-colors">
+<td class="px-3 py-1.5 text-center">
+<input class="row-checkbox rounded bg-surface-card accent-primary-container w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-1.5">
+<span class="font-label-mono-base text-label-mono-base text-primary font-semibold">INV-POS-1793280019283</span>
+</td>
+<td class="px-3 py-1.5">
+<div class="flex items-center gap-2">
+<span class="font-body-sm-semibold text-body-sm-semibold text-on-surface">Pak Ahmad Solihin</span>
+<span class="px-1.5 py-0.2 rounded font-caption-caps text-caption-caps bg-surface-container text-ink-secondary">Retail</span>
+</div>
+</td>
+<td class="px-3 py-1.5 font-label-mono-sm text-label-mono-sm text-ink-secondary">25 Okt 2026</td>
+<td class="px-3 py-1.5 font-label-mono-sm text-label-mono-sm text-ink-muted">25 Okt 2026</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base">Rp 4.150.000</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base text-success-text">Rp 4.150.000</td>
+<td class="px-3 py-1.5 text-right font-label-mono-base text-label-mono-base text-ink-muted">Rp 0</td>
+<td class="px-3 py-1.5 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-bg text-success-text font-caption-caps text-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-success-text"></span>PAID
+                </span>
+</td>
+<td class="px-3 py-1.5 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="h-7 px-2 rounded bg-surface-subtle hover:bg-success-bg hover:text-success-text text-ink-secondary font-body-sm text-body-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">chat</span> WA
+                  </button>
+<button class="w-7 h-7 rounded hover:bg-surface-subtle flex items-center justify-center text-ink-muted">
+<span class="material-symbols-outlined text-[16px]">more_horiz</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Toolbar -->
+<div class="px-4 py-2 bg-surface-subtle flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="font-caption-meta text-caption-meta text-ink-muted">Menampilkan 1–12 dari 99 invoice</span>
+<span class="font-caption-meta text-caption-meta text-ink-slate">·</span>
+<span class="font-caption-meta text-caption-meta text-ink-slate">Halaman 1 dari 9</span>
+</div>
+<div class="flex items-center gap-1">
+<button class="h-7 px-2.5 rounded bg-surface-card text-ink-muted font-body-sm text-body-sm opacity-50 cursor-not-allowed">Sebelumnya</button>
+<button class="h-7 w-7 rounded bg-primary-container text-on-primary font-body-sm-semibold text-body-sm flex items-center justify-center">1</button>
+<button class="h-7 w-7 rounded bg-surface-card hover:bg-surface-container text-ink-secondary font-body-sm text-body-sm flex items-center justify-center">2</button>
+<button class="h-7 w-7 rounded bg-surface-card hover:bg-surface-container text-ink-secondary font-body-sm text-body-sm flex items-center justify-center">3</button>
+<span class="px-1 text-ink-muted">…</span>
+<button class="h-7 w-7 rounded bg-surface-card hover:bg-surface-container text-ink-secondary font-body-sm text-body-sm flex items-center justify-center">9</button>
+<button class="h-7 px-2.5 rounded bg-surface-card hover:bg-surface-container text-ink-secondary font-body-sm text-body-sm">Selanjutnya</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Bottom AR Summary & Action Bar -->
+<div class="sticky bottom-0 left-0 right-0 z-30 px-6 py-2.5 bg-[#0F172A] text-white flex items-center justify-between shadow-xl">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-accent-blue text-white font-caption-caps text-caption-caps font-bold">4</span>
+<span class="font-body-sm text-body-sm text-slate-300">Invoice Dipilih</span>
+</div>
+<div class="h-4 w-px bg-[#334155]"></div>
+<div class="flex items-center gap-2">
+<span class="font-caption-caps text-caption-caps text-slate-400">TOTAL PIUTANG TERPILIH:</span>
+<span class="font-label-mono-metric text-label-mono-metric text-white">Rp 270.746.236</span>
+</div>
+<div class="h-4 w-px bg-[#334155]"></div>
+<div class="flex items-center gap-2">
+<span class="font-caption-caps text-caption-caps text-danger-border flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px] text-danger-border">error</span>
+          JATUH TEMPO MACET:
+        </span>
+<span class="font-label-mono-metric text-label-mono-metric text-danger-border font-bold">Rp 230.786.236</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="h-8 px-3 rounded bg-[#1E293B] hover:bg-[#334155] text-slate-200 font-body-sm-semibold text-body-sm flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px] text-accent-blue">mark_email_read</span>
+        Kirim Massal Dunning WA/Email
+      </button>
+<a class="h-8 px-3 rounded bg-accent-blue hover:bg-blue-600 text-white font-body-sm-semibold text-body-sm flex items-center gap-1 transition-colors" href="#">
+        Buka Matriks Kolektibilitas &amp; Dunning →
+      </a>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    // Checkbox synchronization for table selection
+    const checkAll = document.getElementById('check-all');
+    const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+
+    if (checkAll) {
+      checkAll.addEventListener('change', function() {
+        rowCheckboxes.forEach(cb => {
+          cb.checked = checkAll.checked;
+          const tr = cb.closest('tr');
+          if (tr) {
+            if (checkAll.checked) {
+              tr.classList.add('bg-brand-primary-subtle/40');
+            } else {
+              tr.classList.remove('bg-brand-primary-subtle/40');
+            }
+          }
+        });
+      });
+    }
+
+    rowCheckboxes.forEach(cb => {
+      cb.addEventListener('change', function() {
+        const tr = cb.closest('tr');
+        if (tr) {
+          if (cb.checked) {
+            tr.classList.add('bg-brand-primary-subtle/40');
+          } else {
+            tr.classList.remove('bg-brand-primary-subtle/40');
+          }
+        }
+      });
+    });
+  })();
+</script></main></div></body></html>

@@ -17,8 +17,8 @@ const TONE = (s)=> s==='DELIVERED'?'emerald' : s==='INVOICED'?'purple' : s==='CA
 function Field({ label, children, className='' }){
   return (
     <div className={className}>
-      <div className="text-[10px] font-bold uppercase tracking-wider text-[#76777d]">{label}</div>
-      <div className="text-[12.5px] text-[#0b1c30] font-semibold leading-snug mt-0.5 break-words">{children}</div>
+      <div className="text-[10px] font-bold uppercase tracking-wider text-ink-3">{label}</div>
+      <div className="text-[12.5px] text-ink font-semibold leading-snug mt-0.5 break-words">{children}</div>
     </div>
   );
 }
@@ -42,7 +42,7 @@ export default function SuratJalan(){
   };
   useEffect(()=>{ load(); },[id]);
 
-  if(loading) return <div className="max-w-[880px] mx-auto"><div className="bg-white rounded-xl border border-[#e7ecf7]"><PosSkeleton rows={8} cols={4}/></div></div>;
+  if(loading) return <div className="max-w-[880px] mx-auto"><div className="bg-white rounded-xl border border-line"><PosSkeleton rows={8} cols={4}/></div></div>;
   if(err) return <div className="max-w-[880px] mx-auto"><PosError message={err} onRetry={load}/></div>;
   if(!doc) return null;
 
@@ -57,7 +57,7 @@ export default function SuratJalan(){
       <div className="no-print flex flex-wrap items-center gap-2 justify-between">
         <div className="flex items-center gap-2">
           <Link to="/driver" className={posBtnSecondary+' h-9 px-3 text-xs'}><ArrowLeft size={14}/> Kembali</Link>
-          <div className="text-xs text-[#76777d]">Surat jalan elektronik - bisa dicetak / disimpan PDF</div>
+          <div className="text-xs text-ink-3">Surat jalan elektronik - bisa dicetak / disimpan PDF</div>
         </div>
         <div className="flex items-center gap-2">
           <PosBadge tone={TONE(doc.status)}>{String(doc.status||'-').replace('_',' ')}</PosBadge>
@@ -70,54 +70,54 @@ export default function SuratJalan(){
       </div>
 
       {/* dokumen */}
-      <div id="surat-jalan" className="bg-white rounded-xl border border-[#e7ecf7] shadow-card overflow-hidden print:border-0 print:shadow-none print:rounded-none">
+      <div id="surat-jalan" className="bg-white rounded-xl border border-line shadow-card overflow-hidden print:border-0 print:shadow-none print:rounded-none">
         <div className="p-6 sm:p-8 print:p-0">
           {/* kop */}
           <div className="flex items-start justify-between gap-4 pb-4 border-b-2 border-[#0b1c30]">
             <div className="flex items-start gap-3 min-w-0">
-              <div className="w-11 h-11 rounded-xl bg-[#0051d5] text-white grid place-items-center font-bold text-lg shrink-0">SM</div>
+              <div className="w-11 h-11 rounded-xl bg-brand text-white grid place-items-center font-bold text-lg shrink-0">SM</div>
               <div className="min-w-0">
-                <div className="font-display font-extrabold text-[15px] text-[#0b1c30] leading-tight">PT Sumber Material Jaya</div>
-                <div className="text-[11px] text-[#45464d] leading-snug mt-0.5">Distributor material bangunan</div>
-                <div className="text-[11px] text-[#76777d] flex items-center gap-1 mt-1"><MapPin size={11}/>{LOCATION.name} - <span className="font-mono">{LOCATION_COORDINATES}</span></div>
+                <div className="font-display font-extrabold text-[15px] text-ink leading-tight">PT Sumber Material Jaya</div>
+                <div className="text-[11px] text-ink-2 leading-snug mt-0.5">Distributor material bangunan</div>
+                <div className="text-[11px] text-ink-3 flex items-center gap-1 mt-1"><MapPin size={11}/>{LOCATION.name} - <span className="font-mono">{LOCATION_COORDINATES}</span></div>
               </div>
             </div>
             <div className="text-right shrink-0">
-              <div className="text-[10px] font-bold tracking-[0.18em] text-[#76777d]">DOKUMEN PENGIRIMAN</div>
-              <div className="font-display font-extrabold text-xl text-[#0b1c30] leading-tight">SURAT JALAN</div>
-              <div className="font-mono text-[12px] font-bold text-[#0051d5] mt-0.5">{doc.do_number}</div>
-              <div className="text-[11px] text-[#45464d] mt-0.5">{tgl(doc.delivery_date)}</div>
+              <div className="text-[10px] font-bold tracking-[0.18em] text-ink-3">DOKUMEN PENGIRIMAN</div>
+              <div className="font-display font-extrabold text-xl text-ink leading-tight">SURAT JALAN</div>
+              <div className="font-mono text-[12px] font-bold text-brand mt-0.5">{doc.do_number}</div>
+              <div className="text-[11px] text-ink-2 mt-0.5">{tgl(doc.delivery_date)}</div>
             </div>
           </div>
 
           {/* meta */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-3 py-4 border-b border-[#e7ecf7]">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-3 py-4 border-b border-line">
             <Field label="Kepada">
-              <div className="flex items-center gap-1"><User size={12} className="text-[#76777d]"/>{doc.customer_name}</div>
-              {doc.customer_code && <div className="text-[11px] font-normal text-[#76777d] font-mono">{doc.customer_code}</div>}
-              {doc.customer_phone && <div className="text-[11px] font-normal text-[#45464d] flex items-center gap-1"><Phone size={10}/>{doc.customer_phone}</div>}
+              <div className="flex items-center gap-1"><User size={12} className="text-ink-3"/>{doc.customer_name}</div>
+              {doc.customer_code && <div className="text-[11px] font-normal text-ink-3 font-mono">{doc.customer_code}</div>}
+              {doc.customer_phone && <div className="text-[11px] font-normal text-ink-2 flex items-center gap-1"><Phone size={10}/>{doc.customer_phone}</div>}
             </Field>
             <Field label="Kendaraan">
-              <div className="flex items-center gap-1"><Truck size={12} className="text-[#76777d]"/>{doc.vehicle_plat || doc.vehicle_no || '-'}</div>
-              <div className="text-[11px] font-normal text-[#76777d]">{doc.vehicle_type || ''}</div>
+              <div className="flex items-center gap-1"><Truck size={12} className="text-ink-3"/>{doc.vehicle_plat || doc.vehicle_no || '-'}</div>
+              <div className="text-[11px] font-normal text-ink-3">{doc.vehicle_type || ''}</div>
             </Field>
             <Field label="Pengemudi">
               <div>{doc.driver_name || <span className="text-[#b45309]">Belum diklaim</span>}</div>
-              {doc.driver_phone && <div className="text-[11px] font-normal text-[#45464d]">{doc.driver_phone}</div>}
-              {doc.trip_number && <div className="text-[11px] font-normal text-[#76777d] font-mono">{doc.trip_number}</div>}
+              {doc.driver_phone && <div className="text-[11px] font-normal text-ink-2">{doc.driver_phone}</div>}
+              {doc.trip_number && <div className="text-[11px] font-normal text-ink-3 font-mono">{doc.trip_number}</div>}
             </Field>
             <Field label="Rute / Jarak">
-              <div className="flex items-center gap-1"><MapPin size={12} className="text-[#76777d]"/>{doc.distance_km? nf(doc.distance_km)+' km' : 'jarak belum tersedia'}</div>
-              <div className="text-[11px] font-normal text-[#76777d]">{doc.est_zone? 'Zona '+doc.est_zone : ''}{doc.est_weight_ton? ' - ± '+nf(doc.est_weight_ton*1000)+' kg' : ''}</div>
+              <div className="flex items-center gap-1"><MapPin size={12} className="text-ink-3"/>{doc.distance_km? nf(doc.distance_km)+' km' : 'jarak belum tersedia'}</div>
+              <div className="text-[11px] font-normal text-ink-3">{doc.est_zone? 'Zona '+doc.est_zone : ''}{doc.est_weight_ton? ' - ± '+nf(doc.est_weight_ton*1000)+' kg' : ''}</div>
             </Field>
           </div>
 
           {/* alamat tujuan */}
-          <div className="py-3 border-b border-[#e7ecf7]">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-[#76777d]">Alamat pengiriman</div>
-            <div className="text-[12.5px] text-[#0b1c30] leading-snug mt-0.5">{doc.address || 'Alamat belum diisi'}</div>
+          <div className="py-3 border-b border-line">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-ink-3">Alamat pengiriman</div>
+            <div className="text-[12.5px] text-ink leading-snug mt-0.5">{doc.address || 'Alamat belum diisi'}</div>
             {(doc.delivery_lat && doc.delivery_lng) &&
-              <a className="no-print text-[11px] text-[#0051d5] hover:underline inline-flex items-center gap-1 mt-1"
+              <a className="no-print text-[11px] text-brand hover:underline inline-flex items-center gap-1 mt-1"
                  href={`https://www.openstreetmap.org/?mlat=${doc.delivery_lat}&mlon=${doc.delivery_lng}#map=16/${doc.delivery_lat}/${doc.delivery_lng}`} target="_blank" rel="noreferrer">
                 <MapPin size={11}/> Buka titik tujuan di peta
               </a>}
@@ -126,7 +126,7 @@ export default function SuratJalan(){
           {/* item */}
           <table className="w-full mt-4 text-[12px]">
             <thead>
-              <tr className="bg-[#e5eeff] text-[10px] font-bold uppercase tracking-wider text-[#45464d]">
+              <tr className="bg-surface-3 text-[10px] font-bold uppercase tracking-wider text-ink-2">
                 <th className="text-left px-2.5 py-2 w-8">No</th>
                 <th className="text-left px-2.5 py-2">Barang</th>
                 <th className="text-left px-2.5 py-2 w-24">SKU</th>
@@ -135,21 +135,21 @@ export default function SuratJalan(){
               </tr>
             </thead>
             <tbody>
-              {items.length===0 && <tr><td colSpan={5} className="px-2.5 py-6 text-center text-[#76777d]">Tidak ada item</td></tr>}
+              {items.length===0 && <tr><td colSpan={5} className="px-2.5 py-6 text-center text-ink-3">Tidak ada item</td></tr>}
               {items.map((it,i)=>(
-                <tr key={it.id || i} className="border-b border-[#e5eeff]">
-                  <td className="px-2.5 py-2 text-[#76777d] tabular-nums">{i+1}</td>
-                  <td className="px-2.5 py-2 font-semibold text-[#0b1c30]">{it.product_name}</td>
-                  <td className="px-2.5 py-2 font-mono text-[11px] text-[#45464d]">{it.sku||'-'}</td>
+                <tr key={it.id || i} className="border-b border-line">
+                  <td className="px-2.5 py-2 text-ink-3 tabular-nums">{i+1}</td>
+                  <td className="px-2.5 py-2 font-semibold text-ink">{it.product_name}</td>
+                  <td className="px-2.5 py-2 font-mono text-[11px] text-ink-2">{it.sku||'-'}</td>
                   <td className="px-2.5 py-2 text-right tabular-nums font-bold">{nf(it.qty)}</td>
-                  <td className="px-2.5 py-2 text-[#45464d]">{it.unit_code||'-'}</td>
+                  <td className="px-2.5 py-2 text-ink-2">{it.unit_code||'-'}</td>
                 </tr>
               ))}
             </tbody>
             <tfoot>
               <tr>
-                <td colSpan={3} className="px-2.5 py-2 text-right text-[11px] font-bold uppercase tracking-wider text-[#45464d]">Total qty</td>
-                <td className="px-2.5 py-2 text-right tabular-nums font-extrabold text-[#0b1c30]">{nf(totalQty)}</td>
+                <td colSpan={3} className="px-2.5 py-2 text-right text-[11px] font-bold uppercase tracking-wider text-ink-2">Total qty</td>
+                <td className="px-2.5 py-2 text-right tabular-nums font-extrabold text-ink">{nf(totalQty)}</td>
                 <td/>
               </tr>
             </tfoot>
@@ -160,17 +160,17 @@ export default function SuratJalan(){
             <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50/50 p-3 grid sm:grid-cols-2 gap-3 items-start">
               <div className="space-y-1">
                 <div className="text-[10px] font-bold uppercase tracking-wider text-[#007a55] flex items-center gap-1"><ShieldCheck size={12}/> Bukti serah terima</div>
-                <div className="text-[12px] text-[#0b1c30]">Diterima oleh <b>{doc.received_by||'-'}</b></div>
-                <div className="text-[11px] text-[#45464d]">{tgl(doc.delivered_at)} - {jam(doc.delivered_at)}</div>
-                <div className="text-[11px] text-[#45464d] flex items-center gap-1">
-                  <Receipt size={11}/> Invoice: {doc.invoice_number || <span className="text-[#76777d]">belum dibuat sales</span>}
+                <div className="text-[12px] text-ink">Diterima oleh <b>{doc.received_by||'-'}</b></div>
+                <div className="text-[11px] text-ink-2">{tgl(doc.delivered_at)} - {jam(doc.delivered_at)}</div>
+                <div className="text-[11px] text-ink-2 flex items-center gap-1">
+                  <Receipt size={11}/> Invoice: {doc.invoice_number || <span className="text-ink-3">belum dibuat sales</span>}
                   {doc.invoice_handed ? <span className="ml-1 text-[10px] font-bold text-[#007a55]">(diserahkan)</span> : null}
                 </div>
-                {doc.pod_notes && <div className="text-[11px] text-[#45464d] italic">"{doc.pod_notes}"</div>}
+                {doc.pod_notes && <div className="text-[11px] text-ink-2 italic">"{doc.pod_notes}"</div>}
               </div>
               <div className="flex items-center gap-2 justify-end">
                 {doc.pod_photo_url && <img src={doc.pod_photo_url} alt="Foto bukti terima" className="h-20 rounded-lg border border-emerald-200 object-cover"/>}
-                {doc.pod_signature_url && <img src={doc.pod_signature_url} alt="Tanda tangan penerima" className="h-20 rounded-lg border border-[#e7ecf7] bg-white object-contain px-2"/>}
+                {doc.pod_signature_url && <img src={doc.pod_signature_url} alt="Tanda tangan penerima" className="h-20 rounded-lg border border-line bg-white object-contain px-2"/>}
               </div>
             </div>
           )}
@@ -197,17 +197,17 @@ export default function SuratJalan(){
               ['Penerima', doc.received_by || '(nama & tanda tangan)', doc.pod_signature_url, doc.delivered_at],
             ].map(([label, name, sig, at])=>(
               <div key={label} className="text-center">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-[#76777d]">{label}</div>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-ink-3">{label}</div>
                 <div className="h-14 mt-1 grid place-items-center">
                   {sig? <img src={sig} alt={'ttd '+label} className="max-h-14 object-contain"/> : <span className="text-[10px] text-[#b0b1b6]">belum tanda tangan</span>}
                 </div>
-                <div className="border-t border-[#b0b1b6] pt-1 text-[11px] font-semibold text-[#0b1c30] truncate">{name}</div>
-                <div className="text-[9px] text-[#76777d] h-3">{at? tgl(at)+' • '+jam(at) : ''}</div>
+                <div className="border-t border-[#b0b1b6] pt-1 text-[11px] font-semibold text-ink truncate">{name}</div>
+                <div className="text-[9px] text-ink-3 h-3">{at? tgl(at)+' • '+jam(at) : ''}</div>
               </div>
             ))}
           </div>
 
-          <div className="mt-6 pt-3 border-t border-[#e7ecf7] text-[10px] text-[#76777d] flex items-start justify-between gap-4">
+          <div className="mt-6 pt-3 border-t border-line text-[10px] text-ink-3 flex items-start justify-between gap-4">
             <span className="leading-snug max-w-[520px]">
               Barang telah diterima dalam kondisi baik dan jumlah sesuai. Dokumen ini dibuat otomatis oleh sistem ERP
               {doc.invoice_number? ' - referensi invoice '+doc.invoice_number : ''}.
@@ -217,7 +217,7 @@ export default function SuratJalan(){
         </div>
       </div>
 
-      <div className="no-print text-[11px] text-[#76777d] flex items-center gap-1.5">
+      <div className="no-print text-[11px] text-ink-3 flex items-center gap-1.5">
         <PackageCheck size={12}/> Surat jalan muncul otomatis begitu pengiriman diklaim driver, dan bukti terima terisi setelah trip diselesaikan.
       </div>
 

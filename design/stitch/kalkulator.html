@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+
+<html lang="id"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"outline-variant":"#c4c5d5","danger-border":"#FECDCA","tertiary-fixed-dim":"#6cd8c7","surface":"#f9f9ff","border-muted":"#D0D5DD","error":"#ba1a1a","info-border":"#B9E6FE","warning-border":"#FEDF89","brand-primary-hover":"#1B3A9C","on-primary-container":"#a8b8ff","on-tertiary":"#ffffff","success-text":"#067647","background":"#f9f9ff","tertiary-fixed":"#89f5e3","ink-slate":"#64748B","surface-container-high":"#e0e8ff","warning-bg":"#FFFAEB","accent-blue":"#3B82F6","surface-dim":"#d2daf0","secondary":"#565e74","primary-fixed-dim":"#b8c4ff","on-surface-variant":"#444653","on-tertiary-fixed":"#00201c","surface-container-lowest":"#ffffff","on-secondary":"#ffffff","surface-card":"#FFFFFF","surface-variant":"#dbe2f9","surface-tint":"#3755c3","danger-text":"#B42318","ink-muted":"#667085","ink-secondary":"#475467","on-secondary-fixed-variant":"#3f465c","on-secondary-fixed":"#131b2e","warning-text":"#B54708","surface-container-low":"#f1f3ff","on-secondary-container":"#5c647a","inverse-surface":"#293041","surface-subtle":"#F4F6F8","on-error":"#ffffff","border-hairline":"#E4E7EC","surface-container-highest":"#dbe2f9","surface-inset":"#F8FAFC","inverse-primary":"#b8c4ff","on-surface":"#141b2c","on-primary":"#ffffff","error-container":"#ffdad6","inverse-on-surface":"#edf0ff","on-tertiary-fixed-variant":"#005047","primary":"#00288e","on-error-container":"#93000a","on-primary-fixed":"#001453","secondary-fixed-dim":"#bec6e0","brand-primary-subtle":"#EEF3FF","sidebar-accent-border":"#1E293B","canvas-background":"#F7F8FA","secondary-container":"#dae2fd","info-bg":"#F0F9FF","primary-fixed":"#dde1ff","outline":"#757684","ink-slate-light":"#94A3B8","primary-container":"#1e40af","info-text":"#026AA2","danger-bg":"#FEF3F2","surface-bright":"#f9f9ff","surface-container":"#e9edff","brand-primary-border":"#C7D5FE","on-tertiary-container":"#60cdbc","success-bg":"#ECFDF3","tertiary-container":"#00554c","tertiary":"#003c35","success-border":"#ABEFC6","on-background":"#141b2c","secondary-fixed":"#dae2fd","on-primary-fixed-variant":"#173bab"},borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},spacing:{"gutter-dense":"0.5rem",margin:"1.5rem",gutter:"1rem","space-lg":"1rem","space-sm":"0.5rem","space-xl":"1.5rem","space-xs":"0.25rem","space-md":"0.75rem","margin-compact":"1rem"},fontFamily:{"label-mono-metric":["JetBrains Mono"],"headline-lg":["Inter"],"body-md-medium":["Inter"],"label-mono-sm":["JetBrains Mono"],"caption-meta":["Inter"],"label-mono-lg":["JetBrains Mono"],"headline-sm":["Inter"],"label-mono-base":["JetBrains Mono"],"caption-caps":["Inter"],"body-md":["Inter"],"body-sm":["Inter"],"headline-md":["Inter"],"caption-sidebar":["Inter"],"body-sm-semibold":["Inter"]},fontSize:{"label-mono-metric":["20px",{lineHeight:"24px",letterSpacing:"-0.02em",fontWeight:"700"}],"headline-lg":["20px",{lineHeight:"28px",letterSpacing:"-0.02em",fontWeight:"700"}],"body-md-medium":["14px",{lineHeight:"20px",fontWeight:"500"}],"label-mono-sm":["12px",{lineHeight:"16px",fontWeight:"400"}],"caption-meta":["12px",{lineHeight:"16px",fontWeight:"400"}],"label-mono-lg":["28px",{lineHeight:"32px",letterSpacing:"-0.02em",fontWeight:"700"}],"headline-sm":["16px",{lineHeight:"22px",letterSpacing:"-0.01em",fontWeight:"600"}],"label-mono-base":["13px",{lineHeight:"18px",fontWeight:"500"}],"caption-caps":["11px",{lineHeight:"14px",letterSpacing:"0.06em",fontWeight:"700"}],"body-md":["14px",{lineHeight:"20px",fontWeight:"400"}],"body-sm":["13px",{lineHeight:"18px",fontWeight:"400"}],"headline-md":["18px",{lineHeight:"24px",letterSpacing:"-0.015em",fontWeight:"700"}],"caption-sidebar":["10px",{lineHeight:"12px",letterSpacing:"0.08em",fontWeight:"600"}],"body-sm-semibold":["13px",{lineHeight:"18px",fontWeight:"600"}]}}}</script></head><body class="bg-canvas-background font-body-sm text-body-sm text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-60 bg-[#0F172A] border-r border-sidebar-accent-border z-50 flex flex-col"><div class="h-[52px] px-4 flex items-center gap-3 border-b border-sidebar-accent-border shrink-0"><div class="w-7 h-7 rounded bg-primary-container flex items-center justify-center text-on-primary font-headline-sm text-headline-sm font-bold tracking-tight">SM</div><div class="flex flex-col min-w-0"><span class="font-headline-sm text-headline-sm text-white font-bold leading-none truncate">Sumber Material</span><span class="font-caption-sidebar text-caption-sidebar uppercase tracking-wider text-ink-slate font-semibold mt-0.5">ENTERPRISE ERP</span></div></div><div class="p-3 border-b border-sidebar-accent-border shrink-0"><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-2 text-ink-slate text-[16px]">search</span><input class="w-full bg-[#1E293B] text-white placeholder-ink-slate font-body-sm text-body-sm pl-7 pr-2 py-1.5 rounded border border-[#334155] focus:outline-none focus:border-accent-blue" placeholder="Cari menu..." type="text"/></div></div><div class="flex-1 overflow-y-auto py-2 px-2 space-y-4"><nav class="space-y-4" data-active-classes="bg-primary-container text-white font-semibold"><div class="space-y-1"><div class="px-2 py-1 font-caption-sidebar text-caption-sidebar uppercase font-bold tracking-wider text-ink-slate">PENJUALAN</div><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="dashboard-penjualan" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">monitoring</span>Dashboard</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="sales-order" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">receipt_long</span>Sales Order</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="riwayat-order" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">history</span>Riwayat Order</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="invoice-ar" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">request_quote</span>Invoice (AR)</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="pos-kasir" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">point_of_sale</span>POS Kasir</a><a aria-current="page" class="flex items-center px-2.5 py-1.5 rounded transition-colors bg-primary-container text-white font-semibold" data-path="kalkulator-material" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">calculate</span>Kalkulator Material</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="crm-leads" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">contacts</span>CRM &amp; Leads</a></div><div class="space-y-1"><div class="px-2 py-1 font-caption-sidebar text-caption-sidebar uppercase font-bold tracking-wider text-ink-slate">PROYEK</div><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="proyek-tender" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">engineering</span>Proyek &amp; Tender</a></div><div class="space-y-1"><div class="px-2 py-1 font-caption-sidebar text-caption-sidebar uppercase font-bold tracking-wider text-ink-slate">PEMBELIAN</div><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="purchase-request" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">post_add</span>Purchase Request</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="rfq-supplier" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">request_page</span>RFQ Supplier</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="purchase-order" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">shopping_cart</span>Purchase Order</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="goods-receipt" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">input</span>Goods Receipt</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="landed-cost" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">attach_money</span>Landed Cost</a></div><div class="space-y-1"><div class="px-2 py-1 font-caption-sidebar text-caption-sidebar uppercase font-bold tracking-wider text-ink-slate">BARANG &amp; PERSEDIAAN</div><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="katalog-produk" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">inventory_2</span>Katalog Produk</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="stok-per-gudang" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">warehouse</span>Stok per Gudang</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="penambahan-stok" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">add_box</span>Penambahan Stok</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="kartu-stok" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">table_rows</span>Kartu Stok</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="stock-opname" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">fact_check</span>Stock Opname</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="transfer-gudang" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">move_down</span>Transfer Gudang</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="konsinyasi" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">handshake</span>Konsinyasi</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="susut-pecah" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">broken_image</span>Susut &amp; Pecah</a></div><div class="space-y-1"><div class="px-2 py-1 font-caption-sidebar text-caption-sidebar uppercase font-bold tracking-wider text-ink-slate">OPERASIONAL</div><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="logistik-do" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">local_shipping</span>Logistik (DO)</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="armada-trip" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">commute</span>Armada &amp; Trip</a></div><div class="space-y-1"><div class="px-2 py-1 font-caption-sidebar text-caption-sidebar uppercase font-bold tracking-wider text-ink-slate">KEUANGAN</div><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="coa-jurnal" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">account_tree</span>COA &amp; Jurnal</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="jurnal-umum" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">menu_book</span>Jurnal Umum</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="ar-ap" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">payments</span>AR / AP</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="kolektibilitas" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">timer</span>Kolektibilitas</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="pajak-e-faktur" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">receipt</span>Pajak &amp; e-Faktur</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="tutup-buku" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">lock_clock</span>Tutup Buku</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="rekonsiliasi-bank" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">sync_alt</span>Rekonsiliasi Bank</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="laporan-bi" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">analytics</span>Laporan BI</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="laporan-persediaan" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">summarize</span>Laporan Persediaan</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="budget-cashflow" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">savings</span>Budget &amp; Cashflow</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="aset-tetap" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">domain</span>Aset Tetap</a></div><div class="space-y-1"><div class="px-2 py-1 font-caption-sidebar text-caption-sidebar uppercase font-bold tracking-wider text-ink-slate">LOYALTY</div><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="loyalty-tier" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">stars</span>Loyalty &amp; Tier</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="pricing-engine" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">price_change</span>Pricing Engine</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="retur-klaim" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">assignment_return</span>Retur &amp; Klaim</a></div><div class="space-y-1"><div class="px-2 py-1 font-caption-sidebar text-caption-sidebar uppercase font-bold tracking-wider text-ink-slate">SDM &amp; MASTER</div><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="karyawan-hr" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">badge</span>Karyawan &amp; HR</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="pelanggan" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">group</span>Pelanggan</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="supplier" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">store</span>Supplier</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="audit-grc" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">policy</span>Audit &amp; GRC</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="approval" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">check_circle</span>Approval</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="approval-matrix" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">schema</span>Approval Matrix</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="log-error" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">bug_report</span>Log Error</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="pusat-notifikasi" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">notifications</span>Pusat Notifikasi</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="pengaturan-sistem" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">settings</span>Pengaturan Sistem</a></div><div class="space-y-1"><div class="px-2 py-1 font-caption-sidebar text-caption-sidebar uppercase font-bold tracking-wider text-ink-slate">SAYA</div><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="pengumuman" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">campaign</span>Pengumuman</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="absensi-saya" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">schedule</span>Absensi Saya</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="cuti-tahunan" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">event_available</span>Cuti Tahunan</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="izin-sakit" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">medical_services</span>Izin &amp; Sakit</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="trip-saya" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">navigation</span>Trip Saya</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="surat-jalan" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">description</span>Surat Jalan</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="profil-saya" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">account_circle</span>Profil Saya</a><a class="flex items-center px-2.5 py-1.5 rounded text-slate-300 hover:bg-[#1E293B] hover:text-white transition-colors" data-path="panduan-bantuan" href="#"><span class="material-symbols-outlined text-[16px] mr-2.5 text-slate-400">help_outline</span>Panduan &amp; Bantuan</a></div></nav></div></aside><div class="pl-60"><header class="fixed top-0 left-60 right-0 h-[52px] bg-surface-card border-b border-border-hairline z-40 px-4 flex items-center justify-between"><div class="flex items-center gap-3"><div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-success-bg border border-success-border text-success-text font-caption-caps text-caption-caps"><span class="w-1.5 h-1.5 rounded-full bg-success-text"></span>Sistem normal</div><div class="h-4 w-px bg-border-hairline"></div><button class="flex items-center gap-1 font-body-sm text-body-sm text-ink-secondary hover:text-on-surface"><span class="text-[14px]">📍</span><span class="font-medium">Gudang Pusat Bekasi</span><span class="material-symbols-outlined text-[16px]">arrow_drop_down</span></button><div class="h-4 w-px bg-border-hairline"></div><div class="font-label-mono-sm text-label-mono-sm text-ink-muted flex items-center gap-1.5"><span class="material-symbols-outlined text-[15px]">schedule</span>Sabtu, 31 Okt 2026 · 00.17 WIB</div></div><div class="flex items-center gap-3"><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-2.5 text-ink-muted text-[16px]">search</span><input class="h-8 w-64 bg-surface-subtle font-body-sm text-body-sm text-on-surface placeholder-ink-muted pl-8 pr-3 rounded border border-border-muted focus:outline-none focus:border-primary-container focus:bg-surface-card" placeholder="Pencarian pintar... [Ctrl K]" type="text"/><span class="absolute right-2 font-label-mono-sm text-caption-caps px-1 py-0.5 rounded bg-surface-container text-ink-muted border border-border-hairline">⌘K</span></div><button class="w-8 h-8 rounded flex items-center justify-center text-ink-secondary hover:bg-surface-subtle transition-colors relative"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-error"></span></button><div class="h-4 w-px bg-border-hairline"></div><div class="flex items-center gap-2 pl-1"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="flex flex-col text-left"><span class="font-body-sm-semibold text-body-sm-semibold leading-none text-on-surface">admin</span><span class="font-caption-meta text-caption-meta text-ink-muted leading-tight mt-0.5">(Direktur)</span></div></div></div></header><main class="w-full pt-[52px] bg-canvas-background min-h-screen"><div class="flex flex-col w-full">
+<!-- Sub-Header Action Tier / Breadcrumb Toolbar (36px fixed height) -->
+<div class="h-9 px-6 bg-surface-card border-b border-border-hairline flex items-center justify-between shrink-0">
+<div class="flex items-center gap-2 min-w-0">
+<div class="flex items-center gap-1.5 font-caption-caps text-caption-caps text-ink-muted uppercase">
+<span class="hover:text-on-surface cursor-pointer">Penjualan</span>
+<span>/</span>
+<span class="text-primary-container font-bold">Kalkulator Material (BOM)</span>
+</div>
+<div class="h-3 w-px bg-border-hairline mx-1"></div>
+<span class="font-caption-meta text-caption-meta text-ink-slate flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-accent-blue animate-pulse"></span>
+        Konversi SNI 2835:2008 • Engine v4.2 aktif
+      </span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-caption-meta text-caption-meta text-ink-muted">Toko:</span>
+<span class="font-body-sm-semibold text-body-sm-semibold text-on-surface">Pusat Distribusi Bekasi (Zone 1)</span>
+<div class="h-3.5 w-px bg-border-hairline mx-1"></div>
+<span class="font-label-mono-sm text-label-mono-sm px-1.5 py-0.5 rounded bg-surface-subtle text-ink-secondary border border-border-hairline">Shortcut: Enter (Hitung), F9 (Checkout)</span>
+</div>
+</div>
+<div class="p-6 space-y-5">
+<!-- Compact Page Header (36px functional height area) -->
+<div class="flex flex-wrap items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded bg-brand-primary-subtle border border-brand-primary-border flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined text-[20px]">calculate</span>
+</div>
+<div>
+<div class="flex items-center gap-2.5">
+<h1 class="font-headline-lg text-headline-lg text-[#101828] leading-tight">
+              Kalkulator Material &amp; Estimasi Kebutuhan Proyek
+            </h1>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-info-bg border border-info-border text-info-text font-caption-caps text-caption-caps tracking-wider uppercase">
+              Konversi Dimensi Konstruksi ke Satuan Gudang (BOM Realtime)
+            </span>
+</div>
+<p class="font-caption-meta text-caption-meta text-ink-muted">
+            Hitung akurat kebutuhan material arsitektur &amp; struktur dengan standar toleransi pemotongan (waste margin) langsung terhubung stok live.
+          </p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<div class="relative inline-block text-left">
+<button class="h-9 px-3 bg-surface-card border border-border-muted rounded text-on-surface font-body-sm-semibold text-body-sm-semibold flex items-center gap-1.5 hover:bg-surface-subtle transition-colors shadow-sm" id="btnPresetDropdown" type="button">
+<span class="material-symbols-outlined text-[16px] text-ink-slate">tune</span>
+<span>Pilih Template Pekerjaan</span>
+<span class="material-symbols-outlined text-[16px] text-ink-muted">arrow_drop_down</span>
+</button>
+</div>
+<button class="h-9 px-3 bg-surface-card border border-border-muted rounded text-ink-secondary font-body-sm-semibold text-body-sm-semibold flex items-center gap-1.5 hover:bg-danger-bg hover:text-danger-text hover:border-danger-border transition-colors" id="btnResetCalculator" type="button">
+<span class="material-symbols-outlined text-[16px]">refresh</span>
+<span>Reset Kalkulator</span>
+</button>
+</div>
+</div>
+<!-- Quick Formula KPI / Metric Strip (68px fixed) -->
+<div class="h-[68px] bg-surface-card border border-border-hairline rounded flex items-center divide-x divide-border-hairline overflow-x-auto shadow-sm">
+<div class="px-5 py-2.5 flex flex-col justify-center min-w-[210px]">
+<span class="font-caption-caps text-caption-caps text-ink-muted uppercase">Formula SNI Terapan</span>
+<span class="font-label-mono-base text-label-mono-base text-on-surface font-semibold flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[14px] text-success-text">verified</span>
+          SNI 7394:2008 • Tile Laying
+        </span>
+</div>
+<div class="px-5 py-2.5 flex flex-col justify-center min-w-[190px]">
+<span class="font-caption-caps text-caption-caps text-ink-muted uppercase">Base Unit Conversion</span>
+<span class="font-label-mono-base text-label-mono-base text-on-surface font-semibold mt-0.5">
+          1 Dus = 6 Pcs (0.96 m²)
+        </span>
+</div>
+<div class="px-5 py-2.5 flex flex-col justify-center min-w-[180px]">
+<span class="font-caption-caps text-caption-caps text-ink-muted uppercase">Mortar Adhesion Ratio</span>
+<span class="font-label-mono-base text-label-mono-base text-on-surface font-semibold mt-0.5">
+          ~6.25 kg / m² (3-5mm)
+        </span>
+</div>
+<div class="px-5 py-2.5 flex flex-col justify-center min-w-[220px]">
+<span class="font-caption-caps text-caption-caps text-ink-muted uppercase">Grout Joint Consumption</span>
+<span class="font-label-mono-base text-label-mono-base text-on-surface font-semibold mt-0.5">
+          Nat 2mm • 0.12 kg / m²
+        </span>
+</div>
+<div class="px-5 py-2.5 flex flex-col justify-center flex-1 min-w-[200px] bg-surface-inset">
+<span class="font-caption-caps text-caption-caps text-primary-container uppercase">Status Multi-Warehouse</span>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="w-2 h-2 rounded-full bg-success-text"></span>
+<span class="font-body-sm-semibold text-body-sm-semibold text-on-surface">3 Gudang Terhubung Realtime</span>
+</div>
+</div>
+</div>
+<!-- 2-Column Split Workbench (12-Column Grid) -->
+<div class="grid grid-cols-12 gap-5 items-start">
+<!-- LEFT PANEL (5/12 width — "1. Parameter Dimensi & Spesifikasi Pekerjaan") -->
+<div class="col-span-12 lg:col-span-5 bg-surface-card border border-border-hairline rounded p-5 space-y-5 shadow-sm">
+<div class="flex items-center justify-between pb-3 border-b border-border-hairline">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-primary-container text-white flex items-center justify-center font-label-mono-sm text-label-mono-sm font-bold">1</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">
+              Parameter Dimensi &amp; Spesifikasi Pekerjaan
+            </h2>
+</div>
+<span class="font-caption-caps text-caption-caps text-ink-muted uppercase">INPUT DATA</span>
+</div>
+<!-- Jenis Pekerjaan Konstruksi (4-Pill Selector) -->
+<div class="space-y-1.5">
+<label class="block font-body-sm-semibold text-body-sm-semibold text-on-surface">
+            Jenis Pekerjaan Konstruksi
+          </label>
+<div class="grid grid-cols-2 gap-2">
+<button class="h-9 px-3 rounded font-body-sm-semibold text-body-sm-semibold text-left flex items-center justify-between bg-primary-container text-white shadow-sm ring-1 ring-primary-container" type="button">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">grid_view</span>
+                Keramik &amp; Granit
+              </span>
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+</button>
+<button class="h-9 px-3 rounded font-body-sm text-body-sm text-ink-secondary text-left flex items-center justify-between bg-surface-subtle hover:bg-surface-container border border-border-muted transition-colors" type="button">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-ink-muted">file_open</span>
+                Dinding Pasangan
+              </span>
+</button>
+<button class="h-9 px-3 rounded font-body-sm text-body-sm text-ink-secondary text-left flex items-center justify-between bg-surface-subtle hover:bg-surface-container border border-border-muted transition-colors" type="button">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-ink-muted">roofing</span>
+                Atap Baja Ringan
+              </span>
+</button>
+<button class="h-9 px-3 rounded font-body-sm text-body-sm text-ink-secondary text-left flex items-center justify-between bg-surface-subtle hover:bg-surface-container border border-border-muted transition-colors" type="button">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-ink-muted">foundation</span>
+                Cor Beton &amp; Plat
+              </span>
+</button>
+</div>
+</div>
+<!-- Grid Inputs (36px inputs) -->
+<div class="space-y-3.5">
+<!-- Panjang, Lebar, Luas Area -->
+<div class="grid grid-cols-3 gap-2.5">
+<div>
+<label class="block font-caption-caps text-caption-caps uppercase text-ink-muted mb-1">Panjang Ruang (m)</label>
+<div class="relative">
+<input class="h-9 w-full bg-surface-card text-on-surface font-label-mono-base text-label-mono-base pl-2.5 pr-7 rounded border border-border-muted focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container" id="inputLength" step="0.1" type="number" value="6.0"/>
+<span class="absolute right-2 top-2 font-label-mono-sm text-label-mono-sm text-ink-muted">m</span>
+</div>
+</div>
+<div>
+<label class="block font-caption-caps text-caption-caps uppercase text-ink-muted mb-1">Lebar Ruang (m)</label>
+<div class="relative">
+<input class="h-9 w-full bg-surface-card text-on-surface font-label-mono-base text-label-mono-base pl-2.5 pr-7 rounded border border-border-muted focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container" id="inputWidth" step="0.1" type="number" value="8.0"/>
+<span class="absolute right-2 top-2 font-label-mono-sm text-label-mono-sm text-ink-muted">m</span>
+</div>
+</div>
+<div>
+<label class="block font-caption-caps text-caption-caps uppercase text-ink-muted mb-1">Luas Area Hitung</label>
+<div class="h-9 bg-surface-inset border border-border-hairline rounded px-2.5 flex items-center justify-between text-on-surface font-label-mono-base text-label-mono-base font-bold">
+<span id="calculatedArea">48,00</span>
+<span class="font-label-mono-sm text-label-mono-sm text-ink-slate font-normal">m²</span>
+</div>
+</div>
+</div>
+<!-- SKU Selection Combobox -->
+<div>
+<label class="block font-caption-caps text-caption-caps uppercase text-ink-muted mb-1">Pilihan Produk / Master SKU</label>
+<div class="relative">
+<select class="h-9 w-full bg-surface-card text-on-surface font-body-sm text-body-sm pl-3 pr-8 rounded border border-border-muted focus:outline-none focus:border-primary-container appearance-none cursor-pointer" id="skuSelect">
+<option value="KER-4040">Keramik Polos Putih 40x40 (KER-4040 · Rp 54.000/dus)</option>
+<option value="GRN-6060">Granit Tile Cream Polished 60x60 (GRN-6060 · Rp 168.000/dus)</option>
+<option value="KER-2540">Keramik Dinding Metro Glossy 25x40 (KER-2540 · Rp 62.000/dus)</option>
+<option value="KER-3030">Keramik Kasar Kamar Mandi 30x30 (KER-3030 · Rp 58.500/dus)</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-2 text-ink-slate pointer-events-none text-[18px]">unfold_more</span>
+</div>
+</div>
+<!-- Ukuran Tile & Isi Dus -->
+<div class="grid grid-cols-2 gap-2.5">
+<div>
+<label class="block font-caption-caps text-caption-caps uppercase text-ink-muted mb-1">Ukuran Tile Spesifik</label>
+<div class="h-9 bg-surface-subtle border border-border-hairline rounded px-3 flex items-center justify-between font-label-mono-base text-label-mono-base text-ink-secondary">
+<span>40 × 40 cm</span>
+<span class="material-symbols-outlined text-[15px] text-ink-muted">square_foot</span>
+</div>
+</div>
+<div>
+<label class="block font-caption-caps text-caption-caps uppercase text-ink-muted mb-1">Isi per Kemasan Dus</label>
+<div class="h-9 bg-surface-subtle border border-border-hairline rounded px-3 flex items-center justify-between font-label-mono-base text-label-mono-base text-ink-secondary">
+<span>6 keping ≈ 0.96 m²</span>
+<span class="material-symbols-outlined text-[15px] text-ink-muted">package_2</span>
+</div>
+</div>
+</div>
+<!-- Faktor Waste / Potongan -->
+<div>
+<div class="flex items-center justify-between mb-1">
+<label class="font-caption-caps text-caption-caps uppercase text-ink-muted">Faktor Waste / Nat Pemotongan</label>
+<span class="font-caption-meta text-caption-meta text-ink-slate">Rekomendasi standar 5-10%</span>
+</div>
+<div class="grid grid-cols-4 gap-2">
+<button class="btn-waste h-9 rounded font-label-mono-base text-label-mono-base font-semibold flex items-center justify-center bg-primary-container text-white border border-primary-container" data-waste="5" type="button">
+                5 % (Normal)
+              </button>
+<button class="btn-waste h-9 rounded font-label-mono-base text-label-mono-base text-ink-secondary flex items-center justify-center bg-surface-card hover:bg-surface-subtle border border-border-muted" data-waste="7.5" type="button">
+                7.5 %
+              </button>
+<button class="btn-waste h-9 rounded font-label-mono-base text-label-mono-base text-ink-secondary flex items-center justify-center bg-surface-card hover:bg-surface-subtle border border-border-muted" data-waste="10" type="button">
+                10 % (Diagonal)
+              </button>
+<button class="btn-waste h-9 rounded font-label-mono-base text-label-mono-base text-ink-secondary flex items-center justify-center bg-surface-card hover:bg-surface-subtle border border-border-muted" data-waste="15" type="button">
+                15 % (Pola)
+              </button>
+</div>
+</div>
+</div>
+<!-- Material Pendukung Checkbox Group -->
+<div class="p-3 bg-surface-subtle rounded border border-border-hairline space-y-2.5">
+<span class="block font-caption-caps text-caption-caps uppercase text-on-surface font-bold tracking-wider">
+            Include Material Pendukung &amp; Komponen Perekat (BOM Auto-Add)
+          </span>
+<label class="flex items-start gap-2.5 cursor-pointer select-none group">
+<input checked="" class="mt-0.5 w-4 h-4 rounded border-border-muted text-primary-container focus:ring-primary-container accent-primary-container" type="checkbox"/>
+<div class="text-left leading-tight">
+<span class="font-body-sm-semibold text-body-sm-semibold text-on-surface group-hover:text-primary-container transition-colors">
+                Semen Perekat Mortar Thinbed / Semen PC
+              </span>
+<p class="font-caption-meta text-caption-meta text-ink-muted">Semen Gresik Super / Thinbed 40kg (Dosis 1 sak / 6-7 m²)</p>
+</div>
+</label>
+<label class="flex items-start gap-2.5 cursor-pointer select-none group">
+<input checked="" class="mt-0.5 w-4 h-4 rounded border-border-muted text-primary-container focus:ring-primary-container accent-primary-container" type="checkbox"/>
+<div class="text-left leading-tight">
+<span class="font-body-sm-semibold text-body-sm-semibold text-on-surface group-hover:text-primary-container transition-colors">
+                Pasir Pasang Halus Bangka
+              </span>
+<p class="font-caption-meta text-caption-meta text-ink-muted">Opsional bantalan dasar ketebalan 3-5 cm jika dasar screed kasar</p>
+</div>
+</label>
+<label class="flex items-start gap-2.5 cursor-pointer select-none group">
+<input checked="" class="mt-0.5 w-4 h-4 rounded border-border-muted text-primary-container focus:ring-primary-container accent-primary-container" type="checkbox"/>
+<div class="text-left leading-tight">
+<span class="font-body-sm-semibold text-body-sm-semibold text-on-surface group-hover:text-primary-container transition-colors">
+                Pengisi Nat Keramik (Tile Grout 1kg)
+              </span>
+<p class="font-caption-meta text-caption-meta text-ink-muted">Warna Super White anti-lumut (Konsumsi 0.12 kg/m² pada celah 2mm)</p>
+</div>
+</label>
+</div>
+<!-- Otomatis Terbitkan Dokumen Penawaran Checkbox -->
+<div class="pt-1">
+<label class="flex items-center gap-2 cursor-pointer select-none p-2 rounded bg-surface-inset border border-border-hairline">
+<input checked="" class="w-4 h-4 rounded border-border-muted text-primary-container focus:ring-primary-container accent-primary-container" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface">
+              Otomatis Terbitkan Dokumen Penawaran (Quotation Resmi, Valid 14 Hari)
+            </span>
+</label>
+</div>
+<!-- Primary Full-Width CTA -->
+<button class="w-full h-10 bg-primary-container hover:bg-brand-primary-hover text-white rounded font-body-sm-semibold text-body-sm-semibold flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.99]" id="btnHitung" type="button">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+<span>Hitung Kebutuhan &amp; Cek Stok Gudang (Enter)</span>
+</button>
+</div>
+<!-- RIGHT PANEL (7/12 width — "2. Rincian Estimasi BOM & Ketersediaan Stok Gudang") -->
+<div class="col-span-12 lg:col-span-7 bg-surface-card border border-border-hairline rounded p-5 space-y-4 shadow-sm">
+<div class="flex items-center justify-between pb-3 border-b border-border-hairline">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-primary-container text-white flex items-center justify-center font-label-mono-sm text-label-mono-sm font-bold">2</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">
+              Rincian Estimasi BOM &amp; Ketersediaan Stok Gudang
+            </h2>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-caption-caps text-caption-caps px-2 py-0.5 rounded bg-success-bg text-success-text border border-success-border font-bold">
+              SIAP DIPROSES
+            </span>
+</div>
+</div>
+<!-- Top Summary Metric Banner (EEF3FF, 1px border C7D5FE, 16px padding) -->
+<div class="bg-brand-primary-subtle border border-brand-primary-border rounded p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="space-y-1">
+<div class="font-caption-caps text-caption-caps text-primary-container uppercase font-bold tracking-wider">
+              Kalkulasi Luas &amp; Waste Factor
+            </div>
+<div class="font-body-md-medium text-body-md-medium text-on-surface flex items-center gap-2">
+<span>Luas Total Bersih: <strong class="font-label-mono-base text-label-mono-base">48,00 m²</strong></span>
+<span class="text-ink-muted">+ Waste 5% =</span>
+<span class="font-label-mono-base text-label-mono-base font-bold text-primary-container px-1.5 py-0.5 rounded bg-white border border-brand-primary-border">
+                50,40 m² Kebutuhan Riil
+              </span>
+</div>
+<div class="font-caption-meta text-caption-meta text-ink-slate flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]">info</span>
+              Dibulatkan ke atas: 50,40 / 0.96 = 52.5 dus → <strong>53 Dus Utuh</strong>
+</div>
+</div>
+<div class="text-right md:border-l md:border-brand-primary-border md:pl-5 shrink-0">
+<div class="font-caption-caps text-caption-caps text-ink-secondary uppercase">
+              Total Estimasi Biaya Material
+            </div>
+<div class="font-label-mono-metric text-label-mono-metric text-primary-container mt-0.5">
+              Rp 3.486.000
+            </div>
+<div class="font-caption-meta text-caption-meta text-success-text font-semibold flex items-center justify-end gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+              Margin Toko Bersih: +21,4% (Rp 612.000)
+            </div>
+</div>
+</div>
+<!-- Visual Progress / Stock Fulfillment Indicator Bar -->
+<div class="p-3 bg-surface-inset border border-border-hairline rounded flex items-center justify-between gap-4">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-[18px] text-success-text">inventory</span>
+<div class="text-left truncate">
+<div class="font-body-sm-semibold text-body-sm-semibold text-on-surface">Ketersediaan Stok Gabungan: 100% Siap Kirim</div>
+<div class="font-caption-meta text-caption-meta text-ink-muted">Semua SKU dalam BOM terpenuhi oleh Gudang Bekasi dan Jakarta Timur</div>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0">
+<div class="w-32 bg-border-hairline rounded-full h-2 overflow-hidden">
+<div class="bg-success-text h-2 rounded-full w-full"></div>
+</div>
+<span class="font-label-mono-sm text-label-mono-sm text-success-text font-bold">100%</span>
+</div>
+</div>
+<!-- High-Density BOM Conversion Table (40px rows) -->
+<div class="border border-border-hairline rounded overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="h-9 bg-surface-subtle border-b border-border-hairline">
+<th class="px-3 font-caption-caps text-caption-caps text-ink-muted uppercase">ITEM MATERIAL</th>
+<th class="px-2 font-caption-caps text-caption-caps text-ink-muted uppercase">SKU GUDANG</th>
+<th class="px-2 font-caption-caps text-caption-caps text-ink-muted uppercase text-right">KEBUTUHAN HITUNG</th>
+<th class="px-2 font-caption-caps text-caption-caps text-ink-muted uppercase">SATUAN BELI</th>
+<th class="px-2 font-caption-caps text-caption-caps text-ink-muted uppercase text-right">HARGA SATUAN</th>
+<th class="px-3 font-caption-caps text-caption-caps text-ink-muted uppercase text-right">TOTAL BIAYA</th>
+<th class="px-3 font-caption-caps text-caption-caps text-ink-muted uppercase">STATUS STOK GUDANG</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border-hairline">
+<!-- Row 1 -->
+<tr class="h-10 hover:bg-surface-inset transition-colors">
+<td class="px-3 font-body-sm-semibold text-body-sm-semibold text-on-surface">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-accent-blue"></span>
+<span>Keramik Polos Putih 40x40</span>
+</div>
+</td>
+<td class="px-2 font-label-mono-sm text-label-mono-sm text-ink-slate font-medium">KER-4040</td>
+<td class="px-2 font-label-mono-base text-label-mono-base font-bold text-on-surface text-right">53 Dus</td>
+<td class="px-2 font-caption-meta text-caption-meta text-ink-secondary">Dus (0.96m²)</td>
+<td class="px-2 font-label-mono-base text-label-mono-base text-on-surface text-right tabular-nums">Rp 54.000</td>
+<td class="px-3 font-label-mono-base text-label-mono-base font-bold text-on-surface text-right tabular-nums">Rp 2.862.000</td>
+<td class="px-3">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-success-bg border border-success-border text-success-text font-caption-caps text-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-success-text"></span>
+                      Stok Ada (18 Dus di Bekasi, 40 di Jkt)
+                    </span>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="h-10 hover:bg-surface-inset transition-colors">
+<td class="px-3 font-body-sm-semibold text-body-sm-semibold text-on-surface">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span>Mortar Thinbed Perekat</span>
+</div>
+</td>
+<td class="px-2 font-label-mono-sm text-label-mono-sm text-ink-slate font-medium">MOR-THIN</td>
+<td class="px-2 font-label-mono-base text-label-mono-base font-bold text-on-surface text-right">8 Sak</td>
+<td class="px-2 font-caption-meta text-caption-meta text-ink-secondary">Sak (40 kg)</td>
+<td class="px-2 font-label-mono-base text-label-mono-base text-on-surface text-right tabular-nums">Rp 72.000</td>
+<td class="px-3 font-label-mono-base text-label-mono-base font-bold text-on-surface text-right tabular-nums">Rp 576.000</td>
+<td class="px-3">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-success-bg border border-success-border text-success-text font-caption-caps text-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-success-text"></span>
+                      Stok Ada (85 Sak)
+                    </span>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="h-10 hover:bg-surface-inset transition-colors">
+<td class="px-3 font-body-sm-semibold text-body-sm-semibold text-on-surface">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-ink-slate-light"></span>
+<span>Semen Grout Nat Putih 1kg</span>
+</div>
+</td>
+<td class="px-2 font-label-mono-sm text-label-mono-sm text-ink-slate font-medium">GRT-WHT</td>
+<td class="px-2 font-label-mono-base text-label-mono-base font-bold text-on-surface text-right">6 Pcs</td>
+<td class="px-2 font-caption-meta text-caption-meta text-ink-secondary">Pcs (1 kg)</td>
+<td class="px-2 font-label-mono-base text-label-mono-base text-on-surface text-right tabular-nums">Rp 8.000</td>
+<td class="px-3 font-label-mono-base text-label-mono-base font-bold text-on-surface text-right tabular-nums">Rp 48.000</td>
+<td class="px-3">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-success-bg border border-success-border text-success-text font-caption-caps text-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-success-text"></span>
+                      Stok Ada (120 Pcs)
+                    </span>
+</td>
+</tr>
+</tbody>
+<tfoot>
+<tr class="h-10 bg-surface-subtle font-bold border-t border-border-hairline">
+<td class="px-3 text-right font-caption-caps text-caption-caps text-ink-muted uppercase" colspan="5">
+                    Subtotal Nilai Bahan Pokok Proyek:
+                  </td>
+<td class="px-3 text-right font-label-mono-base text-label-mono-base text-primary-container tabular-nums">
+                    Rp 3.486.000
+                  </td>
+<td class="px-3 font-caption-meta text-caption-meta text-ink-slate font-normal">
+                    Pajak PPN 11% include pada invoice final
+                  </td>
+</tr>
+</tfoot>
+</table>
+</div>
+</div>
+<!-- Technical Material Notes Bar -->
+<div class="flex items-center justify-between text-caption-meta text-ink-muted pt-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-ink-slate">help</span>
+<span>Toleransi nat dihitung pada ketebalan 2mm standar. Pembelian disarankan dibulatkan per karton/dus untuk menjaga batch lot warna yang sama (tone matching).</span>
+</div>
+<span class="font-label-mono-sm text-label-mono-sm text-ink-secondary shrink-0">Batch Lot ID: #LOT-2026-X8</span>
+</div>
+<!-- Action Footer Box (#F4F6F8, 1px border #E4E7EC, 16px padding) -->
+<div class="bg-surface-subtle border border-border-hairline rounded p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-card border border-border-muted flex items-center justify-center text-ink-secondary">
+<span class="material-symbols-outlined text-[18px]">receipt</span>
+</div>
+<div>
+<div class="font-caption-caps text-caption-caps text-ink-muted uppercase">DRAFT ESTIMASI RESMI</div>
+<div class="font-label-mono-base text-label-mono-base font-bold text-on-surface">
+                QUO-927839 • <span class="font-normal text-ink-secondary">Diterbitkan untuk</span> Budi Santoso
+              </div>
+</div>
+</div>
+<div class="flex items-center gap-2.5 w-full md:w-auto">
+<button class="h-9 px-3.5 bg-surface-card border border-border-muted text-on-surface rounded font-body-sm-semibold text-body-sm-semibold flex items-center justify-center gap-1.5 hover:bg-surface-subtle transition-colors shadow-sm" id="btnCetakPDF" type="button">
+<span class="material-symbols-outlined text-[16px] text-ink-slate">print</span>
+<span>Cetak Estimasi RAB (PDF)</span>
+</button>
+<button class="h-9 px-4 bg-primary-container hover:bg-brand-primary-hover text-white rounded font-body-sm-semibold text-body-sm-semibold flex items-center justify-center gap-1.5 transition-all shadow-sm" id="btnLanjutPOS" type="button">
+<span>Lanjut ke Kasir POS / Buat Sales Order (F9)</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Formula References / Technical Drawer Cards (3-up Bento Info) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+<div class="p-3.5 bg-surface-card border border-border-hairline rounded space-y-1">
+<div class="flex items-center justify-between">
+<span class="font-caption-caps text-caption-caps text-ink-muted uppercase font-bold">Rasio Mortar Thinbed</span>
+<span class="material-symbols-outlined text-[16px] text-ink-slate">layers</span>
+</div>
+<p class="font-body-sm-semibold text-body-sm-semibold text-on-surface">1 Sak (40kg) untuk 6-7 m² Keramik Lantai</p>
+<p class="font-caption-meta text-caption-meta text-ink-slate">Ketebalan spesi rata-rata 3mm dengan notched trowel gigi 8mm.</p>
+</div>
+<div class="p-3.5 bg-surface-card border border-border-hairline rounded space-y-1">
+<div class="flex items-center justify-between">
+<span class="font-caption-caps text-caption-caps text-ink-muted uppercase font-bold">Rasio Semen Nat Keramik</span>
+<span class="material-symbols-outlined text-[16px] text-ink-slate">texture</span>
+</div>
+<p class="font-body-sm-semibold text-body-sm-semibold text-on-surface">1 Kemasan (1kg) untuk 7-9 m² Luasan</p>
+<p class="font-caption-meta text-caption-meta text-ink-slate">Menutup lebar celah sambungan 2-3 mm tile ukuran 40x40 cm.</p>
+</div>
+<div class="p-3.5 bg-surface-card border border-border-hairline rounded space-y-1">
+<div class="flex items-center justify-between">
+<span class="font-caption-caps text-caption-caps text-ink-muted uppercase font-bold">Kebijakan Retur Material</span>
+<span class="material-symbols-outlined text-[16px] text-ink-slate">assignment_return</span>
+</div>
+<p class="font-body-sm-semibold text-body-sm-semibold text-on-surface">Maksimal 2 Dus Utuh dalam 7 Hari</p>
+<p class="font-caption-meta text-caption-meta text-ink-slate">Kemasan dus segel tanpa cacat, nota QUO-927839 wajib dilampirkan.</p>
+</div>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    const inputL = document.getElementById('inputLength');
+    const inputW = document.getElementById('inputWidth');
+    const calcArea = document.getElementById('calculatedArea');
+    const btnHitung = document.getElementById('btnHitung');
+    const btnReset = document.getElementById('btnResetCalculator');
+    const wasteBtns = document.querySelectorAll('.btn-waste');
+
+    function updateCalculations() {
+      const l = parseFloat(inputL.value) || 0;
+      const w = parseFloat(inputW.value) || 0;
+      const area = (l * w).toFixed(2);
+      calcArea.textContent = area.replace('.', ',');
+    }
+
+    inputL.addEventListener('input', updateCalculations);
+    inputW.addEventListener('input', updateCalculations);
+
+    wasteBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        wasteBtns.forEach(b => {
+          b.className = 'btn-waste h-9 rounded font-label-mono-base text-label-mono-base text-ink-secondary flex items-center justify-center bg-surface-card hover:bg-surface-subtle border border-border-muted';
+        });
+        this.className = 'btn-waste h-9 rounded font-label-mono-base text-label-mono-base font-semibold flex items-center justify-center bg-primary-container text-white border border-primary-container';
+      });
+    });
+
+    btnReset.addEventListener('click', function() {
+      inputL.value = '6.0';
+      inputW.value = '8.0';
+      updateCalculations();
+    });
+
+    // Keyboard Shortcuts
+    window.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        btnHitung.click();
+      }
+      if (e.key === 'F9') {
+        e.preventDefault();
+        document.getElementById('btnLanjutPOS').click();
+      }
+    });
+  })();
+</script></main></div></body></html>

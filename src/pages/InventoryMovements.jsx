@@ -121,7 +121,7 @@ export default function InventoryMovements(){
             <PosExportButtons onExport={downloadExport} busyKey={expBusy} prefix="Kartu"/>
           </>}>
             <div className={posSearchWrap}>
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#76777d]"/>
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3"/>
               <input value={f.q} onChange={e=>setF({...f, q:e.target.value})} onKeyDown={e=>e.key==='Enter'&&setApplied({...f})}
                 placeholder="Cari produk / SKU lalu Enter..." className={posInput+' pl-9'} />
             </div>
@@ -146,7 +146,7 @@ export default function InventoryMovements(){
             <PosChip active={presetKey==='year'} onClick={()=>preset('year')}>Tahun ini</PosChip>
             <span className="ml-auto flex items-center gap-1.5">
               <input type="date" value={f.start} onChange={e=>setF({...f, start:e.target.value})} className={posInput+' w-[150px]'}/>
-              <span className="text-[11px] text-[#76777d]">s/d</span>
+              <span className="text-[11px] text-ink-3">s/d</span>
               <input type="date" value={f.end} onChange={e=>setF({...f, end:e.target.value})} className={posInput+' w-[150px]'}/>
             </span>
           </PosChipRow>
@@ -154,29 +154,29 @@ export default function InventoryMovements(){
           {loading ? <PosSkeleton rows={8} cols={7}/> : err ? <PosError message={err} onRetry={load}/> : filtered.length===0 ? (
             <PosEmpty text="Belum ada pergerakan pada filter ini"/>
           ) : (
-            <div className="overflow-auto rounded-xl border border-[#e7ecf7]">
+            <div className="overflow-auto rounded-xl border border-line">
               <table className="w-full text-sm">
-                <thead><tr className="bg-[#e5eeff] border-b border-[#e7ecf7]">
+                <thead><tr className="bg-surface-3 border-b border-line">
                   <PosTh>TANGGAL</PosTh><PosTh>PRODUK</PosTh><PosTh align="center">GUDANG</PosTh>
                   <PosTh align="center">TIPE</PosTh><PosTh>REFERENSI</PosTh>
                   <PosTh align="right">MASUK</PosTh><PosTh align="right">KELUAR</PosTh><PosTh align="right">SALDO</PosTh>
                 </tr></thead>
                 <tbody>
                   {pageRows.map(m=>(
-                    <tr key={m.id} className="border-b border-[#e5eeff] hover:bg-[#eff4ff] transition bg-white">
-                      <td className="px-4 py-3.5 text-xs text-[#2b3445] whitespace-nowrap tabular-nums">{fmtDateTime(m.movement_date)}</td>
+                    <tr key={m.id} className="border-b border-line hover:bg-surface-2 transition bg-white">
+                      <td className="px-4 py-3.5 text-xs text-ink-2 whitespace-nowrap tabular-nums">{fmtDateTime(m.movement_date)}</td>
                       <td className="px-4 py-3.5">
-                        <div className="font-semibold text-xs text-[#0b1c30]">{m.product_name}</div>
-                        <div className="text-[11px] text-[#45464d]">{m.sku}</div>
+                        <div className="font-semibold text-xs text-ink">{m.product_name}</div>
+                        <div className="text-[11px] text-ink-2">{m.sku}</div>
                       </td>
-                      <td className="px-4 py-3.5 text-xs text-center text-[#2b3445]">{m.warehouse_name || '-'}</td>
+                      <td className="px-4 py-3.5 text-xs text-center text-ink-2">{m.warehouse_name || '-'}</td>
                       <td className="px-4 py-3.5 text-center">
                         <PosBadge tone={TYPE_TONE[m.movement_type]||'slate'} title={TYPE_LABEL[m.movement_type]||m.movement_type}>{m.movement_type}</PosBadge>
                       </td>
-                      <td className="px-4 py-3.5 text-xs text-[#45464d]">{m.reference_type ? `${m.reference_type} #${m.reference_id ?? '-'}` : '-'}</td>
+                      <td className="px-4 py-3.5 text-xs text-ink-2">{m.reference_type ? `${m.reference_type} #${m.reference_id ?? '-'}` : '-'}</td>
                       <td className="px-4 py-3.5 text-right font-bold text-emerald-700 tabular-nums">{Number(m.qty_in) > 0 ? angka(m.qty_in) : ''}</td>
                       <td className="px-4 py-3.5 text-right font-bold text-red-600 tabular-nums">{Number(m.qty_out) > 0 ? angka(m.qty_out) : ''}</td>
-                      <td className="px-4 py-3.5 text-right text-xs text-[#2b3445] tabular-nums">{m.balance_qty != null ? angka(m.balance_qty) : '-'}</td>
+                      <td className="px-4 py-3.5 text-right text-xs text-ink-2 tabular-nums">{m.balance_qty != null ? angka(m.balance_qty) : '-'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -192,8 +192,8 @@ export default function InventoryMovements(){
       {products.length > 0 && (
         <PosCard>
           <PosCardBody>
-            <div className="text-[11px] font-bold tracking-wider text-[#45464d]">KARTU STOK PER PRODUK</div>
-            <p className="text-xs text-[#45464d] mt-1">Pilih produk untuk menyaring pergerakannya - saldo kolom kanan adalah saldo berjalan setelah mutasi tersebut.</p>
+            <div className="text-[11px] font-bold tracking-wider text-ink-2">KARTU STOK PER PRODUK</div>
+            <p className="text-xs text-ink-2 mt-1">Pilih produk untuk menyaring pergerakannya - saldo kolom kanan adalah saldo berjalan setelah mutasi tersebut.</p>
             <div className="mt-2 flex flex-wrap gap-1.5 max-h-[130px] overflow-auto">
               {products.slice(0, 60).map(p=>(
                 <PosChip key={p.id} active={false} onClick={()=>{ setF(s=>({ ...s, q: p.sku || p.name })); setApplied(s=>({ ...s, q: p.sku || p.name })); }}>

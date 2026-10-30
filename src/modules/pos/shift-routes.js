@@ -83,6 +83,7 @@ router.post('/close', async (req,res)=>{
           amount: masukKas, source:'SHIFT_CLOSE', referenceType:'SHIFT', referenceId: shift.id,
           notes: `Tutup shift #${shift.id} - penjualan tunai (kas ${closing} - kas awal ${opening})`,
           createdBy: req.user.id,
+          withJournal: false,   // pendapatan POS sudah dijurnal saat checkout
         });
       }
     }catch(e){ console.error('[shift cash]', e.message); }

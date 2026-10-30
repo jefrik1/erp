@@ -64,14 +64,14 @@ export default function SignaturePad({ onChange, height=170, label='Tanda tangan
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-[#45464d] uppercase">
+        <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-ink-2 uppercase">
           {hasInk ? <CheckCircle2 size={13} className="text-emerald-600"/> : <PenLine size={13}/>} {label}
         </div>
-        <button type="button" onClick={clear} className="h-7 px-2.5 rounded-lg bg-white border border-[#e7ecf7] text-[11px] font-semibold text-[#45464d] hover:bg-[#eff4ff] inline-flex items-center gap-1">
+        <button type="button" onClick={clear} className="h-7 px-2.5 rounded-lg bg-white border border-line text-[11px] font-semibold text-ink-2 hover:bg-surface-2 inline-flex items-center gap-1">
           <Eraser size={12}/> Hapus
         </button>
       </div>
-      <div className="rounded-xl border border-[#e7ecf7] bg-white overflow-hidden">
+      <div className="rounded-xl border border-line bg-white overflow-hidden">
         <canvas
           ref={canvasRef} width={640} height={Math.round(height*640/560)}
           onPointerDown={start} onPointerMove={move} onPointerUp={end} onPointerLeave={end} onPointerCancel={end}
@@ -80,7 +80,7 @@ export default function SignaturePad({ onChange, height=170, label='Tanda tangan
           aria-label="Area tanda tangan penerima"
         />
       </div>
-      <div className="text-[11px] text-[#76777d]">{hasInk ? 'Tanda tangan tersimpan di bukti terima.' : hint}</div>
+      <div className="text-[11px] text-ink-3">{hasInk ? 'Tanda tangan tersimpan di bukti terima.' : hint}</div>
     </div>
   );
 }

@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+
+<html lang="id"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "sidebar-accent-border": "#1E293B", "accent-blue": "#3B82F6", "success-bg": "#ECFDF3", "surface-container-high": "#e0e8ff", "on-primary-fixed": "#001453", "primary-fixed-dim": "#b8c4ff", "primary-container": "#1e40af", "on-error": "#ffffff", "info-text": "#026AA2", "tertiary": "#003c35", "surface-dim": "#d2daf0", "inverse-on-surface": "#edf0ff", "surface": "#f9f9ff", "secondary": "#565e74", "success-text": "#067647", "brand-primary-subtle": "#EEF3FF", "surface-container-lowest": "#ffffff", "surface-subtle": "#F4F6F8", "outline-variant": "#c4c5d5", "secondary-fixed-dim": "#bec6e0", "on-secondary-container": "#5c647a", "on-secondary-fixed": "#131b2e", "canvas-background": "#F7F8FA", "inverse-primary": "#b8c4ff", "surface-bright": "#f9f9ff", "border-muted": "#D0D5DD", "surface-container": "#e9edff", "success-border": "#ABEFC6", "danger-border": "#FECDCA", "surface-tint": "#3755c3", "on-secondary": "#ffffff", "outline": "#757684", "ink-slate": "#64748B", "primary-fixed": "#dde1ff", "secondary-container": "#dae2fd", "error-container": "#ffdad6", "on-tertiary-fixed-variant": "#005047", "on-surface-variant": "#444653", "brand-primary-hover": "#1B3A9C", "surface-inset": "#F8FAFC", "ink-slate-light": "#94A3B8", "brand-primary-border": "#C7D5FE", "info-border": "#B9E6FE", "on-primary": "#ffffff", "border-hairline": "#E4E7EC", "on-secondary-fixed-variant": "#3f465c", "surface-card": "#FFFFFF", "inverse-surface": "#293041", "primary": "#00288e", "on-primary-container": "#a8b8ff", "ink-secondary": "#475467", "on-tertiary-container": "#60cdbc", "on-background": "#141b2c", "on-error-container": "#93000a", "danger-bg": "#FEF3F2", "on-primary-fixed-variant": "#173bab", "warning-text": "#B54708", "surface-container-low": "#f1f3ff", "on-tertiary-fixed": "#00201c", "error": "#ba1a1a", "tertiary-fixed-dim": "#6cd8c7", "info-bg": "#F0F9FF", "surface-variant": "#dbe2f9", "tertiary-container": "#00554c", "secondary-fixed": "#dae2fd", "tertiary-fixed": "#89f5e3", "surface-container-highest": "#dbe2f9", "on-surface": "#141b2c", "warning-bg": "#FFFAEB", "on-tertiary": "#ffffff", "warning-border": "#FEDF89", "danger-text": "#B42318", "background": "#f9f9ff", "ink-muted": "#667085" }, "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, "spacing": { "space-xl": "1.5rem", "gutter": "1rem", "gutter-dense": "0.5rem", "margin": "1.5rem", "space-md": "0.75rem", "space-lg": "1rem", "space-xs": "0.25rem", "space-sm": "0.5rem", "margin-compact": "1rem" }, "fontFamily": { "label-mono-lg": [ "JetBrains Mono" ], "headline-sm": [ "Inter" ], "caption-caps": [ "Inter" ], "body-md-medium": [ "Inter" ], "label-mono-base": [ "JetBrains Mono" ], "label-mono-metric": [ "JetBrains Mono" ], "label-mono-sm": [ "JetBrains Mono" ], "body-sm": [ "Inter" ], "body-sm-semibold": [ "Inter" ], "headline-lg": [ "Inter" ], "caption-sidebar": [ "Inter" ], "body-md": [ "Inter" ], "caption-meta": [ "Inter" ], "headline-md": [ "Inter" ] }, "fontSize": { "label-mono-lg": [ "28px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" } ], "headline-sm": [ "16px", { "lineHeight": "22px", "letterSpacing": "-0.01em", "fontWeight": "600" } ], "caption-caps": [ "11px", { "lineHeight": "14px", "letterSpacing": "0.06em", "fontWeight": "700" } ], "body-md-medium": [ "14px", { "lineHeight": "20px", "fontWeight": "500" } ], "label-mono-base": [ "13px", { "lineHeight": "18px", "fontWeight": "500" } ], "label-mono-metric": [ "20px", { "lineHeight": "24px", "letterSpacing": "-0.02em", "fontWeight": "700" } ], "label-mono-sm": [ "12px", { "lineHeight": "16px", "fontWeight": "400" } ], "body-sm": [ "13px", { "lineHeight": "18px", "fontWeight": "400" } ], "body-sm-semibold": [ "13px", { "lineHeight": "18px", "fontWeight": "600" } ], "headline-lg": [ "20px", { "lineHeight": "28px", "letterSpacing": "-0.02em", "fontWeight": "700" } ], "caption-sidebar": [ "10px", { "lineHeight": "12px", "letterSpacing": "0.08em", "fontWeight": "600" } ], "body-md": [ "14px", { "lineHeight": "20px", "fontWeight": "400" } ], "caption-meta": [ "12px", { "lineHeight": "16px", "fontWeight": "400" } ], "headline-md": [ "18px", { "lineHeight": "24px", "letterSpacing": "-0.015em", "fontWeight": "700" } ] } } } };</script></head><body class="bg-canvas-background font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-60 bg-[#0F172A] border-r border-[#1E293B] z-50 flex flex-col"><div class="h-14 px-3 flex items-center justify-between border-b border-[#1E293B]"><div class="flex items-center gap-2.5 overflow-hidden"><img alt="SM Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1XFyLp5F1S6oez2uWGORZD91kdqWAsK_v5wLc8HonvI-2SaefFdv-Ymp4aRw6ZSdoY4S-fW81TbWLsBjTYGUo5ZtE-WWcukz7lVP-ofsbPcOmENSVdKBK-PhX7x1yuZILF4yueRFPVld3CDBX2r5I9PeBW1j0xPZEKLZdz00MIpSt9ulWjJOmlYNvrPvFPRpN2u_1SSLagfeda-ywUfB0sdkLooJ9ca-uzJAB4IZM7jlQ"/><div class="flex flex-col truncate"><span class="text-white font-headline-sm text-xs font-semibold leading-tight truncate">Sumber Material</span><span class="text-ink-slate-light font-caption-sidebar text-[10px] tracking-wider leading-none mt-0.5">ENTERPRISE ERP</span></div></div></div><div class="p-2.5 border-b border-[#1E293B]"><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-2 text-ink-slate text-[16px]">search</span><input class="w-full h-8 pl-7 pr-2 bg-[#1E293B] text-white placeholder-ink-slate text-xs rounded border border-transparent focus:border-accent-blue focus:outline-none transition-all" placeholder="Cari menu / modul..." type="text"/></div></div><div class="flex-1 overflow-y-auto px-2 py-3 space-y-4"><nav class="space-y-4" data-active-classes="bg-primary-container text-white font-semibold"><section><div><span class="px-2 font-caption-sidebar text-ink-slate block mb-1 uppercase">PENJUALAN</span><div class="space-y-0.5"><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">space_dashboard</span>Dashboard</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="sales-orders" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">receipt_long</span>Sales Order</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="sales-order-history" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">history</span>Riwayat Order</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="sales-invoices" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">request_quote</span>Invoice (AR)</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="sales-pos" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">point_of_sale</span>POS Kasir</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="calculator" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">calculate</span>Kalkulator Material</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="crm" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">groups</span>CRM &amp; Leads</a></div></div></section><section><div><span class="px-2 font-caption-sidebar text-ink-slate block mb-1 uppercase">PROYEK</span><div class="space-y-0.5"><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="projects" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">foundation</span>Proyek &amp; Tender</a></div></div></section><section><div><span class="px-2 font-caption-sidebar text-ink-slate block mb-1 uppercase">PEMBELIAN</span><div class="space-y-0.5"><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="purchase-requests" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">add_shopping_cart</span>Purchase Request</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="purchase-rfq" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">request_page</span>RFQ Supplier</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="purchase-orders" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">shopping_bag</span>Purchase Order</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="purchase-receipts" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">move_to_inbox</span>Goods Receipt</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="landed-costs" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">price_change</span>Landed Cost</a></div></div></section><section><div><span class="px-2 font-caption-sidebar text-ink-slate block mb-1 uppercase">BARANG &amp; PERSEDIAAN</span><div class="space-y-0.5"><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="master-products" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">category</span>Katalog Produk</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="inventory-stocks" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">warehouse</span>Stok per Gudang</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="inventory-stock-in" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">input</span>Penambahan Stok</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="inventory-movements" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">swap_horiz</span>Kartu Stok</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="inventory-opname" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">fact_check</span>Stock Opname</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="inventory-transfers" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">sync_alt</span>Transfer Gudang</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="consignments" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">inventory_2</span>Konsinyasi</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="waste" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">delete_sweep</span>Susut &amp; Pecah</a></div></div></section><section><div><span class="px-2 font-caption-sidebar text-ink-slate block mb-1 uppercase">OPERASIONAL</span><div class="space-y-0.5"><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="logistics-do" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">local_shipping</span>Logistik (DO)</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="fleet" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">directions_bus</span>Armada &amp; Trip</a></div></div></section><section><div><span class="px-2 font-caption-sidebar text-ink-slate block mb-1 uppercase">KEUANGAN</span><div class="space-y-0.5"><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="finance-coa" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">account_tree</span>COA &amp; Jurnal</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="finance-journals" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">menu_book</span>Jurnal Umum</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="finance-arap" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">account_balance_wallet</span>AR / AP</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="credit" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">credit_score</span>Kolektibilitas</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="finance-tax" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">pin</span>Pajak &amp; e-Faktur</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="finance-periods" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">lock_clock</span>Tutup Buku</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="finance-recon" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">account_balance</span>Rekonsiliasi Bank</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="reports" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">analytics</span>Laporan BI</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="reports-inventory" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">assessment</span>Laporan Persediaan</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="budgets" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">paid</span>Budget &amp; Cashflow</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="assets" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">domain</span>Aset Tetap</a></div></div></section><section><div><span class="px-2 font-caption-sidebar text-ink-slate block mb-1 uppercase">LOYALTY</span><div class="space-y-0.5"><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="loyalty" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">stars</span>Loyalty &amp; Tier</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="pricing" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">tune</span>Pricing Engine</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="returns" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">assignment_return</span>Retur &amp; Klaim</a></div></div></section><section><div><span class="px-2 font-caption-sidebar text-ink-slate block mb-1 uppercase">SDM &amp; MASTER</span><div class="space-y-0.5"><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="hr" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">badge</span>Karyawan &amp; HR</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="master-customers" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">storefront</span>Pelanggan</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="master-suppliers" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">conveyor_belt</span>Supplier</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="audit" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">policy</span>Audit &amp; GRC</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="approvals" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">verified</span>Approval</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="approval-rules" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">rule</span>Approval Matrix</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="errors" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">bug_report</span>Log Error</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="settings" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">settings</span>Pengaturan Sistem</a></div></div></section><section><div><span class="px-2 font-caption-sidebar text-ink-slate block mb-1 uppercase">SAYA</span><div class="space-y-0.5"><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="pengumuman" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">campaign</span>Pengumuman</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="absen" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">schedule</span>Absensi Saya</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="cuti" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">event_busy</span>Cuti Tahunan</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="izin" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">sick</span>Izin &amp; Sakit</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="driver" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">local_shipping</span>Trip Saya</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="surat-jalan" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">description</span>Surat Jalan</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="profil" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">person</span>Profil Saya</a><a class="flex items-center px-2 py-1.5 rounded text-xs text-ink-slate-light hover:bg-[#1E293B] hover:text-white transition-colors" data-path="panduan" href="#"><span class="material-symbols-outlined text-[16px] mr-2 text-ink-slate">help</span>Panduan &amp; Bantuan</a></div></div></section></nav></div><div class="h-14 px-3 bg-[#0F172A] border-t border-[#1E293B] flex items-center justify-between"><div class="flex items-center gap-2.5 overflow-hidden"><div class="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">A</div><div class="flex flex-col truncate"><span class="text-white text-xs font-semibold truncate leading-tight">admin</span><span class="text-ink-slate-light text-[10px] truncate leading-none mt-0.5">Direktur</span></div></div><button class="text-ink-slate hover:text-white p-1 rounded transition-colors" title="Keluar" type="button"><span class="material-symbols-outlined text-[18px]">logout</span></button></div></aside><div class="pl-60 min-h-screen flex flex-col"><header class="fixed top-0 left-60 right-0 h-[52px] bg-white border-b border-border-hairline z-40 px-4 flex items-center justify-between"><div class="flex items-center gap-3 overflow-hidden"><div class="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-success-bg border border-success-border"><span class="w-2 h-2 rounded-full bg-success-text"></span><span class="font-body-sm-semibold text-xs text-success-text leading-none">Sistem normal</span></div><div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-subtle border border-border-hairline text-ink-secondary text-xs font-medium cursor-pointer hover:bg-surface-inset transition-colors"><span class="text-[14px]">📍</span><span>Gudang Pusat Bekasi</span><span class="material-symbols-outlined text-[14px] text-ink-slate">arrow_drop_down</span></div><div class="hidden xl:flex items-center text-xs text-ink-muted border-l border-border-hairline pl-3"><span class="font-label-mono-sm">Sabtu, 31 Okt 2026 · 00.17 WIB</span></div></div><div class="flex items-center gap-3"><div class="relative flex items-center w-[260px] h-8 bg-surface-subtle border border-border-muted rounded px-2.5 text-xs text-ink-muted cursor-pointer hover:border-outline transition-colors"><span class="material-symbols-outlined text-[16px] text-ink-slate mr-2">search</span><span class="flex-1 truncate">Pencarian pintar...</span><kbd class="px-1.5 py-0.5 bg-white border border-border-muted rounded text-[10px] font-label-mono-sm text-ink-secondary shadow-sm">Ctrl K</kbd></div><button class="relative p-1.5 text-ink-secondary hover:text-on-surface hover:bg-surface-subtle rounded transition-colors" title="Notifikasi" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-error border border-white"></span></button><div class="flex items-center gap-2 pl-2 border-l border-border-hairline"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><span class="font-body-sm-semibold text-xs text-on-surface hidden sm:inline">admin</span></div></div></header><main class="flex-1 pt-[52px] w-full bg-canvas-background"><div class="flex flex-col w-full">
+<div class="px-6 py-4 flex flex-col gap-4">
+<!-- Header Tier -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 min-h-[36px]">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-lg bg-primary-container text-white flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-xl">account_tree</span>
+</div>
+<div class="flex items-center gap-2.5 flex-wrap">
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Chart of Accounts (COA) &amp; Saldo Buku Besar</h1>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-container-high text-primary font-caption-caps text-caption-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+            27 Akun Terdaftar · Terkoneksi Jurnal Otomatis
+          </span>
+</div>
+</div>
+<div class="flex items-center gap-2 self-start lg:self-auto">
+<div class="relative inline-block text-left">
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-lowest text-on-surface-variant font-body-sm-semibold text-body-sm-semibold rounded shadow-sm hover:bg-surface-subtle transition-colors" id="exportDropdownBtn" type="button">
+<span class="material-symbols-outlined text-[16px] text-ink-slate">file_download</span>
+<span>Ekspor</span>
+<span class="material-symbols-outlined text-[16px]">arrow_drop_down</span>
+</button>
+<div class="hidden absolute right-0 mt-1 w-44 bg-surface-container-lowest rounded shadow-lg py-1 z-20" id="exportMenu">
+<a class="flex items-center gap-2 px-3 py-1.5 font-body-sm text-body-sm text-on-surface hover:bg-surface-subtle" href="#">
+<span class="material-symbols-outlined text-[16px] text-success-text">table_view</span> COA Excel (.xlsx)
+            </a>
+<a class="flex items-center gap-2 px-3 py-1.5 font-body-sm text-body-sm text-on-surface hover:bg-surface-subtle" href="#">
+<span class="material-symbols-outlined text-[16px] text-danger-text">picture_as_pdf</span> COA PDF
+            </a>
+<a class="flex items-center gap-2 px-3 py-1.5 font-body-sm text-body-sm text-on-surface hover:bg-surface-subtle" href="#">
+<span class="material-symbols-outlined text-[16px] text-accent-blue">csv</span> COA CSV
+            </a>
+</div>
+</div>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-lowest text-on-surface-variant font-body-sm-semibold text-body-sm-semibold rounded shadow-sm hover:bg-surface-subtle transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px] text-ink-slate">format_indent_increase</span>
+<span>Atur Posisi / Induk</span>
+</button>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary-container text-on-primary font-body-sm-semibold text-body-sm-semibold rounded shadow-sm hover:bg-brand-primary-hover transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span>Buat Akun Baru</span>
+</button>
+</div>
+</div>
+<!-- Category Strip -->
+<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+<!-- 1: Aset -->
+<div class="bg-surface-card p-3 rounded-lg shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-caption-caps text-caption-caps text-ink-muted">1-xxxx · ASET</span>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-brand-primary-subtle text-primary font-caption-caps text-[10px]">10 Akun</span>
+</div>
+<div class="mt-1 flex items-baseline justify-between">
+<span class="font-label-mono-metric text-headline-sm text-on-surface">Rp 27.566.583.680</span>
+</div>
+<div class="mt-1 w-full bg-surface-subtle rounded-full h-1 overflow-hidden">
+<div class="bg-primary-container h-full w-[82%]"></div>
+</div>
+</div>
+<!-- 2: Kewajiban -->
+<div class="bg-surface-card p-3 rounded-lg shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-caption-caps text-caption-caps text-ink-muted">2-xxxx · KEWAJIBAN</span>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-warning-bg text-warning-text font-caption-caps text-[10px]">7 Akun</span>
+</div>
+<div class="mt-1 flex items-baseline justify-between">
+<span class="font-label-mono-metric text-headline-sm text-on-surface">Rp 1.450.000.000</span>
+</div>
+<div class="mt-1 w-full bg-surface-subtle rounded-full h-1 overflow-hidden">
+<div class="bg-warning-text h-full w-[24%]"></div>
+</div>
+</div>
+<!-- 3: Modal / Ekuitas -->
+<div class="bg-surface-card p-3 rounded-lg shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-caption-caps text-caption-caps text-ink-muted">3-xxxx · EKUITAS</span>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-success-bg text-success-text font-caption-caps text-[10px]">2 Akun</span>
+</div>
+<div class="mt-1 flex items-baseline justify-between">
+<span class="font-label-mono-metric text-headline-sm text-on-surface">Rp 25.000.000.000</span>
+</div>
+<div class="mt-1 w-full bg-surface-subtle rounded-full h-1 overflow-hidden">
+<div class="bg-success-text h-full w-[75%]"></div>
+</div>
+</div>
+<!-- 4: Pendapatan -->
+<div class="bg-surface-card p-3 rounded-lg shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-caption-caps text-caption-caps text-ink-muted">4-xxxx · PENDAPATAN</span>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-info-bg text-info-text font-caption-caps text-[10px]">1 Akun</span>
+</div>
+<div class="mt-1 flex items-baseline justify-between">
+<span class="font-label-mono-metric text-headline-sm text-on-surface">Rp 711.169.896</span>
+</div>
+<div class="mt-1 w-full bg-surface-subtle rounded-full h-1 overflow-hidden">
+<div class="bg-info-text h-full w-[16%]"></div>
+</div>
+</div>
+<!-- 5: Beban Pokok (HPP) -->
+<div class="bg-surface-card p-3 rounded-lg shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-caption-caps text-caption-caps text-ink-muted">5-xxxx · BEBAN POKOK</span>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-surface-container text-secondary font-caption-caps text-[10px]">2 Akun</span>
+</div>
+<div class="mt-1 flex items-baseline justify-between">
+<span class="font-label-mono-metric text-headline-sm text-on-surface">Rp 331.606.431</span>
+</div>
+<div class="mt-1 w-full bg-surface-subtle rounded-full h-1 overflow-hidden">
+<div class="bg-secondary h-full w-[10%]"></div>
+</div>
+</div>
+<!-- 6: Beban Operasional -->
+<div class="bg-surface-card p-3 rounded-lg shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-caption-caps text-caption-caps text-ink-muted">6-xxxx · OPERASIONAL</span>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-danger-bg text-danger-text font-caption-caps text-[10px]">5 Akun</span>
+</div>
+<div class="mt-1 flex items-baseline justify-between">
+<span class="font-label-mono-metric text-headline-sm text-on-surface">Rp 176.304.472</span>
+</div>
+<div class="mt-1 w-full bg-surface-subtle rounded-full h-1 overflow-hidden">
+<div class="bg-danger-text h-full w-[6%]"></div>
+</div>
+</div>
+</div>
+<!-- Filter Bar -->
+<div class="bg-surface-card p-2 rounded-lg shadow-sm flex flex-wrap items-center justify-between gap-3">
+<div class="flex items-center gap-2 flex-wrap">
+<div class="relative w-64 md:w-72">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[18px] text-ink-slate">search</span>
+<input class="w-full h-9 pl-9 pr-3 bg-surface-subtle text-on-surface font-body-sm text-body-sm rounded focus:bg-surface-container-lowest focus:outline-none transition-colors" id="coaSearchInput" placeholder="Cari kode akun atau nama..." type="text"/>
+</div>
+<!-- Filter Tabs -->
+<div class="flex items-center bg-surface-subtle p-0.5 rounded">
+<button class="tab-btn active px-2.5 py-1 text-xs font-body-sm-semibold rounded bg-surface-card text-primary shadow-xs transition-all" data-filter="all">Semua (27)</button>
+<button class="tab-btn px-2.5 py-1 text-xs font-body-sm text-ink-secondary hover:text-on-surface rounded transition-all" data-filter="1">Aset (10)</button>
+<button class="tab-btn px-2.5 py-1 text-xs font-body-sm text-ink-secondary hover:text-on-surface rounded transition-all" data-filter="2">Kewajiban (7)</button>
+<button class="tab-btn px-2.5 py-1 text-xs font-body-sm text-ink-secondary hover:text-on-surface rounded transition-all" data-filter="3">Ekuitas (2)</button>
+<button class="tab-btn px-2.5 py-1 text-xs font-body-sm text-ink-secondary hover:text-on-surface rounded transition-all" data-filter="4">Pendapatan (1)</button>
+<button class="tab-btn px-2.5 py-1 text-xs font-body-sm text-ink-secondary hover:text-on-surface rounded transition-all" data-filter="5">Beban (7)</button>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<label class="flex items-center gap-2 cursor-pointer select-none">
+<input class="w-4 h-4 rounded text-primary-container focus:ring-0 cursor-pointer" id="showInactiveToggle" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-ink-secondary">Tampilkan Akun Non-Aktif</span>
+</label>
+<button class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded bg-surface-subtle text-ink-secondary hover:text-on-surface hover:bg-surface-container transition-colors" id="btnReloadTable" type="button">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+<span class="font-body-sm text-body-sm">Muat Ulang</span>
+</button>
+</div>
+</div>
+<!-- Table Workspace -->
+<div class="bg-surface-card rounded-lg shadow-sm overflow-hidden flex flex-col">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-subtle h-9">
+<th class="px-3 font-caption-caps text-caption-caps text-ink-muted uppercase w-[150px]">KODE AKUN</th>
+<th class="px-3 font-caption-caps text-caption-caps text-ink-muted uppercase">NAMA AKUN &amp; KETERANGAN</th>
+<th class="px-3 font-caption-caps text-caption-caps text-ink-muted uppercase w-[120px]">TIPE AKUN</th>
+<th class="px-3 font-caption-caps text-caption-caps text-ink-muted uppercase w-[130px]">POSISI NORMAL</th>
+<th class="px-3 font-caption-caps text-caption-caps text-ink-muted uppercase w-[180px]">SISTEM / AUTO</th>
+<th class="px-3 font-caption-caps text-caption-caps text-ink-muted uppercase text-right w-[190px]">SALDO BERJALAN</th>
+<th class="px-3 font-caption-caps text-caption-caps text-ink-muted uppercase text-right w-[120px]">AKSI</th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-body-sm text-on-surface divide-y-0" id="coaTableBody">
+<!-- Row: Header 1-0000 -->
+<tr class="h-10 bg-surface-container-low font-body-sm-semibold hover:bg-surface-container transition-colors" data-type="1">
+<td class="px-3 font-label-mono-base text-label-mono-base text-primary">1-0000</td>
+<td class="px-3">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-primary">folder_open</span>
+<span class="font-body-sm-semibold text-on-surface">ASET</span>
+<span class="text-xs text-ink-muted font-normal">· Akun Induk Klasifikasi Utama</span>
+</div>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-caption-caps bg-brand-primary-subtle text-primary">ASSET</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-surface-container-high text-primary font-caption-caps text-[10px]">DEBIT</span>
+</td>
+<td class="px-3">
+<span class="text-xs text-ink-muted">—</span>
+</td>
+<td class="px-3 text-right font-label-mono-base text-label-mono-base text-on-surface">
+                Rp 27.566.583.680
+              </td>
+<td class="px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1 hover:bg-surface-container rounded text-ink-slate hover:text-on-surface transition-colors" title="Detail Buku Besar"><span class="material-symbols-outlined text-[16px]">menu_book</span></button>
+<button class="p-1 hover:bg-surface-container rounded text-ink-slate hover:text-on-surface transition-colors" title="Edit Akun"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+<button class="p-1 hover:bg-surface-container rounded text-ink-slate hover:text-on-surface transition-colors" title="Menu Lain"><span class="material-symbols-outlined text-[16px]">more_vert</span></button>
+</div>
+</td>
+</tr>
+<!-- Row: Sub-Induk 1-1000 -->
+<tr class="h-10 bg-surface-container-lowest hover:bg-surface-inset transition-colors" data-type="1">
+<td class="px-3 pl-6 font-label-mono-base text-label-mono-base text-on-surface-variant">1-1000</td>
+<td class="px-3 pl-6">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-ink-slate">subdirectory_arrow_right</span>
+<span class="font-body-sm-semibold text-on-surface">Kas &amp; Setara Kas</span>
+<span class="text-xs text-ink-muted">· Sub-Induk Likuiditas</span>
+</div>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-caption-caps bg-brand-primary-subtle text-primary">ASSET</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-surface-container-high text-primary font-caption-caps text-[10px]">DEBIT</span>
+</td>
+<td class="px-3">
+<span class="text-xs text-ink-muted">—</span>
+</td>
+<td class="px-3 text-right font-label-mono-base text-label-mono-base text-on-surface">
+                Rp 1.613.567.460
+              </td>
+<td class="px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Detail Buku Besar"><span class="material-symbols-outlined text-[16px]">menu_book</span></button>
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Edit Akun"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Menu Lain"><span class="material-symbols-outlined text-[16px]">more_vert</span></button>
+</div>
+</td>
+</tr>
+<!-- Child 1-1010 -->
+<tr class="h-10 bg-surface-card hover:bg-surface-inset transition-colors" data-type="1">
+<td class="px-3 pl-10 font-label-mono-base text-label-mono-base text-on-surface">1-1010</td>
+<td class="px-3 pl-10">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-accent-blue"></span>
+<span>Kas Tunai Kasir</span>
+<span class="text-xs text-ink-muted">· Kasir POS Depo Utama</span>
+</div>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-caption-caps bg-brand-primary-subtle text-primary">ASSET</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-surface-container-high text-primary font-caption-caps text-[10px]">DEBIT</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-subtle text-ink-secondary text-[11px]">
+<span class="material-symbols-outlined text-[12px] text-ink-slate">lock</span>
+                  Otomatis POS
+                </span>
+</td>
+<td class="px-3 text-right font-label-mono-base text-label-mono-base text-on-surface">
+                Rp 249.279.995
+              </td>
+<td class="px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Detail Buku Besar"><span class="material-symbols-outlined text-[16px]">menu_book</span></button>
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Edit Akun"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Menu Lain"><span class="material-symbols-outlined text-[16px]">more_vert</span></button>
+</div>
+</td>
+</tr>
+<!-- Child 1-1020 -->
+<tr class="h-10 bg-surface-card hover:bg-surface-inset transition-colors" data-type="1">
+<td class="px-3 pl-10 font-label-mono-base text-label-mono-base text-on-surface">1-1020</td>
+<td class="px-3 pl-10">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-accent-blue"></span>
+<span>Bank BCA Operasional</span>
+<span class="text-xs text-ink-muted">· Rek. 8410293881</span>
+</div>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-caption-caps bg-brand-primary-subtle text-primary">ASSET</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-surface-container-high text-primary font-caption-caps text-[10px]">DEBIT</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-subtle text-ink-secondary text-[11px]">
+<span class="material-symbols-outlined text-[12px] text-ink-slate">account_balance</span>
+                  Rekonsiliasi
+                </span>
+</td>
+<td class="px-3 text-right font-label-mono-base text-label-mono-base text-on-surface">
+                Rp 564.897.965
+              </td>
+<td class="px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Detail Buku Besar"><span class="material-symbols-outlined text-[16px]">menu_book</span></button>
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Edit Akun"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Menu Lain"><span class="material-symbols-outlined text-[16px]">more_vert</span></button>
+</div>
+</td>
+</tr>
+<!-- Child 1-1030 -->
+<tr class="h-10 bg-surface-card hover:bg-surface-inset transition-colors" data-type="1">
+<td class="px-3 pl-10 font-label-mono-base text-label-mono-base text-on-surface">1-1030</td>
+<td class="px-3 pl-10">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-accent-blue"></span>
+<span>Bank Mandiri Giro</span>
+<span class="text-xs text-ink-muted">· Rek. 129008920199</span>
+</div>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-caption-caps bg-brand-primary-subtle text-primary">ASSET</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-surface-container-high text-primary font-caption-caps text-[10px]">DEBIT</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-subtle text-ink-secondary text-[11px]">
+<span class="material-symbols-outlined text-[12px] text-ink-slate">account_balance</span>
+                  Rekonsiliasi
+                </span>
+</td>
+<td class="px-3 text-right font-label-mono-base text-label-mono-base text-on-surface">
+                Rp 799.389.500
+              </td>
+<td class="px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Detail Buku Besar"><span class="material-symbols-outlined text-[16px]">menu_book</span></button>
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Edit Akun"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Menu Lain"><span class="material-symbols-outlined text-[16px]">more_vert</span></button>
+</div>
+</td>
+</tr>
+<!-- Child 1-1100 -->
+<tr class="h-10 bg-surface-card hover:bg-surface-inset transition-colors" data-type="1">
+<td class="px-3 pl-6 font-label-mono-base text-label-mono-base text-on-surface">1-1100</td>
+<td class="px-3 pl-6">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-accent-blue"></span>
+<span class="font-body-sm-semibold">Piutang Usaha (AR)</span>
+<span class="text-xs text-ink-muted">· Invoice Jatuh Tempo Proyek &amp; Retail</span>
+</div>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-caption-caps bg-brand-primary-subtle text-primary">ASSET</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-surface-container-high text-primary font-caption-caps text-[10px]">DEBIT</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-subtle text-ink-secondary text-[11px]">
+<span class="material-symbols-outlined text-[12px] text-ink-slate">lock</span>
+                  Otomatis SO / POS
+                </span>
+</td>
+<td class="px-3 text-right font-label-mono-base text-label-mono-base text-on-surface">
+                Rp 270.746.236
+              </td>
+<td class="px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Detail Buku Besar"><span class="material-symbols-outlined text-[16px]">menu_book</span></button>
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Edit Akun"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Menu Lain"><span class="material-symbols-outlined text-[16px]">more_vert</span></button>
+</div>
+</td>
+</tr>
+<!-- Child 1-1200 -->
+<tr class="h-10 bg-surface-card hover:bg-surface-inset transition-colors" data-type="1">
+<td class="px-3 pl-6 font-label-mono-base text-label-mono-base text-on-surface">1-1200</td>
+<td class="px-3 pl-6">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-accent-blue"></span>
+<span class="font-body-sm-semibold">Persediaan Barang Dagang</span>
+<span class="text-xs text-ink-muted">· Semen, Baja, Agregat, Kayu</span>
+</div>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-caption-caps bg-brand-primary-subtle text-primary">ASSET</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-surface-container-high text-primary font-caption-caps text-[10px]">DEBIT</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-subtle text-ink-secondary text-[11px]">
+<span class="material-symbols-outlined text-[12px] text-ink-slate">sync</span>
+                  Sinkron Stok Gudang
+                </span>
+</td>
+<td class="px-3 text-right font-label-mono-base text-label-mono-base text-on-surface">
+                Rp 20.000.344.584
+              </td>
+<td class="px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Detail Buku Besar"><span class="material-symbols-outlined text-[16px]">menu_book</span></button>
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Edit Akun"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Menu Lain"><span class="material-symbols-outlined text-[16px]">more_vert</span></button>
+</div>
+</td>
+</tr>
+<!-- Child 1-1300 -->
+<tr class="h-10 bg-surface-card hover:bg-surface-inset transition-colors" data-type="1">
+<td class="px-3 pl-6 font-label-mono-base text-label-mono-base text-on-surface">1-1300</td>
+<td class="px-3 pl-6">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-accent-blue"></span>
+<span>PPN Masukan Dibayar di Muka</span>
+<span class="text-xs text-ink-muted">· Pajak Masukan 11% PO</span>
+</div>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-caption-caps bg-brand-primary-subtle text-primary">ASSET</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-surface-container-high text-primary font-caption-caps text-[10px]">DEBIT</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-subtle text-ink-secondary text-[11px]">
+<span class="material-symbols-outlined text-[12px] text-ink-slate">receipt</span>
+                  e-Faktur
+                </span>
+</td>
+<td class="px-3 text-right font-label-mono-base text-label-mono-base text-on-surface">
+                Rp 111.413.500
+              </td>
+<td class="px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Detail Buku Besar"><span class="material-symbols-outlined text-[16px]">menu_book</span></button>
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Edit Akun"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Menu Lain"><span class="material-symbols-outlined text-[16px]">more_vert</span></button>
+</div>
+</td>
+</tr>
+<!-- Header 2-0000 KEWAJIBAN -->
+<tr class="h-10 bg-surface-container-low font-body-sm-semibold hover:bg-surface-container transition-colors" data-type="2">
+<td class="px-3 font-label-mono-base text-label-mono-base text-warning-text">2-0000</td>
+<td class="px-3">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-warning-text">folder_open</span>
+<span class="font-body-sm-semibold text-on-surface">KEWAJIBAN &amp; LIABILITAS</span>
+<span class="text-xs text-ink-muted font-normal">· Akun Induk Liabilitas</span>
+</div>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-caption-caps bg-warning-bg text-warning-text">LIABILITY</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-warning-bg text-warning-text font-caption-caps text-[10px]">KREDIT</span>
+</td>
+<td class="px-3">
+<span class="text-xs text-ink-muted">—</span>
+</td>
+<td class="px-3 text-right font-label-mono-base text-label-mono-base text-on-surface">
+                Rp 1.450.000.000
+              </td>
+<td class="px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1 hover:bg-surface-container rounded text-ink-slate hover:text-on-surface transition-colors" title="Detail Buku Besar"><span class="material-symbols-outlined text-[16px]">menu_book</span></button>
+<button class="p-1 hover:bg-surface-container rounded text-ink-slate hover:text-on-surface transition-colors" title="Edit Akun"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+<button class="p-1 hover:bg-surface-container rounded text-ink-slate hover:text-on-surface transition-colors" title="Menu Lain"><span class="material-symbols-outlined text-[16px]">more_vert</span></button>
+</div>
+</td>
+</tr>
+<!-- Child 2-1000 -->
+<tr class="h-10 bg-surface-card hover:bg-surface-inset transition-colors" data-type="2">
+<td class="px-3 pl-6 font-label-mono-base text-label-mono-base text-on-surface">2-1000</td>
+<td class="px-3 pl-6">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-warning-text"></span>
+<span class="font-body-sm-semibold">Hutang Usaha (AP)</span>
+<span class="text-xs text-ink-muted">· Invoice Jatuh Tempo Supplier Semen &amp; Baja</span>
+</div>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-caption-caps bg-warning-bg text-warning-text">LIABILITY</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-warning-bg text-warning-text font-caption-caps text-[10px]">KREDIT</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-subtle text-ink-secondary text-[11px]">
+<span class="material-symbols-outlined text-[12px] text-ink-slate">lock</span>
+                  Otomatis PO / GRN
+                </span>
+</td>
+<td class="px-3 text-right font-label-mono-base text-label-mono-base text-on-surface">
+                Rp 160.917.600
+              </td>
+<td class="px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Detail Buku Besar"><span class="material-symbols-outlined text-[16px]">menu_book</span></button>
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Edit Akun"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Menu Lain"><span class="material-symbols-outlined text-[16px]">more_vert</span></button>
+</div>
+</td>
+</tr>
+<!-- Child 2-1100 -->
+<tr class="h-10 bg-surface-card hover:bg-surface-inset transition-colors" data-type="2">
+<td class="px-3 pl-6 font-label-mono-base text-label-mono-base text-on-surface">2-1100</td>
+<td class="px-3 pl-6">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-warning-text"></span>
+<span>Hutang Pajak PPN Keluaran</span>
+<span class="text-xs text-ink-muted">· Pajak Terutang Penjualan Barang</span>
+</div>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-caption-caps bg-warning-bg text-warning-text">LIABILITY</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-warning-bg text-warning-text font-caption-caps text-[10px]">KREDIT</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-subtle text-ink-secondary text-[11px]">
+<span class="material-symbols-outlined text-[12px] text-ink-slate">gavel</span>
+                  Pajak
+                </span>
+</td>
+<td class="px-3 text-right font-label-mono-base text-label-mono-base text-on-surface">
+                Rp 39.896.296
+              </td>
+<td class="px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Detail Buku Besar"><span class="material-symbols-outlined text-[16px]">menu_book</span></button>
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Edit Akun"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+<button class="p-1 hover:bg-surface-subtle rounded text-ink-slate hover:text-on-surface transition-colors" title="Menu Lain"><span class="material-symbols-outlined text-[16px]">more_vert</span></button>
+</div>
+</td>
+</tr>
+<!-- Header 3-0000 MODAL -->
+<tr class="h-10 bg-surface-container-low font-body-sm-semibold hover:bg-surface-container transition-colors" data-type="3">
+<td class="px-3 font-label-mono-base text-label-mono-base text-success-text">3-0000</td>
+<td class="px-3">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-success-text">folder_open</span>
+<span class="font-body-sm-semibold text-on-surface">MODAL &amp; EKUITAS</span>
+<span class="text-xs text-ink-muted font-normal">· Akun Modal Pemegang Saham</span>
+</div>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-caption-caps bg-success-bg text-success-text">EQUITY</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-success-bg text-success-text font-caption-caps text-[10px]">KREDIT</span>
+</td>
+<td class="px-3">
+<span class="text-xs text-ink-muted">—</span>
+</td>
+<td class="px-3 text-right font-label-mono-base text-label-mono-base text-on-surface">
+                Rp 25.000.000.000
+              </td>
+<td class="px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1 hover:bg-surface-container rounded text-ink-slate hover:text-on-surface transition-colors" title="Detail Buku Besar"><span class="material-symbols-outlined text-[16px]">menu_book</span></button>
+<button class="p-1 hover:bg-surface-container rounded text-ink-slate hover:text-on-surface transition-colors" title="Edit Akun"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+<button class="p-1 hover:bg-surface-container rounded text-ink-slate hover:text-on-surface transition-colors" title="Menu Lain"><span class="material-symbols-outlined text-[16px]">more_vert</span></button>
+</div>
+</td>
+</tr>
+<!-- Header 4-0000 PENDAPATAN -->
+<tr class="h-10 bg-surface-container-low font-body-sm-semibold hover:bg-surface-container transition-colors" data-type="4">
+<td class="px-3 font-label-mono-base text-label-mono-base text-info-text">4-0000</td>
+<td class="px-3">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-info-text">folder_open</span>
+<span class="font-body-sm-semibold text-on-surface">PENDAPATAN USAHA</span>
+<span class="text-xs text-ink-muted font-normal">· Penjualan Material Konstruksi</span>
+</div>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-caption-caps bg-info-bg text-info-text">REVENUE</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-info-bg text-info-text font-caption-caps text-[10px]">KREDIT</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-subtle text-ink-secondary text-[11px]">
+<span class="material-symbols-outlined text-[12px] text-ink-slate">lock</span>
+                  Otomatis SO / POS
+                </span>
+</td>
+<td class="px-3 text-right font-label-mono-base text-label-mono-base text-on-surface">
+                Rp 711.169.896
+              </td>
+<td class="px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1 hover:bg-surface-container rounded text-ink-slate hover:text-on-surface transition-colors" title="Detail Buku Besar"><span class="material-symbols-outlined text-[16px]">menu_book</span></button>
+<button class="p-1 hover:bg-surface-container rounded text-ink-slate hover:text-on-surface transition-colors" title="Edit Akun"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+<button class="p-1 hover:bg-surface-container rounded text-ink-slate hover:text-on-surface transition-colors" title="Menu Lain"><span class="material-symbols-outlined text-[16px]">more_vert</span></button>
+</div>
+</td>
+</tr>
+<!-- Header 5-0000 BEBAN HPP -->
+<tr class="h-10 bg-surface-container-low font-body-sm-semibold hover:bg-surface-container transition-colors" data-type="5">
+<td class="px-3 font-label-mono-base text-label-mono-base text-secondary">5-0000</td>
+<td class="px-3">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-secondary">folder_open</span>
+<span class="font-body-sm-semibold text-on-surface">BEBAN POKOK PENJUALAN (HPP)</span>
+<span class="text-xs text-ink-muted font-normal">· Kos Barang Terjual &amp; Ongkut Angkut Masuk</span>
+</div>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-caption-caps bg-surface-container text-secondary">EXPENSE</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-surface-container-high text-primary font-caption-caps text-[10px]">DEBIT</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-subtle text-ink-secondary text-[11px]">
+<span class="material-symbols-outlined text-[12px] text-ink-slate">lock</span>
+                  Otomatis DO / POS
+                </span>
+</td>
+<td class="px-3 text-right font-label-mono-base text-label-mono-base text-on-surface">
+                Rp 331.606.431
+              </td>
+<td class="px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1 hover:bg-surface-container rounded text-ink-slate hover:text-on-surface transition-colors" title="Detail Buku Besar"><span class="material-symbols-outlined text-[16px]">menu_book</span></button>
+<button class="p-1 hover:bg-surface-container rounded text-ink-slate hover:text-on-surface transition-colors" title="Edit Akun"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+<button class="p-1 hover:bg-surface-container rounded text-ink-slate hover:text-on-surface transition-colors" title="Menu Lain"><span class="material-symbols-outlined text-[16px]">more_vert</span></button>
+</div>
+</td>
+</tr>
+<!-- Header 6-0000 BEBAN OPERASIONAL -->
+<tr class="h-10 bg-surface-container-low font-body-sm-semibold hover:bg-surface-container transition-colors" data-type="5">
+<td class="px-3 font-label-mono-base text-label-mono-base text-danger-text">6-0000</td>
+<td class="px-3">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-danger-text">folder_open</span>
+<span class="font-body-sm-semibold text-on-surface">BEBAN OPERASIONAL &amp; UMUM</span>
+<span class="text-xs text-ink-muted font-normal">· Gaji, BBM Armada, Listrik &amp; Penyusutan</span>
+</div>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-caption-caps bg-danger-bg text-danger-text">EXPENSE</span>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-surface-container-high text-primary font-caption-caps text-[10px]">DEBIT</span>
+</td>
+<td class="px-3">
+<span class="text-xs text-ink-muted">—</span>
+</td>
+<td class="px-3 text-right font-label-mono-base text-label-mono-base text-on-surface">
+                Rp 176.304.472
+              </td>
+<td class="px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1 hover:bg-surface-container rounded text-ink-slate hover:text-on-surface transition-colors" title="Detail Buku Besar"><span class="material-symbols-outlined text-[16px]">menu_book</span></button>
+<button class="p-1 hover:bg-surface-container rounded text-ink-slate hover:text-on-surface transition-colors" title="Edit Akun"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+<button class="p-1 hover:bg-surface-container rounded text-ink-slate hover:text-on-surface transition-colors" title="Menu Lain"><span class="material-symbols-outlined text-[16px]">more_vert</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Sticky Ledger Summary -->
+<div class="bg-surface-container px-4 py-2.5 flex flex-col md:flex-row items-center justify-between gap-2 border-t-0 shadow-inner">
+<div class="flex items-center gap-2.5">
+<span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-success-text text-white">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</span>
+<span class="font-body-sm-semibold text-body-sm-semibold text-on-surface">Total Debit = Total Kredit · Posisi Seimbang</span>
+<span class="hidden sm:inline text-ink-muted text-xs">| Selisih: Rp 0 (Koreksi Otomatis Realtime)</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="font-caption-caps text-caption-caps text-ink-slate uppercase">TOTAL NILAI KONSOLIDASI</span>
+<span class="font-label-mono-metric text-headline-sm text-primary">Rp 27.566.583.680</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Filter tabs and search interaction
+  document.addEventListener('DOMContentLoaded', () => {
+    const tabs = document.querySelectorAll('.tab-btn');
+    const rows = document.querySelectorAll('#coaTableBody tr');
+    const searchInput = document.getElementById('coaSearchInput');
+    const exportBtn = document.getElementById('exportDropdownBtn');
+    const exportMenu = document.getElementById('exportMenu');
+
+    // Dropdown toggle
+    if (exportBtn && exportMenu) {
+      exportBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        exportMenu.classList.toggle('hidden');
+      });
+      document.addEventListener('click', () => {
+        exportMenu.classList.add('hidden');
+      });
+    }
+
+    let activeFilter = 'all';
+
+    function filterTable() {
+      const query = (searchInput?.value || '').toLowerCase().trim();
+
+      rows.forEach(row => {
+        const type = row.getAttribute('data-type');
+        const text = row.innerText.toLowerCase();
+
+        const matchesType = (activeFilter === 'all') || (type === activeFilter);
+        const matchesQuery = !query || text.includes(query);
+
+        if (matchesType && matchesQuery) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => {
+          t.classList.remove('bg-surface-card', 'text-primary', 'shadow-xs', 'font-body-sm-semibold');
+          t.classList.add('text-ink-secondary', 'font-body-sm');
+        });
+
+        tab.classList.add('bg-surface-card', 'text-primary', 'shadow-xs', 'font-body-sm-semibold');
+        tab.classList.remove('text-ink-secondary', 'font-body-sm');
+
+        activeFilter = tab.getAttribute('data-filter') || 'all';
+        filterTable();
+      });
+    });
+
+    if (searchInput) {
+      searchInput.addEventListener('input', filterTable);
+    }
+
+    const btnReload = document.getElementById('btnReloadTable');
+    if (btnReload) {
+      btnReload.addEventListener('click', () => {
+        if (searchInput) searchInput.value = '';
+        activeFilter = 'all';
+        tabs[0].click();
+      });
+    }
+  });
+</script></main></div></body></html>

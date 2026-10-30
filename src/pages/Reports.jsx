@@ -45,18 +45,18 @@ const BUCKET_TONE = {
 };
 const BUCKETS = ['Semua','Current','1-30','31-60','61-90','>90'];
 
-const inputCls = "h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm outline-none focus:bg-white focus:border-[#0051d5] focus:ring-2 focus:ring-[#0051d5]/10 transition";
-const btnPrimary = "h-[42px] px-5 bg-[#0051d5] text-white rounded-xl inline-flex items-center justify-center gap-1.5 text-sm font-bold shadow-card hover:bg-[#0041ab] active:scale-[0.98] transition disabled:opacity-50 disabled:cursor-not-allowed";
-const btnGhost = "h-[42px] px-4 bg-white border border-[#e7ecf7] rounded-xl inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-[#2b3445] hover:bg-[#eff4ff] active:scale-[0.98] transition";
-const thCls = "bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]";
-const rowCls = "border-b border-[#e5eeff] hover:bg-[#eff4ff] transition bg-white";
+const inputCls = "h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm outline-none focus:bg-white focus:border-brand focus:ring-2 focus:ring-[#0051d5]/10 transition";
+const btnPrimary = "h-[42px] px-5 bg-brand text-white rounded-xl inline-flex items-center justify-center gap-1.5 text-sm font-bold shadow-card hover:bg-brand-strong active:scale-[0.98] transition disabled:opacity-50 disabled:cursor-not-allowed";
+const btnGhost = "h-[42px] px-4 bg-white border border-line rounded-xl inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-ink-2 hover:bg-surface-2 active:scale-[0.98] transition";
+const thCls = "bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2";
+const rowCls = "border-b border-line hover:bg-surface-2 transition bg-white";
 
 /* ---------------- small building blocks ---------------- */
 function SkeletonRows({ rows = 6, className = '' }){
   return (
     <div className={"space-y-2 animate-pulse " + className}>
       {Array.from({length: rows}).map((_,i)=>(
-        <div key={i} className="h-9 rounded-xl bg-[#e5eeff]" style={{ opacity: Math.max(0.35, 1 - i*0.1) }} />
+        <div key={i} className="h-9 rounded-xl bg-surface-3" style={{ opacity: Math.max(0.35, 1 - i*0.1) }} />
       ))}
     </div>
   );
@@ -64,8 +64,8 @@ function SkeletonRows({ rows = 6, className = '' }){
 function EmptyState({ text = 'Belum ada data pada periode ini' }){
   return (
     <div className="py-10 text-center">
-      <div className="w-11 h-11 mx-auto rounded-xl bg-[#e5eeff] grid place-items-center text-[#76777d]"><Inbox size={20}/></div>
-      <p className="text-xs text-[#45464d] mt-2">{text}</p>
+      <div className="w-11 h-11 mx-auto rounded-xl bg-surface-3 grid place-items-center text-ink-3"><Inbox size={20}/></div>
+      <p className="text-xs text-ink-2 mt-2">{text}</p>
     </div>
   );
 }
@@ -74,8 +74,8 @@ function ErrorState({ message, onRetry }){
     <div className="py-8 text-center">
       <div className="w-11 h-11 mx-auto rounded-xl bg-red-50 grid place-items-center text-red-600"><AlertTriangle size={20}/></div>
       <p className="text-xs text-red-600 mt-2 font-semibold">Gagal memuat data</p>
-      <p className="text-[11px] text-[#45464d] mt-0.5 break-words">{message}</p>
-      <button type="button" onClick={onRetry} className="mt-3 h-9 px-4 rounded-xl bg-[#0051d5] text-white text-xs font-bold inline-flex items-center gap-1.5 hover:bg-[#0041ab] transition">
+      <p className="text-[11px] text-ink-2 mt-0.5 break-words">{message}</p>
+      <button type="button" onClick={onRetry} className="mt-3 h-9 px-4 rounded-xl bg-brand text-white text-xs font-bold inline-flex items-center gap-1.5 hover:bg-brand-strong transition">
         <RefreshCw size={13}/> Coba Lagi
       </button>
     </div>
@@ -87,16 +87,16 @@ function Pager({ page, setPage, total, size = 10 }){
   const from = (page-1)*size + 1;
   const to = Math.min(total, page*size);
   return (
-    <div className="flex items-center justify-between gap-2 px-3 py-2 border-t border-[#e5eeff] text-[11px] text-[#45464d]">
+    <div className="flex items-center justify-between gap-2 px-3 py-2 border-t border-line text-[11px] text-ink-2">
       <span className="tabular-nums">{from}-{to} dari {total}</span>
       <div className="flex items-center gap-1">
         <button type="button" disabled={page<=1} onClick={()=>setPage(Math.max(1,page-1))}
-          className="h-8 px-3 rounded-lg border border-[#e7ecf7] bg-white text-xs font-semibold text-[#2b3445] hover:bg-[#eff4ff] disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-1 transition">
+          className="h-8 px-3 rounded-lg border border-line bg-white text-xs font-semibold text-ink-2 hover:bg-surface-2 disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-1 transition">
           <ChevronLeft size={13}/> Prev
         </button>
-        <span className="px-2 font-bold text-[#0b1c30] tabular-nums">{page}/{pages}</span>
+        <span className="px-2 font-bold text-ink tabular-nums">{page}/{pages}</span>
         <button type="button" disabled={page>=pages} onClick={()=>setPage(Math.min(pages,page+1))}
-          className="h-8 px-3 rounded-lg border border-[#e7ecf7] bg-white text-xs font-semibold text-[#2b3445] hover:bg-[#eff4ff] disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-1 transition">
+          className="h-8 px-3 rounded-lg border border-line bg-white text-xs font-semibold text-ink-2 hover:bg-surface-2 disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-1 transition">
           Next <ChevronRight size={13}/>
         </button>
       </div>
@@ -108,7 +108,7 @@ function SortTh({ label, k, sortKey, sortDir, onSort }){
   return (
     <th className={thCls + " px-3 py-2.5 text-right"}>
       <button type="button" onClick={()=>onSort(k)} title="Klik untuk urutkan"
-        className={"inline-flex flex-row-reverse items-center gap-1 uppercase transition " + (active ? "text-[#0051d5]" : "hover:text-[#0051d5]")}>
+        className={"inline-flex flex-row-reverse items-center gap-1 uppercase transition " + (active ? "text-brand" : "hover:text-brand")}>
         {label}
         {active ? (sortDir === 'asc' ? <ArrowUp size={12}/> : <ArrowDown size={12}/>) : <ChevronsUpDown size={12} className="opacity-40"/>}
       </button>
@@ -343,26 +343,26 @@ export default function Reports(){
       <PosCard>
         <PosCardBody className="space-y-3">
           <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-[#45464d] mr-1">
+            <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-ink-2 mr-1">
               <Calendar size={13}/> PERIODE CEPAT
             </div>
             {presetChips.map(p=>(
               <PosChip key={p.k} active={false} onClick={()=>applyPreset(p.k)}>{p.label}</PosChip>
             ))}
-            <button type="button" onClick={resetAll} className="h-8 px-3.5 rounded-full text-xs font-bold border border-[#e7ecf7] bg-white text-[#45464d] hover:bg-[#eff4ff] transition shrink-0">Reset</button>
+            <button type="button" onClick={resetAll} className="h-8 px-3.5 rounded-full text-xs font-bold border border-line bg-white text-ink-2 hover:bg-surface-2 transition shrink-0">Reset</button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-2">
             <div>
-              <label className="text-[11px] font-bold tracking-wider text-[#45464d]">DARI</label>
+              <label className="text-[11px] font-bold tracking-wider text-ink-2">DARI</label>
               <input type="date" value={f.start} onChange={e=>setF({...f, start:e.target.value})} className={inputCls + " w-full mt-1"} />
             </div>
             <div>
-              <label className="text-[11px] font-bold tracking-wider text-[#45464d]">SAMPAI</label>
+              <label className="text-[11px] font-bold tracking-wider text-ink-2">SAMPAI</label>
               <input type="date" value={f.end} onChange={e=>setF({...f, end:e.target.value})} className={inputCls + " w-full mt-1"} />
             </div>
             <div>
-              <label className="text-[11px] font-bold tracking-wider text-[#45464d]">KATEGORI</label>
+              <label className="text-[11px] font-bold tracking-wider text-ink-2">KATEGORI</label>
               <div className="mt-1">
                 <PosSelect value={f.category_id} onChange={v=>setF({...f, category_id:v})}>
                   <option value="">Semua Kategori</option>
@@ -371,10 +371,10 @@ export default function Reports(){
               </div>
             </div>
             <div className="xl:col-span-2">
-              <label className="text-[11px] font-bold tracking-wider text-[#45464d]">CARI CUSTOMER / PRODUK</label>
+              <label className="text-[11px] font-bold tracking-wider text-ink-2">CARI CUSTOMER / PRODUK</label>
               <div className="flex gap-2 mt-1">
                 <div className="relative flex-1 min-w-0">
-                  <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#76777d]"/>
+                  <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3"/>
                   <input
                     value={f.q}
                     onChange={e=>setF({...f, q:e.target.value})}
@@ -390,10 +390,10 @@ export default function Reports(){
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 text-[11px] text-[#45464d]">
-            <span className="px-2.5 py-1 rounded-full bg-[#e5eeff] border border-[#e7ecf7]">Periode aktif: <b className="text-[#0b1c30]">{applied.start} → {applied.end}</b></span>
-            {applied.category_id && <span className="px-2.5 py-1 rounded-full bg-[#e5eeff] text-[#0051d5] border border-[#dbe1ff]">Kategori terfilter</span>}
-            {applied.q && <span className="px-2.5 py-1 rounded-full bg-[#fff8ec] text-amber-700 border border-amber-200">Cari: “{applied.q}”</span>}
+          <div className="flex flex-wrap items-center gap-2 text-[11px] text-ink-2">
+            <span className="px-2.5 py-1 rounded-full bg-surface-3 border border-line">Periode aktif: <b className="text-ink">{applied.start} → {applied.end}</b></span>
+            {applied.category_id && <span className="px-2.5 py-1 rounded-full bg-surface-3 text-brand border border-[#dbe1ff]">Kategori terfilter</span>}
+            {applied.q && <span className="px-2.5 py-1 rounded-full bg-warning-soft text-amber-700 border border-amber-200">Cari: “{applied.q}”</span>}
             {metaErr && <span className="text-red-600">Meta gagal dimuat: {metaErr}</span>}
             {metaLoading && <span className="inline-flex items-center gap-1"><Loader2 size={12} className="animate-spin"/> memuat kategori…</span>}
           </div>
@@ -403,16 +403,16 @@ export default function Reports(){
       <div className="grid lg:grid-cols-2 gap-4 items-stretch">
         {/* ---------- Penjualan per Produk ---------- */}
         <PosCard className="flex flex-col">
-          <div className="p-4 border-b border-[#e5eeff] flex items-center justify-between gap-2">
+          <div className="p-4 border-b border-line flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-blue-50 grid place-items-center text-[#0051d5]"><BarChart3 size={16}/></div>
-              <h3 className="font-bold text-[#0b1c30]">Penjualan per Produk</h3>
+              <div className="w-8 h-8 rounded-xl bg-blue-50 grid place-items-center text-brand"><BarChart3 size={16}/></div>
+              <h3 className="font-bold text-ink">Penjualan per Produk</h3>
             </div>
-            <span className="text-[11px] px-2 py-1 rounded-full bg-[#e5eeff] border border-[#e7ecf7] text-[#45464d]">Top {Math.min(8, chartData.length)} revenue</span>
+            <span className="text-[11px] px-2 py-1 rounded-full bg-surface-3 border border-line text-ink-2">Top {Math.min(8, chartData.length)} revenue</span>
           </div>
           <PosCardBody>
             {salesLoading ? (
-              <div className="h-[260px] animate-pulse rounded-xl bg-[#e5eeff]" />
+              <div className="h-[260px] animate-pulse rounded-xl bg-surface-3" />
             ) : salesErr ? (
               <ErrorState message={salesErr} onRetry={loadSales} />
             ) : chartData.length === 0 ? (
@@ -432,7 +432,7 @@ export default function Reports(){
             )}
           </PosCardBody>
 
-          <div className="border-t border-[#e5eeff] flex-1 flex flex-col min-h-0">
+          <div className="border-t border-line flex-1 flex flex-col min-h-0">
             <div className="flex-1 min-h-0 max-h-[420px] overflow-auto">
               {salesLoading ? (
                 <SkeletonRows rows={5} className="p-3"/>
@@ -449,8 +449,8 @@ export default function Reports(){
                   <tbody>
                     {salesPageRows.map((s, i)=>(
                       <tr key={String(s?.name||'row')+i} className={rowCls}>
-                        <td className="px-3 py-2.5 font-semibold text-[#0b1c30]">{s?.name}</td>
-                        <td className="px-3 py-2.5 text-[#45464d]">{s?.category || '-'}</td>
+                        <td className="px-3 py-2.5 font-semibold text-ink">{s?.name}</td>
+                        <td className="px-3 py-2.5 text-ink-2">{s?.category || '-'}</td>
                         <td className="px-3 py-2.5 text-right tabular-nums">{num(s?.qty)}</td>
                         <td className="px-3 py-2.5 text-right font-bold tabular-nums">{rupiah(s?.revenue)}</td>
                       </tr>
@@ -467,12 +467,12 @@ export default function Reports(){
 
         {/* ---------- Analisa Margin ---------- */}
         <PosCard className="flex flex-col">
-          <div className="p-4 border-b border-[#e5eeff] flex items-center justify-between gap-2">
+          <div className="p-4 border-b border-line flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-xl bg-amber-50 grid place-items-center text-amber-600"><Percent size={16}/></div>
-              <h3 className="font-bold text-[#0b1c30]">Analisa Margin per Produk</h3>
+              <h3 className="font-bold text-ink">Analisa Margin per Produk</h3>
             </div>
-            <span className="text-[11px] px-2 py-1 rounded-full bg-[#e5eeff] border border-[#e7ecf7] text-[#45464d]">Urut margin terendah • {margin.length} produk</span>
+            <span className="text-[11px] px-2 py-1 rounded-full bg-surface-3 border border-line text-ink-2">Urut margin terendah • {margin.length} produk</span>
           </div>
           <div className="flex-1 min-h-0 flex flex-col">
             <div className="flex-1 min-h-0 max-h-[420px] overflow-auto">
@@ -502,10 +502,10 @@ export default function Reports(){
                                 : 'bg-red-50 text-red-700 border-red-200';
                       return (
                         <tr key={String(m?.sku||m?.name||'m')+i} className={rowCls}>
-                          <td className="px-3 py-2.5 font-mono text-[11px] text-[#45464d]">{m?.sku || '-'}</td>
-                          <td className="px-3 py-2.5 font-semibold text-[#0b1c30]">{m?.name}</td>
+                          <td className="px-3 py-2.5 font-mono text-[11px] text-ink-2">{m?.sku || '-'}</td>
+                          <td className="px-3 py-2.5 font-semibold text-ink">{m?.name}</td>
                           <td className="px-3 py-2.5 text-right tabular-nums">{num(m?.price)}</td>
-                          <td className="px-3 py-2.5 text-right tabular-nums text-[#45464d]" title="HPP = harga pokok rata-rata (average cost) dari stocks.avg_cost">{num(m?.cost)}</td>
+                          <td className="px-3 py-2.5 text-right tabular-nums text-ink-2" title="HPP = harga pokok rata-rata (average cost) dari stocks.avg_cost">{num(m?.cost)}</td>
                           <td className="px-3 py-2.5 text-right font-bold tabular-nums">{num(m?.margin)}</td>
                           <td className="px-3 py-2.5 text-right">
                             <span className={"px-2 py-1 rounded-full border font-bold tabular-nums "+tone} title={pct > 30 ? 'Margin sehat (>30%)' : pct > 15 ? 'Margin sedang (>15%)' : 'Margin rendah - review harga/HPP'}>
@@ -528,24 +528,24 @@ export default function Reports(){
 
       {/* ---------- Aging Piutang ---------- */}
       <PosCard>
-        <div className="p-4 border-b border-[#e5eeff] flex flex-wrap items-center justify-between gap-3">
+        <div className="p-4 border-b border-line flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-red-50 grid place-items-center text-red-600"><Wallet size={16}/></div>
             <div>
-              <h3 className="font-bold text-[#0b1c30] leading-none">Aging Piutang - Drill-down</h3>
-              <p className="text-[11px] text-[#45464d] mt-1">Klik baris untuk detail invoice &amp; pengiriman tagihan WhatsApp</p>
+              <h3 className="font-bold text-ink leading-none">Aging Piutang - Drill-down</h3>
+              <p className="text-[11px] text-ink-2 mt-1">Klik baris untuk detail invoice &amp; pengiriman tagihan WhatsApp</p>
             </div>
           </div>
           <div className="flex flex-wrap gap-2 text-[11px]">
-            <span className="px-2.5 py-1 rounded-full bg-[#e5eeff] border border-[#e7ecf7] text-[#45464d]">Outstanding: <b className="text-[#0b1c30]">{rupiah(agingTotals.outstanding)}</b></span>
-            <span className="px-2.5 py-1 rounded-full bg-[#e5eeff] border border-[#e7ecf7] text-[#45464d]">Invoice: <b className="text-[#0b1c30]">{num(agingTotals.invoices)}</b></span>
-            <span className="px-2.5 py-1 rounded-full bg-[#e5eeff] border border-[#e7ecf7] text-[#45464d]">Customer: <b className="text-[#0b1c30]">{num(agingTotals.customers)}</b></span>
+            <span className="px-2.5 py-1 rounded-full bg-surface-3 border border-line text-ink-2">Outstanding: <b className="text-ink">{rupiah(agingTotals.outstanding)}</b></span>
+            <span className="px-2.5 py-1 rounded-full bg-surface-3 border border-line text-ink-2">Invoice: <b className="text-ink">{num(agingTotals.invoices)}</b></span>
+            <span className="px-2.5 py-1 rounded-full bg-surface-3 border border-line text-ink-2">Customer: <b className="text-ink">{num(agingTotals.customers)}</b></span>
             <span className="px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700">Menampilkan <b>{aging.length}</b> baris (semua)</span>
           </div>
         </div>
 
         <div className="px-4 pt-3 flex flex-wrap items-center gap-2">
-          <span className="text-[11px] font-bold tracking-wider text-[#45464d] mr-1">BUCKET</span>
+          <span className="text-[11px] font-bold tracking-wider text-ink-2 mr-1">BUCKET</span>
           {BUCKETS.map(b=>(
             <PosChip key={b} active={bucket === b} onClick={()=>setBucket(b)}>{b}</PosChip>
           ))}
@@ -576,15 +576,15 @@ export default function Reports(){
                   return (
                     <tr key={String(a?.invoice_id || a?.invoice_number || 'a')+i} className={rowCls + " cursor-pointer"} onClick={()=>openInvoice(a)}>
                       <td className="px-3 py-2.5">
-                        <div className="font-semibold text-[#0b1c30]">{a?.name}</div>
-                        <div className="text-[11px] text-[#76777d]">{a?.phone || 'tanpa nomor telepon'}</div>
+                        <div className="font-semibold text-ink">{a?.name}</div>
+                        <div className="text-[11px] text-ink-3">{a?.phone || 'tanpa nomor telepon'}</div>
                       </td>
-                      <td className="px-3 py-2.5 font-mono text-[11px] text-[#2b3445]">{a?.invoice_number}</td>
-                      <td className="px-3 py-2.5 text-center text-[#45464d]">{a?.due_date ? String(a.due_date).slice(0,10) : '-'}</td>
+                      <td className="px-3 py-2.5 font-mono text-[11px] text-ink-2">{a?.invoice_number}</td>
+                      <td className="px-3 py-2.5 text-center text-ink-2">{a?.due_date ? String(a.due_date).slice(0,10) : '-'}</td>
                       <td className="px-3 py-2.5 text-center tabular-nums">{num(a?.days_overdue)} hari</td>
                       <td className="px-3 py-2.5 text-right font-bold tabular-nums">{rupiah(a?.outstanding)}</td>
                       <td className="px-3 py-2.5 text-center">
-                        <span className={"px-2 py-1 rounded-full border font-bold "+(BUCKET_TONE[a?.bucket] || 'bg-[#e5eeff] text-[#45464d] border-[#e7ecf7]')}>{a?.bucket}</span>
+                        <span className={"px-2 py-1 rounded-full border font-bold "+(BUCKET_TONE[a?.bucket] || 'bg-surface-3 text-ink-2 border-line')}>{a?.bucket}</span>
                       </td>
                       <td className="px-3 py-2.5 text-right">
                         {href ? (
@@ -593,7 +593,7 @@ export default function Reports(){
                             <MessageCircle size={12}/> Tagih
                           </a>
                         ) : (
-                          <span title="Nomor telepon customer belum terdaftar" className="inline-flex items-center gap-1 h-7 px-2.5 rounded-lg bg-[#e5eeff] text-[#76777d] border border-[#e7ecf7] text-[11px] font-bold cursor-not-allowed">
+                          <span title="Nomor telepon customer belum terdaftar" className="inline-flex items-center gap-1 h-7 px-2.5 rounded-lg bg-surface-3 text-ink-3 border border-line text-[11px] font-bold cursor-not-allowed">
                             <MessageCircle size={12}/> Tagih
                           </span>
                         )}
@@ -608,7 +608,7 @@ export default function Reports(){
       </PosCard>
 
       {/* ---------- Export ---------- */}
-      <div className="bg-[#131b2e] rounded-xl border border-[#0b1c30] shadow-card p-5 text-white">
+      <div className="bg-navy rounded-xl border border-[#0b1c30] shadow-card p-5 text-white">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-white/10 grid place-items-center"><Download size={16}/></div>
@@ -630,7 +630,7 @@ export default function Reports(){
           <div className="mt-4 bg-white/5 border border-white/10 rounded-xl p-4 text-center">
             <p className="text-xs text-red-300 font-semibold">Gagal memuat daftar laporan</p>
             <p className="text-[11px] text-white/50 mt-0.5 break-words">{typesErr}</p>
-            <button type="button" onClick={loadTypes} className="mt-3 h-9 px-4 rounded-xl bg-white text-[#0b1c30] text-xs font-bold inline-flex items-center gap-1.5 hover:bg-white/90 transition">
+            <button type="button" onClick={loadTypes} className="mt-3 h-9 px-4 rounded-xl bg-white text-ink text-xs font-bold inline-flex items-center gap-1.5 hover:bg-white/90 transition">
               <RefreshCw size={13}/> Coba Lagi
             </button>
           </div>
@@ -658,14 +658,14 @@ export default function Reports(){
       {detail && (
         <div className="fixed inset-0 bg-black/50 grid place-items-center p-4 z-[60]" onClick={closeDetail}>
           <div className="bg-white rounded-xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden shadow-modal animate-pop" onClick={e=>e.stopPropagation()}>
-            <div className="px-5 py-4 border-b border-[#e7ecf7] flex items-start justify-between gap-3">
+            <div className="px-5 py-4 border-b border-line flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <h3 className="font-bold text-[#0b1c30] leading-tight">Detail Invoice Piutang</h3>
-                <p className="text-[11px] text-[#45464d] mt-1">
+                <h3 className="font-bold text-ink leading-tight">Detail Invoice Piutang</h3>
+                <p className="text-[11px] text-ink-2 mt-1">
                   {detail.invoice ? `${detail.invoice.invoice_number} • ${detail.invoice.customer_name}` : 'Memuat data invoice…'}
                 </p>
               </div>
-              <button type="button" onClick={closeDetail} aria-label="Tutup" className="w-8 h-8 rounded-full border border-[#e7ecf7] grid place-items-center hover:bg-[#eff4ff] shrink-0">
+              <button type="button" onClick={closeDetail} aria-label="Tutup" className="w-8 h-8 rounded-full border border-line grid place-items-center hover:bg-surface-2 shrink-0">
                 <X size={15}/>
               </button>
             </div>
@@ -680,20 +680,20 @@ export default function Reports(){
               ) : (
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-                    <div className="bg-[#eff4ff] border border-[#e7ecf7] rounded-xl p-2.5">
-                      <div className="text-[11px] font-bold tracking-wider text-[#45464d]">CUSTOMER</div>
-                      <div className="font-bold text-[#0b1c30] truncate">{detail.invoice.customer_name || '-'}</div>
-                      <div className="text-[11px] text-[#76777d]">{detail.invoice.customer_code || '-'} • {detail.invoice.phone || 'tanpa telepon'}</div>
+                    <div className="bg-surface-2 border border-line rounded-xl p-2.5">
+                      <div className="text-[11px] font-bold tracking-wider text-ink-2">CUSTOMER</div>
+                      <div className="font-bold text-ink truncate">{detail.invoice.customer_name || '-'}</div>
+                      <div className="text-[11px] text-ink-3">{detail.invoice.customer_code || '-'} • {detail.invoice.phone || 'tanpa telepon'}</div>
                     </div>
-                    <div className="bg-[#eff4ff] border border-[#e7ecf7] rounded-xl p-2.5">
-                      <div className="text-[11px] font-bold tracking-wider text-[#45464d]">TANGGAL / JATUH TEMPO</div>
-                      <div className="font-bold text-[#0b1c30]">{detail.invoice.invoice_date ? String(detail.invoice.invoice_date).slice(0,10) : '-'}</div>
-                      <div className="text-[11px] text-[#76777d]">Due: {detail.invoice.due_date ? String(detail.invoice.due_date).slice(0,10) : '-'}</div>
+                    <div className="bg-surface-2 border border-line rounded-xl p-2.5">
+                      <div className="text-[11px] font-bold tracking-wider text-ink-2">TANGGAL / JATUH TEMPO</div>
+                      <div className="font-bold text-ink">{detail.invoice.invoice_date ? String(detail.invoice.invoice_date).slice(0,10) : '-'}</div>
+                      <div className="text-[11px] text-ink-3">Due: {detail.invoice.due_date ? String(detail.invoice.due_date).slice(0,10) : '-'}</div>
                     </div>
-                    <div className="bg-[#eff4ff] border border-[#e7ecf7] rounded-xl p-2.5">
-                      <div className="text-[11px] font-bold tracking-wider text-[#45464d]">STATUS</div>
-                      <div className="font-bold text-[#0b1c30]">{detail.invoice.status || '-'}</div>
-                      <div className="text-[11px] text-[#76777d]">Terlambat {num(detail.invoice.days_overdue)} hari • Limit {rupiah(detail.invoice.credit_limit)}</div>
+                    <div className="bg-surface-2 border border-line rounded-xl p-2.5">
+                      <div className="text-[11px] font-bold tracking-wider text-ink-2">STATUS</div>
+                      <div className="font-bold text-ink">{detail.invoice.status || '-'}</div>
+                      <div className="text-[11px] text-ink-3">Terlambat {num(detail.invoice.days_overdue)} hari • Limit {rupiah(detail.invoice.credit_limit)}</div>
                     </div>
                     <div className="bg-red-50 border border-red-200 rounded-xl p-2.5">
                       <div className="text-[11px] font-bold tracking-wider text-red-600">OUTSTANDING</div>
@@ -703,8 +703,8 @@ export default function Reports(){
                   </div>
 
                   <div>
-                    <div className="text-[11px] font-bold tracking-wider text-[#45464d] mb-1.5">ITEM INVOICE</div>
-                    <div className="border border-[#e7ecf7] rounded-xl overflow-hidden">
+                    <div className="text-[11px] font-bold tracking-wider text-ink-2 mb-1.5">ITEM INVOICE</div>
+                    <div className="border border-line rounded-xl overflow-hidden">
                       <table className="w-full text-xs">
                         <thead><tr className={thCls}>
                           <th className="px-3 py-2.5 text-left">PRODUK</th>
@@ -715,11 +715,11 @@ export default function Reports(){
                         </tr></thead>
                         <tbody>
                           {detail.items.length === 0 ? (
-                            <tr><td colSpan={5} className="px-3 py-6 text-center text-[#76777d]">Tidak ada item</td></tr>
+                            <tr><td colSpan={5} className="px-3 py-6 text-center text-ink-3">Tidak ada item</td></tr>
                           ) : detail.items.map((it, i)=>(
                             <tr key={i} className={rowCls}>
-                              <td className="px-3 py-2.5 font-semibold text-[#0b1c30]">{it?.product_name}</td>
-                              <td className="px-3 py-2.5 font-mono text-[11px] text-[#45464d]">{it?.sku || '-'}</td>
+                              <td className="px-3 py-2.5 font-semibold text-ink">{it?.product_name}</td>
+                              <td className="px-3 py-2.5 font-mono text-[11px] text-ink-2">{it?.sku || '-'}</td>
                               <td className="px-3 py-2.5 text-right tabular-nums">{num(it?.qty)}</td>
                               <td className="px-3 py-2.5 text-right tabular-nums">{rupiah(it?.unit_price)}</td>
                               <td className="px-3 py-2.5 text-right font-bold tabular-nums">{rupiah(it?.total)}</td>
@@ -731,8 +731,8 @@ export default function Reports(){
                   </div>
 
                   <div>
-                    <div className="text-[11px] font-bold tracking-wider text-[#45464d] mb-1.5">RIWAYAT PEMBAYARAN</div>
-                    <div className="border border-[#e7ecf7] rounded-xl overflow-hidden">
+                    <div className="text-[11px] font-bold tracking-wider text-ink-2 mb-1.5">RIWAYAT PEMBAYARAN</div>
+                    <div className="border border-line rounded-xl overflow-hidden">
                       <table className="w-full text-xs">
                         <thead><tr className={thCls}>
                           <th className="px-3 py-2.5 text-left">TANGGAL</th>
@@ -741,11 +741,11 @@ export default function Reports(){
                         </tr></thead>
                         <tbody>
                           {detail.payments.length === 0 ? (
-                            <tr><td colSpan={3} className="px-3 py-6 text-center text-[#76777d]">Belum ada pembayaran tercatat</td></tr>
+                            <tr><td colSpan={3} className="px-3 py-6 text-center text-ink-3">Belum ada pembayaran tercatat</td></tr>
                           ) : detail.payments.map((p, i)=>(
                             <tr key={i} className={rowCls}>
                               <td className="px-3 py-2.5">{String(p?.payment_date || p?.date || p?.created_at || '-').slice(0,10)}</td>
-                              <td className="px-3 py-2.5 text-[#45464d]">{p?.method || p?.payment_method || p?.reference || p?.ref || '-'}</td>
+                              <td className="px-3 py-2.5 text-ink-2">{p?.method || p?.payment_method || p?.reference || p?.ref || '-'}</td>
                               <td className="px-3 py-2.5 text-right font-bold tabular-nums text-emerald-700">{rupiah(p?.amount ?? p?.total ?? p?.paid_amount)}</td>
                             </tr>
                           ))}
@@ -757,8 +757,8 @@ export default function Reports(){
               )}
             </div>
 
-            <div className="px-5 py-3 bg-[#eff4ff] border-t border-[#e7ecf7] flex flex-wrap items-center justify-between gap-2 shrink-0">
-              <div className="text-[11px] text-[#45464d] min-w-0">
+            <div className="px-5 py-3 bg-surface-2 border-t border-line flex flex-wrap items-center justify-between gap-2 shrink-0">
+              <div className="text-[11px] text-ink-2 min-w-0">
                 {detail.invoice && !normPhone(detail.invoice.phone || detail.fallbackPhone)
                   ? 'Nomor WhatsApp customer belum terdaftar - tombol tagih dinonaktifkan.'
                   : detail.invoice ? `Tagihan akan dikirim ke +${normPhone(detail.invoice.phone || detail.fallbackPhone)}` : ''}
@@ -773,7 +773,7 @@ export default function Reports(){
                     </a>
                   ) : (
                     <button type="button" disabled title="Nomor telepon customer belum terdaftar"
-                      className="h-[42px] px-5 bg-[#e7ecf7] text-[#76777d] rounded-xl inline-flex items-center justify-center gap-1.5 text-sm font-bold cursor-not-allowed">
+                      className="h-[42px] px-5 bg-[#e7ecf7] text-ink-3 rounded-xl inline-flex items-center justify-center gap-1.5 text-sm font-bold cursor-not-allowed">
                       <MessageCircle size={15}/> WA Tagih
                     </button>
                   );

@@ -16,6 +16,7 @@ import purchaseRoutes from './modules/purchase/routes.js';
 import inventoryRoutes from './modules/inventory/routes.js';
 import financeRoutes from './modules/finance/routes.js';
 import logisticsRoutes from './modules/logistics/routes.js';
+import scaleRoutes from './modules/logistics/scale-routes.js';
 import hrRoutes from './modules/hr/routes.js';
 import crmRoutes from './modules/crm/routes.js';
 import reportRoutes from './modules/reporting/routes.js';
@@ -45,6 +46,7 @@ import publicRoutes from './modules/public/routes.js';
 import projectTermRoutes from './modules/projects/terms-routes.js';
 import periodRoutes from './modules/finance/period-routes.js';
 import reconRoutes from './modules/finance/recon-routes.js';
+import reconCenterRoutes from './modules/finance/recon-center-routes.js';
 import reorderRoutes from './modules/inventory/reorder-routes.js';
 import approvalRuleRoutes from './modules/approvals/rules-routes.js';
 import errorsRoutes from './modules/errors/routes.js';
@@ -175,8 +177,10 @@ app.use('/api/inventory/opname', auth, rbac(...MODULE_ROLES.inventory), opnameRo
 app.use('/api/inventory/reorder', auth, rbac(...MODULE_ROLES.inventory), reorderRoutes);
 app.use('/api/inventory', auth, rbac(...MODULE_ROLES.inventory), inventoryRoutes);
 app.use('/api/finance/periods', auth, rbac(...MODULE_ROLES.finance), periodRoutes);
+app.use('/api/finance/recon-center', auth, rbac(...MODULE_ROLES.finance), reconCenterRoutes);
 app.use('/api/finance/recon', auth, rbac(...MODULE_ROLES.finance), reconRoutes);
 app.use('/api/finance', auth, rbac(...MODULE_ROLES.finance), financeRoutes);
+app.use('/api/logistics/scale', auth, rbac(...MODULE_ROLES.logistics), scaleRoutes);
 app.use('/api/logistics', auth, rbac(...MODULE_ROLES.logistics), logisticsRoutes);
 app.use('/api/hr', auth, hrRoutes);
 app.use('/api/crm', auth, rbac(...MODULE_ROLES.crm), crmRoutes);
@@ -228,7 +232,12 @@ async function ensureUsers(){
   }catch(e){ console.error('seed pw err',e.message); }
 }
 async function runMigrations(){
+  // Advisory lock: dua container backend yang boot bersamaan tidak boleh menjalankan
+  // migrasi yang sama secara paralel.
+  let lockClient = null;
   try{
+    lockClient = await pool.connect();
+    await lockClient.query('SELECT pg_advisory_lock(948271)');
     const fs = await import('fs');
     const path = await import('path');
     const dir = path.resolve('migrations');
@@ -254,6 +263,12 @@ async function runMigrations(){
       console.log('Migration '+f+' done');
     }
   }catch(e){ console.error('migration err',e.message); }
+  finally{
+    if(lockClient){
+      try{ await lockClient.query('SELECT pg_advisory_unlock(948271)'); }catch{}
+      lockClient.release();
+    }
+  }
 }
 
 // ---------------------------------------------------------------- hardening

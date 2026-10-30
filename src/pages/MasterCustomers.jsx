@@ -145,7 +145,7 @@ export default function MasterCustomers(){
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <PosStat icon={Users} tone="bg-[#0051d5]/10 text-[#0051d5]" label="TOTAL PELANGGAN" value={nf(total)} sub="sesuai filter aktif"/>
+        <PosStat icon={Users} tone="bg-brand/10 text-brand" label="TOTAL PELANGGAN" value={nf(total)} sub="sesuai filter aktif"/>
         <PosStat icon={TrendingUp} tone="bg-emerald-50 text-emerald-700" label="PENJUALAN (HALAMAN INI)" value={rupiah(stats.penjualan)} sub="total invoice pelanggan di halaman ini"/>
         <PosStat icon={Wallet} tone="bg-amber-50 text-amber-700" label="PIUTANG TERBUKA" value={rupiah(stats.piutang)} sub={stats.overLimit+' pelanggan melebihi limit kredit'}/>
         <PosStat icon={Ban} tone="bg-red-50 text-red-700" label="DI-HOLD" value={nf(stats.hold)} sub="tidak boleh transaksi kredit"/>
@@ -159,7 +159,7 @@ export default function MasterCustomers(){
             </button>
           </>}>
             <div className={posSearchWrap}>
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#76777d]"/>
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3"/>
               <input value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Enter'&&setAppliedQ(q)}
                 placeholder="Cari nama / kode / telepon lalu Enter..." className={posInput+' pl-9'}/>
             </div>
@@ -182,7 +182,7 @@ export default function MasterCustomers(){
           <>
             <div className="overflow-auto">
               <table className="w-full text-sm">
-                <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                   <PosTh>PELANGGAN</PosTh><PosTh align="center">TIPE</PosTh><PosTh>KONTAK</PosTh>
                   <PosTh align="right">LIMIT KREDIT</PosTh><PosTh align="center">TERMIN</PosTh>
                   <PosTh align="right">PIUTANG</PosTh><PosTh align="center">INVOICE TERAKHIR</PosTh>
@@ -194,21 +194,21 @@ export default function MasterCustomers(){
                     return (
                       <tr key={c.id} className={posTr}>
                         <td className={posTd}>
-                          <div className="font-bold text-[#0b1c30]">{c.name}</div>
-                          <div className="text-[11px] text-[#45464d] font-mono">{c.code}{c.npwp? ' • NPWP '+c.npwp : ''}</div>
+                          <div className="font-bold text-ink">{c.name}</div>
+                          <div className="text-[11px] text-ink-2 font-mono">{c.code}{c.npwp? ' • NPWP '+c.npwp : ''}</div>
                         </td>
                         <td className={posTd+' text-center'}><PosBadge tone={TYPE_TONE[(c.type||'').toUpperCase()]||'slate'}>{(c.type||'-').toUpperCase()}</PosBadge></td>
-                        <td className={posTd+' text-xs text-[#45464d]'}>
+                        <td className={posTd+' text-xs text-ink-2'}>
                           <div className="flex items-center gap-1"><Phone size={11}/> {c.phone||'-'}</div>
                           {c.email && <div className="flex items-center gap-1"><Mail size={11}/> {c.email}</div>}
                         </td>
-                        <td className={posTd+' text-right tabular-nums'}>{num(c.credit_limit)>0? rupiah(c.credit_limit) : <span className="text-[#76777d]">tanpa limit</span>}</td>
+                        <td className={posTd+' text-right tabular-nums'}>{num(c.credit_limit)>0? rupiah(c.credit_limit) : <span className="text-ink-3">tanpa limit</span>}</td>
                         <td className={posTd+' text-center text-xs'}>{c.payment_term_days? c.payment_term_days+' hari' : 'COD'}</td>
                         <td className={posTd+' text-right'}>
-                          <div className={'font-bold tabular-nums '+(num(c.outstanding)>0?'text-amber-700':'text-[#45464d]')}>{rupiah(c.outstanding)}</div>
+                          <div className={'font-bold tabular-nums '+(num(c.outstanding)>0?'text-amber-700':'text-ink-2')}>{rupiah(c.outstanding)}</div>
                           {over && <div className="text-[11px] text-red-600 font-bold">melebihi limit</div>}
                         </td>
-                        <td className={posTd+' text-center text-xs'}>{iso(c.last_invoice)}<div className="text-[11px] text-[#76777d]">{c.invoice_count||0} invoice</div></td>
+                        <td className={posTd+' text-center text-xs'}>{iso(c.last_invoice)}<div className="text-[11px] text-ink-3">{c.invoice_count||0} invoice</div></td>
                         <td className={posTd+' text-center'}>
                           {!c.is_active ? <PosBadge tone="slate">NONAKTIF</PosBadge>
                             : c.is_hold ? <PosBadge tone="red"><Ban size={11}/> HOLD</PosBadge>
@@ -241,40 +241,40 @@ export default function MasterCustomers(){
           <form onSubmit={submit} className="bg-white rounded-xl p-5 w-full max-w-2xl max-h-[92vh] overflow-auto space-y-3 border shadow-raised animate-pop">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-bold text-[16px] text-[#0b1c30]">{editing? 'Edit Pelanggan':'Pelanggan Baru'}</h3>
-                <div className="text-xs text-[#45464d] mt-0.5">Limit kredit & termin dipakai untuk mengecek piutang saat penjualan</div>
+                <h3 className="font-bold text-[16px] text-ink">{editing? 'Edit Pelanggan':'Pelanggan Baru'}</h3>
+                <div className="text-xs text-ink-2 mt-0.5">Limit kredit & termin dipakai untuk mengecek piutang saat penjualan</div>
               </div>
-              <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-[#e7ecf7] grid place-items-center text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
+              <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-line grid place-items-center text-ink-2 hover:bg-surface-2"><X size={16}/></button>
             </div>
             {formErr && <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{formErr}</div>}
             <div className="grid sm:grid-cols-3 gap-2">
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">KODE *</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">KODE *</span>
                 <input value={form.code} onChange={e=>setForm({...form, code:e.target.value})} disabled={!!editing}
                   placeholder="CUST-014" className={posInput+' disabled:opacity-60 font-mono'}/></label>
-              <label className="space-y-1 sm:col-span-2"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">NAMA *</span>
+              <label className="space-y-1 sm:col-span-2"><span className="text-[11px] font-bold tracking-wider text-ink-2">NAMA *</span>
                 <input value={form.name} onChange={e=>setForm({...form, name:e.target.value})} placeholder="mis. Toko Bangunan Sinar Jaya" className={posInput}/></label>
             </div>
             <div className="grid sm:grid-cols-3 gap-2">
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">TIPE</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">TIPE</span>
                 <PosSelect size="md" value={form.type} onChange={v=>setForm({...form, type:v})}>
                   {TYPES.map(t=> <option key={t} value={t}>{t}</option>)}
                 </PosSelect></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">LIMIT KREDIT Rp</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">LIMIT KREDIT Rp</span>
                 <input type="number" value={form.credit_limit} onChange={e=>setForm({...form, credit_limit:e.target.value})} placeholder="0 = tanpa limit" className={posInput+' text-right tabular-nums'}/></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">TERMIN (HARI)</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">TERMIN (HARI)</span>
                 <input type="number" value={form.payment_term_days} onChange={e=>setForm({...form, payment_term_days:e.target.value})} placeholder="0 = COD" className={posInput+' text-right tabular-nums'}/></label>
             </div>
             <div className="grid sm:grid-cols-3 gap-2">
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">TELEPON</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">TELEPON</span>
                 <input value={form.phone} onChange={e=>setForm({...form, phone:e.target.value})} className={posInput}/></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">EMAIL</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">EMAIL</span>
                 <input value={form.email} onChange={e=>setForm({...form, email:e.target.value})} className={posInput}/></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">NPWP</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">NPWP</span>
                 <input value={form.npwp} onChange={e=>setForm({...form, npwp:e.target.value})} className={posInput}/></label>
             </div>
-            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">ALAMAT</span>
+            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-ink-2">ALAMAT</span>
               <input value={form.address} onChange={e=>setForm({...form, address:e.target.value})} placeholder="Jalan, kota" className={posInput}/></label>
-            <div className="rounded-xl border border-[#e7ecf7] bg-[#eff4ff] p-3 space-y-2">
+            <div className="rounded-xl border border-line bg-surface-2 p-3 space-y-2">
               <div className="flex flex-wrap gap-4 text-sm">
                 <label className="inline-flex items-center gap-2">
                   <input type="checkbox" checked={form.is_active} onChange={e=>setForm({...form, is_active:e.target.checked})}/>
@@ -286,7 +286,7 @@ export default function MasterCustomers(){
                 </label>
               </div>
               {form.is_hold && (
-                <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">ALASAN HOLD</span>
+                <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-ink-2">ALASAN HOLD</span>
                   <input value={form.hold_reason} onChange={e=>setForm({...form, hold_reason:e.target.value})} placeholder="mis. piutang lewat jatuh tempo" className={posInput}/></label>
               )}
             </div>
@@ -306,8 +306,8 @@ export default function MasterCustomers(){
           <div className="bg-white rounded-xl w-full max-w-3xl max-h-[92vh] flex flex-col border shadow-raised overflow-hidden animate-pop">
             <div className="p-4 border-b flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-bold text-[16px] text-[#0b1c30]">{detail.name||'Pelanggan'}</h3>
-                <div className="text-xs text-[#45464d] mt-1 flex items-center gap-2 flex-wrap">
+                <h3 className="font-bold text-[16px] text-ink">{detail.name||'Pelanggan'}</h3>
+                <div className="text-xs text-ink-2 mt-1 flex items-center gap-2 flex-wrap">
                   <span className="font-mono">{detail.code}</span><span>•</span>
                   <PosBadge tone={TYPE_TONE[(detail.type||'').toUpperCase()]||'slate'}>{(detail.type||'-').toUpperCase()}</PosBadge>
                   {detail.is_hold && <PosBadge tone="red"><Ban size={11}/> HOLD</PosBadge>}
@@ -315,17 +315,17 @@ export default function MasterCustomers(){
                   {detail.loyalty && <PosBadge tone="amber"><Crown size={11}/> {nf(detail.loyalty.points_balance)} poin</PosBadge>}
                 </div>
               </div>
-              <button onClick={()=>setDetail(null)} className="w-9 h-9 rounded-xl border border-[#e7ecf7] grid place-items-center text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
+              <button onClick={()=>setDetail(null)} className="w-9 h-9 rounded-xl border border-line grid place-items-center text-ink-2 hover:bg-surface-2"><X size={16}/></button>
             </div>
             <div className="p-4 space-y-4 overflow-auto">
               {detailBusy ? <PosSkeleton rows={5} cols={4}/> : (<>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 text-xs">
-                  <div className="rounded-xl border border-[#e7ecf7] bg-[#eff4ff] p-2.5"><div className="text-[#45464d]">Total Penjualan</div><div className="font-bold text-[#0b1c30]">{rupiah(detail.total_sales)}</div></div>
-                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-2.5"><div className="text-amber-700">Piutang Terbuka</div><div className="font-bold text-[#0b1c30]">{rupiah(detail.outstanding)}</div></div>
-                  <div className="rounded-xl border border-[#e7ecf7] bg-[#eff4ff] p-2.5"><div className="text-[#45464d]">Limit / Termin</div><div className="font-bold">{num(detail.credit_limit)>0? rupiah(detail.credit_limit):'tanpa limit'} • {detail.payment_term_days||0} hari</div></div>
-                  <div className="rounded-xl border border-[#e7ecf7] bg-[#eff4ff] p-2.5"><div className="text-[#45464d]">Invoice</div><div className="font-bold">{detail.invoice_count||0} dokumen</div></div>
+                  <div className="rounded-xl border border-line bg-surface-2 p-2.5"><div className="text-ink-2">Total Penjualan</div><div className="font-bold text-ink">{rupiah(detail.total_sales)}</div></div>
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-2.5"><div className="text-amber-700">Piutang Terbuka</div><div className="font-bold text-ink">{rupiah(detail.outstanding)}</div></div>
+                  <div className="rounded-xl border border-line bg-surface-2 p-2.5"><div className="text-ink-2">Limit / Termin</div><div className="font-bold">{num(detail.credit_limit)>0? rupiah(detail.credit_limit):'tanpa limit'} • {detail.payment_term_days||0} hari</div></div>
+                  <div className="rounded-xl border border-line bg-surface-2 p-2.5"><div className="text-ink-2">Invoice</div><div className="font-bold">{detail.invoice_count||0} dokumen</div></div>
                 </div>
-                <div className="text-xs text-[#45464d] flex flex-wrap gap-3">
+                <div className="text-xs text-ink-2 flex flex-wrap gap-3">
                   {detail.phone && <span className="inline-flex items-center gap-1"><Phone size={12}/> {detail.phone}</span>}
                   {detail.email && <span className="inline-flex items-center gap-1"><Mail size={12}/> {detail.email}</span>}
                   {detail.address && <span className="inline-flex items-center gap-1"><MapPin size={12}/> {detail.address}</span>}
@@ -337,10 +337,10 @@ export default function MasterCustomers(){
                   </div>
                 )}
                 <div>
-                  <div className="text-[11px] font-bold tracking-wider text-[#45464d] mb-2">INVOICE TERAKHIR ({(detail.invoices||[]).length})</div>
-                  <div className="overflow-auto rounded-xl border border-[#e7ecf7]">
+                  <div className="text-[11px] font-bold tracking-wider text-ink-2 mb-2">INVOICE TERAKHIR ({(detail.invoices||[]).length})</div>
+                  <div className="overflow-auto rounded-xl border border-line">
                     <table className="w-full text-sm">
-                      <thead><tr className="bg-[#e5eeff] border-b border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                      <thead><tr className="bg-surface-3 border-b border-line text-[11px] font-bold tracking-wider text-ink-2">
                         <PosTh>NO INVOICE</PosTh><PosTh align="center">TANGGAL</PosTh><PosTh align="right">NILAI</PosTh><PosTh align="center">STATUS</PosTh>
                       </tr></thead>
                       <tbody>
@@ -358,10 +358,10 @@ export default function MasterCustomers(){
                   </div>
                 </div>
                 <div>
-                  <div className="text-[11px] font-bold tracking-wider text-[#45464d] mb-2">SALES ORDER TERAKHIR ({(detail.orders||[]).length})</div>
-                  <div className="overflow-auto rounded-xl border border-[#e7ecf7]">
+                  <div className="text-[11px] font-bold tracking-wider text-ink-2 mb-2">SALES ORDER TERAKHIR ({(detail.orders||[]).length})</div>
+                  <div className="overflow-auto rounded-xl border border-line">
                     <table className="w-full text-sm">
-                      <thead><tr className="bg-[#e5eeff] border-b border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                      <thead><tr className="bg-surface-3 border-b border-line text-[11px] font-bold tracking-wider text-ink-2">
                         <PosTh>NO SO</PosTh><PosTh align="center">TANGGAL</PosTh><PosTh align="right">NILAI</PosTh><PosTh align="center">STATUS</PosTh>
                       </tr></thead>
                       <tbody>

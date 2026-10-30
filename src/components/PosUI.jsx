@@ -102,7 +102,7 @@ export function PosTh({ children, align='left', className='' }){
 const TONES = {
   emerald: 'bg-success-soft text-success border-success-line/60',
   amber:   'bg-warning-soft text-warning border-warning-line/60',
-  red:     'bg-danger-soft text-[#93000a] border-danger-line/60',
+  red:     'bg-danger-soft text-danger border-danger-line/60',
   sky:     'bg-info-soft text-info border-info-line/60',
   slate:   'bg-surface-2 text-ink-2 border-line',
   teal:    'bg-success-soft text-success border-success-line/60',
@@ -174,12 +174,12 @@ export function PosPager({ page, setPage, total, size=10, unit='baris' }){
 // ---------------------------------------------- kartu ringkasan (statistik)
 export function PosStat({ label, value, sub, tone='bg-surface-2 text-ink-2', icon:Icon }){
   return (
-    <div className="bg-surface rounded-xl shadow-card p-4 flex flex-col justify-between">
+    <div className="bg-surface rounded-lg shadow-card border border-line p-4 min-h-[104px] flex flex-col justify-between">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-label-sm uppercase tracking-wider text-ink-2 font-semibold">{label}</span>
-        {Icon && <span className={"w-8 h-8 rounded-lg grid place-items-center shrink-0 "+tone}><Icon size={18} strokeWidth={2}/></span>}
+        <span className="text-[11px] uppercase tracking-[.04em] text-ink-3 font-semibold">{label}</span>
+        {Icon && <span className={"w-7 h-7 rounded grid place-items-center shrink-0 "+tone}><Icon size={18} strokeWidth={2}/></span>}
       </div>
-      <div className="font-display text-headline-xl font-bold text-ink mt-2 num leading-none">{value}</div>
+      <div className="text-[22px] font-bold text-ink mt-2 num leading-none tracking-tight">{value}</div>
       {sub && <div className="text-body-sm text-ink-3 mt-1.5">{sub}</div>}
     </div>
   );
@@ -208,7 +208,7 @@ export const posSelectWrap = 'w-full sm:w-[200px] shrink-0';
 // ------------------------------------------------------------ tombol export
 const EXPORT_META = {
   xlsx: { label:'Excel', Icon:FileSpreadsheet, cls:'bg-success-soft text-success hover:bg-success-line/40' },
-  pdf:  { label:'PDF',   Icon:FileText,        cls:'bg-danger-soft text-[#93000a] hover:bg-danger-line/40' },
+  pdf:  { label:'PDF',   Icon:FileText,        cls:'bg-danger-soft text-danger hover:bg-danger-line/40' },
   csv:  { label:'CSV',   Icon:FileCode2,       cls:'bg-info-soft text-info hover:bg-info-line/40' },
 };
 export function PosExportButtons({ onExport, busyKey='', formats=['xlsx','pdf','csv'], prefix='', disabled=false, size='sm', className='' }){

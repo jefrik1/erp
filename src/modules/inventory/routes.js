@@ -39,6 +39,44 @@ router.post('/adjustment', async (req,res)=>{
   await pool.query('INSERT INTO audit_logs (user_id, action, entity_type, entity_id, new_value) VALUES ($1,\'UPDATE\',\'STOCK_ADJUST\',$2,$3)',[req.user.id, product_id, JSON.stringify({qty_adjust, reason})]);
   res.json({ok:true});
 });
+// --------------------------- GET /inventory/stocks/fefo/:product_id
+// Saran pengambilan barang (FEFO): batch paling dekat kedaluwarsa lebih dulu.
+// Dipakai gudang untuk semen/cat dan untuk alokasi picking DO.
+router.get('/stocks/fefo/:product_id', async (req,res)=>{
+  try{
+    const wh = parseInt(req.query.warehouse_id)||null;
+    const p = [req.params.product_id]; let where = 'AND s.product_id=$1 AND s.qty_on_hand > 0';
+    if(wh){ p.push(wh); where += ` AND s.warehouse_id=$${p.length}`; }
+    const r = await pool.query(
+      `SELECT s.id, s.product_id, p.sku, p.name, w.code AS warehouse_code, w.name AS warehouse_name,
+              s.batch_no, s.expired_date, s.manufactured_date, s.qty_on_hand, s.qty_reserved, s.qty_available,
+              s.avg_cost,
+              CASE WHEN s.expired_date IS NULL THEN NULL ELSE (s.expired_date - CURRENT_DATE) END AS days_to_expiry
+         FROM stocks s JOIN products p ON p.id=s.product_id JOIN warehouses w ON w.id=s.warehouse_id
+        ${where}
+        ORDER BY s.expired_date ASC NULLS LAST, s.id ASC`, p);
+    const total = r.rows.reduce((a,x)=> a + Number(x.qty_available||0), 0);
+    res.json({ product_id:Number(req.params.product_id), total_available:total, batches:r.rows });
+  }catch(e){ res.status(500).json({error:e.message}); }
+});
+
+// --------------------------- GET /inventory/expiring?days=30
+// Peringatan stok mendekati kedaluwarsa (banner gudang).
+router.get('/expiring', async (req,res)=>{
+  try{
+    const days = Math.min(365, Math.max(1, parseInt(req.query.days)||30));
+    const r = await pool.query(
+      `SELECT s.id, p.sku, p.name, w.code AS warehouse_code, s.batch_no, s.expired_date,
+              s.qty_on_hand, s.qty_available, s.avg_cost,
+              (s.expired_date - CURRENT_DATE) AS days_to_expiry
+         FROM stocks s JOIN products p ON p.id=s.product_id JOIN warehouses w ON w.id=s.warehouse_id
+        WHERE s.expired_date IS NOT NULL AND s.qty_on_hand > 0
+          AND s.expired_date <= CURRENT_DATE + ($1 || ' days')::interval
+        ORDER BY s.expired_date ASC`, [String(days)]);
+    res.json({ days, count:r.rowCount, data:r.rows });
+  }catch(e){ res.status(500).json({error:e.message}); }
+});
+
 // ------------------------------------------- GET /inventory/stocks/summary
 // Ringkasan per PRODUK (bukan per baris batch) - dipakai tampilan "Ringkas"
 // supaya 1 produk tidak muncul berkali-kali dan angkanya mudah dibaca.

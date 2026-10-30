@@ -257,16 +257,16 @@ export default function DriverTrips(){
       {loading ? <PosCard><PosSkeleton rows={6} cols={4}/></PosCard> : err ? <PosCard><PosError message={err} onRetry={load}/></PosCard> : (
       <>
       <PosCard>
-        <div className="p-4 border-b border-[#e7ecf7] flex flex-wrap items-center gap-2 justify-between">
+        <div className="p-4 border-b border-line flex flex-wrap items-center gap-2 justify-between">
           <div>
-            <div className="font-bold text-sm text-[#0b1c30] flex items-center gap-1.5"><Hand size={15} className="text-[#0051d5]"/> Pengiriman Tersedia</div>
-            <div className="text-[11px] text-[#76777d] mt-0.5">DO yang sudah diproses gudang, SO disetujui, dan order POS dengan alamat kirim</div>
+            <div className="font-bold text-sm text-ink flex items-center gap-1.5"><Hand size={15} className="text-brand"/> Pengiriman Tersedia</div>
+            <div className="text-[11px] text-ink-3 mt-0.5">DO yang sudah diproses gudang, SO disetujui, dan order POS dengan alamat kirim</div>
           </div>
           <div className="flex items-center gap-1.5 flex-wrap">
             {[['ALL','SEMUA',counts.total],['DO','DO',counts.DO],['SO','SO',counts.SO],['POS','POS',counts.POS]].map(([key,label,n])=>(
               <button key={key} onClick={()=>setFilter(key)}
-                className={"h-8 px-3 rounded-lg text-[11px] font-bold border transition "+(filter===key?"bg-[#0051d5] text-white border-[#0051d5]":"bg-white text-[#2b3445] border-[#e7ecf7] hover:bg-[#eff4ff]")}>
-                {label} <span className={"ml-0.5 "+(filter===key?'text-white/70':'text-[#76777d]')}>{(n||0)}</span>
+                className={"h-8 px-3 rounded-lg text-[11px] font-bold border transition "+(filter===key?"bg-brand text-white border-brand":"bg-white text-ink-2 border-line hover:bg-surface-2")}>
+                {label} <span className={"ml-0.5 "+(filter===key?'text-white/70':'text-ink-3')}>{(n||0)}</span>
               </button>
             ))}
           </div>
@@ -276,20 +276,20 @@ export default function DriverTrips(){
         ) : (
           <div className="divide-y divide-[#e7ecf7]">
             {claimRows.map(r=>(
-              <div key={r.source+'-'+r.id} className="p-3.5 flex flex-col sm:flex-row sm:items-center gap-3 hover:bg-[#eff4ff]/60 transition">
+              <div key={r.source+'-'+r.id} className="p-3.5 flex flex-col sm:flex-row sm:items-center gap-3 hover:bg-surface-2/60 transition">
                 <div className="flex items-start gap-3 flex-1 min-w-0">
                   <div className={"w-9 h-9 rounded-xl grid place-items-center shrink-0 "+(r.source==='POS'?"bg-amber-50 text-amber-700":r.source==='SO'?"bg-sky-50 text-sky-700":"bg-[#f3efff] text-[#5b3fd6]")}>
                     {r.source==='POS'? <Receipt size={16}/> : r.source==='SO'? <FileText size={16}/> : <Truck size={16}/>}
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-mono text-[12px] font-bold text-[#0b1c30]">{r.number}</span>
+                      <span className="font-mono text-[12px] font-bold text-ink">{r.number}</span>
                       <PosBadge tone={SOURCE_TONE[r.source]}>{r.source}</PosBadge>
-                      {r.status && <span className="text-[10px] font-bold text-[#76777d] uppercase">{String(r.status).replace('_',' ')}</span>}
+                      {r.status && <span className="text-[10px] font-bold text-ink-3 uppercase">{String(r.status).replace('_',' ')}</span>}
                     </div>
-                    <div className="text-[13px] font-semibold text-[#2b3445] truncate mt-0.5">{r.customer_name||'-'}{r.customer_phone? <span className="font-normal text-[#76777d]"> - {r.customer_phone}</span>:null}</div>
-                    <div className="text-[11px] text-[#45464d] flex items-center gap-1 mt-0.5"><MapPin size={11} className="shrink-0"/><span className="truncate">{r.address||'Alamat belum diisi'}</span></div>
-                    <div className="text-[11px] text-[#76777d] mt-1 flex flex-wrap gap-x-3 gap-y-0.5">
+                    <div className="text-[13px] font-semibold text-ink-2 truncate mt-0.5">{r.customer_name||'-'}{r.customer_phone? <span className="font-normal text-ink-3"> - {r.customer_phone}</span>:null}</div>
+                    <div className="text-[11px] text-ink-2 flex items-center gap-1 mt-0.5"><MapPin size={11} className="shrink-0"/><span className="truncate">{r.address||'Alamat belum diisi'}</span></div>
+                    <div className="text-[11px] text-ink-3 mt-1 flex flex-wrap gap-x-3 gap-y-0.5">
                       <span>{nf(r.items_count)} jenis - {nf(r.total_qty)} qty</span>
                       {r.total? <span>Nilai {rupiah(r.total)}</span>:null}
                       {r.est_weight_ton? <span>+/- {nf(r.est_weight_ton*1000)} kg</span>:null}
@@ -308,22 +308,22 @@ export default function DriverTrips(){
 
       {aktif.length>0 && (
         <PosCard className="p-4 space-y-3">
-          <div className="font-bold text-sm text-[#0b1c30]">Trip Aktif</div>
+          <div className="font-bold text-sm text-ink">Trip Aktif</div>
           <div className="grid md:grid-cols-2 gap-3">
             {aktif.map(t=>(
               <div key={t.id} className="border border-sky-200 bg-sky-50/50 rounded-xl p-4 space-y-2">
                 <div className="flex justify-between items-start gap-2">
                   <div>
-                    <div className="font-mono text-xs font-bold text-[#0b1c30]">{t.trip_number}</div>
-                    <div className="font-bold text-sm mt-0.5">{t.plat_no||'-'} <span className="font-medium text-[#45464d] text-xs">{t.vehicle_type||''}</span></div>
+                    <div className="font-mono text-xs font-bold text-ink">{t.trip_number}</div>
+                    <div className="font-bold text-sm mt-0.5">{t.plat_no||'-'} <span className="font-medium text-ink-2 text-xs">{t.vehicle_type||''}</span></div>
                   </div>
                   <PosBadge tone={tone(t.status)}>{t.status}</PosBadge>
                 </div>
-                {(t.do_number||t.customer_name) && <div className="text-xs text-[#2b3445] flex items-center gap-1"><MapPin size={12}/> {t.do_number||''} {t.customer_name? '- '+t.customer_name:''}</div>}
-                <div className="text-xs text-[#45464d] flex items-center gap-3 flex-wrap">
+                {(t.do_number||t.customer_name) && <div className="text-xs text-ink-2 flex items-center gap-1"><MapPin size={12}/> {t.do_number||''} {t.customer_name? '- '+t.customer_name:''}</div>}
+                <div className="text-xs text-ink-2 flex items-center gap-3 flex-wrap">
                   <span className="flex items-center gap-1"><Gauge size={12}/> Odo awal {t.odometer_start??'-'}</span>
                   <span>{d10(t.departure_date)||''}</span>
-                  {parseInt(t.invoice_count||0)>0 && <span className="flex items-center gap-1 text-[#0051d5]"><Receipt size={12}/> {t.invoice_number||'invoice'} siap diserahkan</span>}
+                  {parseInt(t.invoice_count||0)>0 && <span className="flex items-center gap-1 text-brand"><Receipt size={12}/> {t.invoice_number||'invoice'} siap diserahkan</span>}
                 </div>
                 <div className="flex flex-wrap gap-2 pt-1">
                   {t.do_id && <Link to={'/surat-jalan/'+t.do_id} className={posBtnSm+' h-9'}><FileText size={13}/> Surat Jalan</Link>}
@@ -340,15 +340,15 @@ export default function DriverTrips(){
         <PosCard className="p-4 space-y-3">
           <button type="button" onClick={()=>setManualOpen(o=>!o)} className="w-full flex items-center justify-between gap-2 text-left">
             <div>
-              <div className="font-bold text-sm text-[#0b1c30]">Trip Tanpa Pengiriman</div>
-              <div className="text-[11px] text-[#76777d] mt-0.5">Untuk pindah gudang / tugas armada tanpa DO</div>
+              <div className="font-bold text-sm text-ink">Trip Tanpa Pengiriman</div>
+              <div className="text-[11px] text-ink-3 mt-0.5">Untuk pindah gudang / tugas armada tanpa DO</div>
             </div>
-            <ChevronRight size={16} className={"text-[#76777d] transition-transform "+(manualOpen?'rotate-90':'')}/>
+            <ChevronRight size={16} className={"text-ink-3 transition-transform "+(manualOpen?'rotate-90':'')}/>
           </button>
           {manualOpen && (
             <form onSubmit={mulai} className="space-y-3 pt-1">
               {startErr && <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{startErr}</div>}
-              <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">PILIH KENDARAAN *</span>
+              <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-ink-2">PILIH KENDARAAN *</span>
                 <select value={startForm.vehicle_id} onChange={e=>setStartForm({...startForm,vehicle_id:e.target.value})} className={posInput}>
                   <option value="">Pilih armada yang AVAILABLE</option>
                   {available.map(v=> <option key={v.id} value={v.id}>{v.plat_no} - {v.type||'armada'}{v.capacity_ton? ' ('+v.capacity_ton+' ton)':''}</option>)}
@@ -356,8 +356,8 @@ export default function DriverTrips(){
                 {available.length===0 && <span className="text-[11px] text-amber-700">Tidak ada armada AVAILABLE - hubungi gudang/admin.</span>}
               </label>
               <div className="grid grid-cols-2 gap-2">
-                <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">ODOMETER AWAL</span><input type="number" min="0" value={startForm.odometer_start} onChange={e=>setStartForm({...startForm,odometer_start:e.target.value})} placeholder="45210" className={posInput}/></label>
-                <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">CATATAN</span><input value={startForm.notes} onChange={e=>setStartForm({...startForm,notes:e.target.value})} placeholder="opsional" className={posInput}/></label>
+                <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-ink-2">ODOMETER AWAL</span><input type="number" min="0" value={startForm.odometer_start} onChange={e=>setStartForm({...startForm,odometer_start:e.target.value})} placeholder="45210" className={posInput}/></label>
+                <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-ink-2">CATATAN</span><input value={startForm.notes} onChange={e=>setStartForm({...startForm,notes:e.target.value})} placeholder="opsional" className={posInput}/></label>
               </div>
               <button disabled={starting || !available.length} className={posBtnPrimary+' h-10 px-5 text-sm w-full sm:w-auto'}><Play size={15}/> {starting?'Memulai...':'Mulai Trip'}</button>
             </form>
@@ -365,22 +365,22 @@ export default function DriverTrips(){
         </PosCard>
 
         <PosCard>
-          <div className="p-4 border-b font-bold text-sm text-[#0b1c30]">Pengiriman Saya (DO aktif)</div>
+          <div className="p-4 border-b font-bold text-sm text-ink">Pengiriman Saya (DO aktif)</div>
           {!dos.length ? <PosEmpty text="Tidak ada pengiriman aktif yang ditugaskan"/> : (
             <div className="overflow-auto">
               <table className="w-full text-sm">
-                <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                   <PosTh>DO</PosTh><PosTh>PELANGGAN</PosTh><PosTh>INVOICE</PosTh><PosTh align="center">STATUS</PosTh>
                 </tr></thead>
                 <tbody>
                   {dos.map(d=>(
                     <tr key={d.id} className={posTr}>
                       <td className={posTd+' font-mono text-xs font-bold'}>
-                        <Link to={'/surat-jalan/'+d.id} className="text-[#0051d5] hover:underline">{d.do_number}</Link>
+                        <Link to={'/surat-jalan/'+d.id} className="text-brand hover:underline">{d.do_number}</Link>
                         {d.received_by && <div className="text-[10px] font-normal text-[#007a55] mt-0.5">diterima {d.received_by}</div>}
                       </td>
-                      <td className={posTd+' text-xs'}>{d.customer_name||'-'}{d.customer_phone? <div className="text-[11px] text-[#76777d]">{d.customer_phone}</div>:null}</td>
-                      <td className={posTd+' text-xs'}>{d.invoice_number? <><div className="font-mono text-[11px] font-bold">{d.invoice_number}</div><div className="text-[10px] text-[#76777d]">{d.invoice_status} - {rupiah(d.invoice_total)}{parseFloat(d.invoice_paid||0)>0? ' - DP '+rupiah(d.invoice_paid):''}</div></> : <span className="text-[#76777d]">-</span>}</td>
+                      <td className={posTd+' text-xs'}>{d.customer_name||'-'}{d.customer_phone? <div className="text-[11px] text-ink-3">{d.customer_phone}</div>:null}</td>
+                      <td className={posTd+' text-xs'}>{d.invoice_number? <><div className="font-mono text-[11px] font-bold">{d.invoice_number}</div><div className="text-[10px] text-ink-3">{d.invoice_status} - {rupiah(d.invoice_total)}{parseFloat(d.invoice_paid||0)>0? ' - DP '+rupiah(d.invoice_paid):''}</div></> : <span className="text-ink-3">-</span>}</td>
                       <td className={posTd+' text-center'}><PosBadge tone={d.status==='IN_TRANSIT'?'sky':'emerald'}>{d.status}</PosBadge></td>
                     </tr>
                   ))}
@@ -392,11 +392,11 @@ export default function DriverTrips(){
       </div>
 
       <PosCard>
-        <div className="p-4 border-b font-bold text-sm text-[#0b1c30]">Riwayat Trip</div>
+        <div className="p-4 border-b font-bold text-sm text-ink">Riwayat Trip</div>
         {!selesai.length ? <PosEmpty text="Belum ada trip selesai"/> : (
           <div className="overflow-auto">
             <table className="w-full text-sm">
-              <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+              <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                 <PosTh>TRIP</PosTh><PosTh>ARMADA</PosTh><PosTh>DO / PELANGGAN</PosTh><PosTh align="right">JARAK</PosTh><PosTh align="right">BBM</PosTh><PosTh align="right">BIAYA/KM</PosTh><PosTh align="center">BUKTI TERIMA</PosTh><PosTh>TANGGAL</PosTh>
               </tr></thead>
               <tbody>
@@ -404,17 +404,17 @@ export default function DriverTrips(){
                   <tr key={t.id} className={posTr}>
                     <td className={posTd+' font-mono text-xs'}>{t.trip_number}</td>
                     <td className={posTd+' text-xs font-bold'}>{t.plat_no||'-'}</td>
-                    <td className={posTd+' text-xs'}>{t.do_id? <Link to={'/surat-jalan/'+t.do_id} className="font-mono font-bold text-[#0051d5] hover:underline">{t.do_number}</Link> : '-'}{t.customer_name? ' - '+t.customer_name:''}</td>
+                    <td className={posTd+' text-xs'}>{t.do_id? <Link to={'/surat-jalan/'+t.do_id} className="font-mono font-bold text-brand hover:underline">{t.do_number}</Link> : '-'}{t.customer_name? ' - '+t.customer_name:''}</td>
                     <td className={posTd+' text-right tabular-nums'}>{nf(t.distance_km||0)} km</td>
                     <td className={posTd+' text-right tabular-nums'}>{t.fuel_liters? nf(t.fuel_liters)+' L':'-'}</td>
                     <td className={posTd+' text-right tabular-nums'}>{rupiah(t.cost_per_km||0)}</td>
                     <td className={posTd+' text-center text-[11px]'}>
                       <div className="flex flex-col items-center gap-0.5">
-                        {t.do_signature_url ? <span className="inline-flex items-center gap-1 text-[#007a55] font-bold"><ShieldCheck size={12}/> TTD</span> : <span className="text-[#76777d]">-</span>}
-                        {t.do_invoice_handed ? <span className="text-[10px] text-[#0051d5] font-bold">invoice OK</span> : null}
+                        {t.do_signature_url ? <span className="inline-flex items-center gap-1 text-[#007a55] font-bold"><ShieldCheck size={12}/> TTD</span> : <span className="text-ink-3">-</span>}
+                        {t.do_invoice_handed ? <span className="text-[10px] text-brand font-bold">invoice OK</span> : null}
                       </div>
                     </td>
-                    <td className={posTd+' text-xs text-[#45464d]'}>{d10(t.arrival_date)||d10(t.departure_date)||'-'}</td>
+                    <td className={posTd+' text-xs text-ink-2'}>{d10(t.arrival_date)||d10(t.departure_date)||'-'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -430,27 +430,27 @@ export default function DriverTrips(){
           <form onSubmit={submitClaim} className="bg-white rounded-2xl p-5 w-full max-w-lg space-y-3 border shadow-raised animate-pop max-h-[92vh] overflow-auto">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-bold text-[16px] text-[#0b1c30]">Klaim Pengiriman</h3>
-                <div className="text-xs text-[#45464d] mt-0.5 font-mono">{claiming.number}</div>
+                <h3 className="font-bold text-[16px] text-ink">Klaim Pengiriman</h3>
+                <div className="text-xs text-ink-2 mt-0.5 font-mono">{claiming.number}</div>
               </div>
-              <button type="button" onClick={()=>setClaiming(null)} aria-label="Tutup" className="w-9 h-9 rounded-xl border grid place-items-center hover:bg-[#eff4ff]"><X size={16}/></button>
+              <button type="button" onClick={()=>setClaiming(null)} aria-label="Tutup" className="w-9 h-9 rounded-xl border grid place-items-center hover:bg-surface-2"><X size={16}/></button>
             </div>
 
-            <div className="rounded-xl border border-[#e7ecf7] bg-[#eff4ff] p-3 space-y-1">
+            <div className="rounded-xl border border-line bg-surface-2 p-3 space-y-1">
               <div className="flex items-center gap-2">
                 <PosBadge tone={SOURCE_TONE[claiming.source]}>{SOURCE_LABEL[claiming.source]}</PosBadge>
-                <span className="text-xs font-semibold text-[#2b3445] truncate">{claiming.customer_name}</span>
+                <span className="text-xs font-semibold text-ink-2 truncate">{claiming.customer_name}</span>
               </div>
-              <div className="text-[11px] text-[#45464d] flex items-start gap-1"><MapPin size={11} className="mt-0.5 shrink-0"/>{claiming.address||'Alamat belum diisi'}</div>
-              <div className="text-[11px] text-[#76777d]">{nf(claiming.items_count)} jenis - {nf(claiming.total_qty)} qty{claiming.total? ' - '+rupiah(claiming.total):''}</div>
+              <div className="text-[11px] text-ink-2 flex items-start gap-1"><MapPin size={11} className="mt-0.5 shrink-0"/>{claiming.address||'Alamat belum diisi'}</div>
+              <div className="text-[11px] text-ink-3">{nf(claiming.items_count)} jenis - {nf(claiming.total_qty)} qty{claiming.total? ' - '+rupiah(claiming.total):''}</div>
             </div>
 
             {claimErr && <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 flex items-start gap-1.5"><AlertTriangle size={13} className="mt-0.5 shrink-0"/>{claimErr}</div>}
 
-            <div className="rounded-xl border border-[#e7ecf7] p-3 bg-white space-y-2">
+            <div className="rounded-xl border border-line p-3 bg-white space-y-2">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-[11px] font-bold tracking-wider text-[#45464d] uppercase flex items-center gap-1.5"><MapPin size={12}/> Jarak rute</span>
-                {claimGeo.status==='loading' && <span className="text-[11px] text-[#76777d]">menghitung dari alamat…</span>}
+                <span className="text-[11px] font-bold tracking-wider text-ink-2 uppercase flex items-center gap-1.5"><MapPin size={12}/> Jarak rute</span>
+                {claimGeo.status==='loading' && <span className="text-[11px] text-ink-3">menghitung dari alamat…</span>}
                 {claimGeo.status==='auto' && !claimGeo.approx && <PosBadge tone="emerald">otomatis dari alamat</PosBadge>}
                 {claimGeo.status==='auto' && claimGeo.approx && <PosBadge tone="amber">perkiraan dari kota</PosBadge>}
                 {claimGeo.status==='saved' && <PosBadge tone="sky">dari data DO</PosBadge>}
@@ -460,10 +460,10 @@ export default function DriverTrips(){
                 <input type="number" min="0" step="0.01" value={claimGeo.km}
                   onChange={e=>setClaimGeo(g=>({...g, km:e.target.value, status: g.status==='loading'?'none':'manual'}))}
                   placeholder="0" className={posInput+' max-w-[120px]'}/>
-                <span className="text-xs text-[#45464d]">km</span>
-                {claimGeo.zone && <span className="text-[11px] text-[#76777d]">• zona <b className="text-[#2b3445]">{claimGeo.zone}</b></span>}
+                <span className="text-xs text-ink-2">km</span>
+                {claimGeo.zone && <span className="text-[11px] text-ink-3">• zona <b className="text-ink-2">{claimGeo.zone}</b></span>}
               </div>
-              <div className="text-[11px] text-[#76777d]">
+              <div className="text-[11px] text-ink-3">
                 {claimGeo.status==='none'
                   ? 'Alamat belum dikenali peta OSM — isi jarak manual, atau perbaiki alamat pengiriman.'
                   : claimGeo.approx
@@ -472,7 +472,7 @@ export default function DriverTrips(){
               </div>
             </div>
 
-            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">ARMADA *</span>
+            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-ink-2">ARMADA *</span>
               <select value={claimForm.vehicle_id} onChange={e=>setClaimForm({...claimForm,vehicle_id:e.target.value})} className={posInput}>
                 <option value="">Pilih armada AVAILABLE</option>
                 {claimVehicles.map(v=> <option key={v.id} value={v.id}>{v.plat_no} - {v.type||'armada'}{v.capacity_ton? ' ('+v.capacity_ton+' ton)':''}{v.status!=='AVAILABLE'? ' • armada DO ini':''}</option>)}
@@ -480,11 +480,11 @@ export default function DriverTrips(){
               {claimVehicles.length===0 && <span className="text-[11px] text-amber-700">Tidak ada armada AVAILABLE - hubungi gudang.</span>}
             </label>
             <div className="grid grid-cols-2 gap-2">
-              <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">ODOMETER AWAL</span><input type="number" min="0" value={claimForm.odometer_start} onChange={e=>setClaimForm({...claimForm,odometer_start:e.target.value})} placeholder="45210" className={posInput}/></label>
-              <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">CATATAN</span><input value={claimForm.notes} onChange={e=>setClaimForm({...claimForm,notes:e.target.value})} placeholder="opsional" className={posInput}/></label>
+              <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-ink-2">ODOMETER AWAL</span><input type="number" min="0" value={claimForm.odometer_start} onChange={e=>setClaimForm({...claimForm,odometer_start:e.target.value})} placeholder="45210" className={posInput}/></label>
+              <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-ink-2">CATATAN</span><input value={claimForm.notes} onChange={e=>setClaimForm({...claimForm,notes:e.target.value})} placeholder="opsional" className={posInput}/></label>
             </div>
-            <div className="rounded-xl border border-[#e7ecf7] p-3 bg-white space-y-3">
-              <div className="text-[11px] font-bold tracking-wider text-[#45464d] uppercase flex items-center gap-1.5"><PenLine size={12} className="text-[#0051d5]"/> Serah terima muatan</div>
+            <div className="rounded-xl border border-line p-3 bg-white space-y-3">
+              <div className="text-[11px] font-bold tracking-wider text-ink-2 uppercase flex items-center gap-1.5"><PenLine size={12} className="text-brand"/> Serah terima muatan</div>
               <SignaturePad
                 label="Tanda tangan pengemudi *"
                 hint="Anda (pengemudi) menandatangani sebagai penerima muatan dari gudang"
@@ -492,7 +492,7 @@ export default function DriverTrips(){
                 onChange={(v)=>setClaimForm(s=>({...s, driver_sig:v||''}))}
               />
               <label className="space-y-1 block">
-                <span className="text-[11px] font-bold tracking-wider text-[#45464d]">NAMA PETUGAS GUDANG (opsional)</span>
+                <span className="text-[11px] font-bold tracking-wider text-ink-2">NAMA PETUGAS GUDANG (opsional)</span>
                 <input value={claimForm.sender_name} onChange={e=>setClaimForm({...claimForm,sender_name:e.target.value})}
                   placeholder="nama petugas yang menyerahkan barang" className={posInput}/>
               </label>
@@ -502,9 +502,9 @@ export default function DriverTrips(){
                 height={120}
                 onChange={(v)=>setClaimForm(s=>({...s, sender_sig:v||''}))}
               />
-              <div className="text-[11px] text-[#76777d]">Kedua tanda tangan tercetak di surat jalan kolom <b>Pengemudi</b> dan <b>Pengirim / Gudang</b>.</div>
+              <div className="text-[11px] text-ink-3">Kedua tanda tangan tercetak di surat jalan kolom <b>Pengemudi</b> dan <b>Pengirim / Gudang</b>.</div>
             </div>
-            <div className="text-[11px] text-[#45464d] bg-[#eff4ff] border border-[#e7ecf7] rounded-xl p-2.5">
+            <div className="text-[11px] text-ink-2 bg-surface-2 border border-line rounded-xl p-2.5">
               Setelah diklaim, pengiriman ini terkunci untuk Anda. Selesaikan trip dengan tanda tangan penerima dan serah terima invoice.
             </div>
             <div className="flex justify-end gap-2 pt-1">
@@ -520,18 +520,18 @@ export default function DriverTrips(){
           <form onSubmit={selesaikan} className="bg-white rounded-2xl p-5 w-full max-w-xl space-y-3 border shadow-raised animate-pop max-h-[92vh] overflow-auto">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-bold text-[16px] text-[#0b1c30]">Selesaikan Trip</h3>
-                <div className="text-xs text-[#45464d] mt-0.5">{completing.trip_number} - {completing.plat_no}{completing.do_number? ' - '+completing.do_number:''}</div>
+                <h3 className="font-bold text-[16px] text-ink">Selesaikan Trip</h3>
+                <div className="text-xs text-ink-2 mt-0.5">{completing.trip_number} - {completing.plat_no}{completing.do_number? ' - '+completing.do_number:''}</div>
               </div>
-              <button type="button" onClick={()=>setCompleting(null)} aria-label="Tutup" className="w-9 h-9 rounded-xl border grid place-items-center hover:bg-[#eff4ff]"><X size={16}/></button>
+              <button type="button" onClick={()=>setCompleting(null)} aria-label="Tutup" className="w-9 h-9 rounded-xl border grid place-items-center hover:bg-surface-2"><X size={16}/></button>
             </div>
 
             {completeErr && <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 flex items-start gap-1.5"><AlertTriangle size={13} className="mt-0.5 shrink-0"/>{completeErr}</div>}
 
             {completing.do_id && (
-              <div className="rounded-xl border border-[#e7ecf7] p-3 space-y-3 bg-[#fbfcff]">
-                <div className="text-[11px] font-bold tracking-wider text-[#45464d] uppercase flex items-center gap-1.5"><PackageCheck size={13} className="text-emerald-600"/> Bukti Serah Terima</div>
-                <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">NAMA PENERIMA *</span>
+              <div className="rounded-xl border border-line p-3 space-y-3 bg-[#fbfcff]">
+                <div className="text-[11px] font-bold tracking-wider text-ink-2 uppercase flex items-center gap-1.5"><PackageCheck size={13} className="text-emerald-600"/> Bukti Serah Terima</div>
+                <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-ink-2">NAMA PENERIMA *</span>
                   <input value={completeForm.received_by} onChange={e=>setCompleteForm({...completeForm,received_by:e.target.value})} placeholder="nama lengkap penerima di lokasi" className={posInput}/>
                 </label>
                 <SignaturePad onChange={(sig)=>setCompleteForm(s=>({...s, signature: sig||''}))}/>
@@ -543,40 +543,40 @@ export default function DriverTrips(){
                   <div className="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl p-2 flex items-center gap-1.5"><ShieldCheck size={12}/> Tanda tangan pengemudi sudah tersimpan saat klaim.</div>
                 )}
                 <div>
-                  <div className="text-[11px] font-bold tracking-wider text-[#45464d] uppercase flex items-center gap-1.5 mb-1"><Camera size={13}/> Foto Bukti (opsional)</div>
+                  <div className="text-[11px] font-bold tracking-wider text-ink-2 uppercase flex items-center gap-1.5 mb-1"><Camera size={13}/> Foto Bukti (opsional)</div>
                   <div className="flex items-center gap-2">
-                    <label className="h-9 px-3 rounded-lg bg-white border border-[#e7ecf7] text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer hover:bg-[#eff4ff]">
+                    <label className="h-9 px-3 rounded-lg bg-white border border-line text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer hover:bg-surface-2">
                       <Camera size={13}/> {completeForm.photo? 'Ganti foto':'Pilih foto'}
                       <input type="file" accept="image/jpeg,image/png,image/webp" onChange={pilihFoto} className="hidden"/>
                     </label>
-                    {completeForm.photoName && <span className="text-[11px] text-[#45464d] truncate">{completeForm.photoName}</span>}
+                    {completeForm.photoName && <span className="text-[11px] text-ink-2 truncate">{completeForm.photoName}</span>}
                     {completeForm.photo && <button type="button" onClick={()=>setCompleteForm(s=>({...s,photo:'',photoName:''}))} className="text-[11px] font-bold text-red-600 hover:underline">hapus</button>}
                   </div>
-                  {completeForm.photo && <img src={completeForm.photo} alt="Bukti terima" className="mt-2 h-24 rounded-lg border border-[#e7ecf7] object-cover"/>}
-                  <div className="text-[11px] text-[#76777d] mt-1">JPG/PNG/WEBP, maks 3 MB.</div>
+                  {completeForm.photo && <img src={completeForm.photo} alt="Bukti terima" className="mt-2 h-24 rounded-lg border border-line object-cover"/>}
+                  <div className="text-[11px] text-ink-3 mt-1">JPG/PNG/WEBP, maks 3 MB.</div>
                 </div>
                 {parseInt(completing.invoice_count||0)>0 ? (
-                  <label className="flex items-start gap-2 rounded-xl border border-[#e7ecf7] bg-white p-2.5 cursor-pointer">
+                  <label className="flex items-start gap-2 rounded-xl border border-line bg-white p-2.5 cursor-pointer">
                     <input type="checkbox" checked={completeForm.invoice_handed} onChange={e=>setCompleteForm({...completeForm,invoice_handed:e.target.checked})} className="mt-0.5 h-4 w-4 accent-[#0051d5]"/>
-                    <span className="text-[12px] text-[#2b3445] leading-snug">
+                    <span className="text-[12px] text-ink-2 leading-snug">
                       Invoice <b className="font-mono">{completing.invoice_number||''}</b> sudah diserahkan langsung ke penerima.
-                      <span className="block text-[11px] text-[#76777d]">Wajib dicentang sebelum trip bisa diselesaikan.</span>
+                      <span className="block text-[11px] text-ink-3">Wajib dicentang sebelum trip bisa diselesaikan.</span>
                     </span>
                   </label>
                 ) : (
-                  <div className="text-[11px] text-[#76777d]">Belum ada invoice untuk pengiriman ini - invoice dibuat sales setelah DO diterima.</div>
+                  <div className="text-[11px] text-ink-3">Belum ada invoice untuk pengiriman ini - invoice dibuat sales setelah DO diterima.</div>
                 )}
               </div>
             )}
 
-            <div className="rounded-xl border border-[#e7ecf7] p-3 space-y-3">
-              <div className="text-[11px] font-bold tracking-wider text-[#45464d] uppercase flex items-center gap-1.5"><Gauge size={13}/> Perjalanan</div>
+            <div className="rounded-xl border border-line p-3 space-y-3">
+              <div className="text-[11px] font-bold tracking-wider text-ink-2 uppercase flex items-center gap-1.5"><Gauge size={13}/> Perjalanan</div>
               <div className="grid grid-cols-3 gap-2">
-                <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">ODO AKHIR</span><input type="number" min="0" value={completeForm.odometer_end} onChange={e=>setCompleteForm({...completeForm,odometer_end:e.target.value})} className={posInput}/></label>
-                <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">BBM (L)</span><input type="number" min="0" step="0.1" value={completeForm.fuel_liters} onChange={e=>setCompleteForm({...completeForm,fuel_liters:e.target.value})} className={posInput}/></label>
-                <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">BIAYA BBM</span><input type="number" min="0" value={completeForm.fuel_cost} onChange={e=>setCompleteForm({...completeForm,fuel_cost:e.target.value})} className={posInput}/></label>
+                <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-ink-2">ODO AKHIR</span><input type="number" min="0" value={completeForm.odometer_end} onChange={e=>setCompleteForm({...completeForm,odometer_end:e.target.value})} className={posInput}/></label>
+                <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-ink-2">BBM (L)</span><input type="number" min="0" step="0.1" value={completeForm.fuel_liters} onChange={e=>setCompleteForm({...completeForm,fuel_liters:e.target.value})} className={posInput}/></label>
+                <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-ink-2">BIAYA BBM</span><input type="number" min="0" value={completeForm.fuel_cost} onChange={e=>setCompleteForm({...completeForm,fuel_cost:e.target.value})} className={posInput}/></label>
               </div>
-              <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">CATATAN</span><input value={completeForm.notes} onChange={e=>setCompleteForm({...completeForm,notes:e.target.value})} placeholder="kendala / kondisi jalan / barang" className={posInput}/></label>
+              <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-ink-2">CATATAN</span><input value={completeForm.notes} onChange={e=>setCompleteForm({...completeForm,notes:e.target.value})} placeholder="kendala / kondisi jalan / barang" className={posInput}/></label>
             </div>
 
             <div className="flex justify-end gap-2 pt-1">

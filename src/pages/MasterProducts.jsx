@@ -182,7 +182,7 @@ export default function MasterProducts(){
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <PosStat icon={Package} tone="bg-[#0051d5]/10 text-[#0051d5]" label="TOTAL PRODUK" value={angka(total)} sub="katalog aktif"/>
+        <PosStat icon={Package} tone="bg-brand/10 text-brand" label="TOTAL PRODUK" value={angka(total)} sub="katalog aktif"/>
         <PosStat icon={Boxes} tone="bg-emerald-50 text-emerald-700" label="ADA STOK" value={angka(adaStok)} sub={`${angka(kosong)} produk stoknya 0`}/>
         <PosStat icon={AlertTriangle} tone="bg-amber-50 text-amber-700" label="DI BAWAH MINIMUM" value={angka(kritis)} sub="perlu segera ditambah"/>
         <PosStat icon={Layers} tone="bg-sky-50 text-sky-700" label="NILAI STOK" value={rupiah(totalNilai)} sub="halaman ini saja (per halaman)"/>
@@ -190,9 +190,9 @@ export default function MasterProducts(){
 
       <PosCard>
         <PosCardBody className="flex items-start gap-3">
-          <span className="w-7 h-7 rounded-lg grid place-items-center bg-[#0051d5]/10 text-[#0051d5] shrink-0"><Info size={14}/></span>
-          <div className="text-xs text-[#45464d] leading-relaxed">
-            <b className="text-[#0b1c30]">Produk vs Stok.</b> Halaman ini hanya <b>katalog</b> - mendaftarkan barang, satuan, harga jual, dan batas minimum.
+          <span className="w-7 h-7 rounded-lg grid place-items-center bg-brand/10 text-brand shrink-0"><Info size={14}/></span>
+          <div className="text-xs text-ink-2 leading-relaxed">
+            <b className="text-ink">Produk vs Stok.</b> Halaman ini hanya <b>katalog</b> - mendaftarkan barang, satuan, harga jual, dan batas minimum.
             Jumlah stok tidak diketik di sini: stok bertambah lewat <b>Penambahan Stok</b> (stok awal, pembelian tanpa PO) atau <b>Goods Receipt</b> (dari PO),
             dan berkurang lewat <b>POS / Sales Order</b>, <b>Susut &amp; Pecah</b>, atau <b>Transfer</b>. Klik <b>Tambah Stok</b> pada baris produk untuk langsung menambah stoknya.
           </div>
@@ -207,7 +207,7 @@ export default function MasterProducts(){
             </button>
           </>}>
             <div className={posSearchWrap}>
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#76777d]"/>
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3"/>
               <input value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Enter'&&setAppliedQ(q)}
                 placeholder="Cari nama / SKU / barcode lalu Enter..." className={posInput+' pl-9'}/>
             </div>
@@ -230,7 +230,7 @@ export default function MasterProducts(){
           <>
             <div className="overflow-auto">
               <table className="w-full text-sm">
-                <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                   <PosTh>PRODUK</PosTh><PosTh>KATEGORI</PosTh><PosTh align="center">SATUAN</PosTh>
                   <PosTh align="right">HARGA JUAL</PosTh><PosTh align="right">STOK</PosTh>
                   <PosTh align="right">MIN / REORDER</PosTh><PosTh align="center">STATUS STOK</PosTh>
@@ -240,31 +240,31 @@ export default function MasterProducts(){
                   {rows.map(p=>{
                     const st = statusStok(p);
                     return (
-                      <tr key={p.id} className="border-b border-[#e5eeff] hover:bg-[#eff4ff] transition bg-white">
+                      <tr key={p.id} className="border-b border-line hover:bg-surface-2 transition bg-white">
                         <td className="px-4 py-3.5">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-lg bg-[#eff4ff] border border-[#e7ecf7] overflow-hidden grid place-items-center shrink-0">
-                              {p.image_url ? <img src={p.image_url} alt={p.name} loading="lazy" className="w-full h-full object-cover"/> : <span className="text-[9px] font-bold text-[#76777d]">{(p.sku||'?').slice(0,4)}</span>}
+                            <div className="w-9 h-9 rounded-lg bg-surface-2 border border-line overflow-hidden grid place-items-center shrink-0">
+                              {p.image_url ? <img src={p.image_url} alt={p.name} loading="lazy" className="w-full h-full object-cover"/> : <span className="text-[9px] font-bold text-ink-3">{(p.sku||'?').slice(0,4)}</span>}
                             </div>
                             <div className="min-w-0">
-                          <div className="font-semibold text-[#0b1c30]">{p.name}</div>
-                          <div className="text-[11px] text-[#45464d] flex items-center gap-2 flex-wrap">
+                          <div className="font-semibold text-ink">{p.name}</div>
+                          <div className="text-[11px] text-ink-2 flex items-center gap-2 flex-wrap">
                             <span className="font-mono">{p.sku}</span>
                             {p.barcode && <span className="inline-flex items-center gap-1"><Barcode size={11}/> {p.barcode}</span>}
                           </div>
                             </div>
                           </div>
                         </td>
-                        <td className="px-4 py-3.5 text-xs text-[#2b3445]">{p.category_name||'-'}</td>
+                        <td className="px-4 py-3.5 text-xs text-ink-2">{p.category_name||'-'}</td>
                         <td className="px-4 py-3.5 text-center text-xs"><PosBadge tone="slate">{p.unit_code||'-'}</PosBadge></td>
-                        <td className="px-4 py-3.5 text-right tabular-nums">{p.base_price>0 ? rupiah(p.base_price) : <span className="text-[#76777d]">belum diisi</span>}</td>
+                        <td className="px-4 py-3.5 text-right tabular-nums">{p.base_price>0 ? rupiah(p.base_price) : <span className="text-ink-3">belum diisi</span>}</td>
                         <td className="px-4 py-3.5 text-right">
-                          <div className="font-bold tabular-nums text-[#0b1c30]">{angka(p.stock_onhand)}</div>
-                          <div className="text-[11px] text-[#45464d]">
+                          <div className="font-bold tabular-nums text-ink">{angka(p.stock_onhand)}</div>
+                          <div className="text-[11px] text-ink-2">
                             {p.stock_warehouses>1 ? p.stock_warehouses+' gudang' : p.stock_warehouses===1 ? '1 gudang' : 'belum ada baris stok'}
                           </div>
                         </td>
-                        <td className="px-4 py-3.5 text-right text-xs tabular-nums text-[#45464d]">
+                        <td className="px-4 py-3.5 text-right text-xs tabular-nums text-ink-2">
                           {angka(p.min_stock)} / {angka(p.reorder_point)}
                         </td>
                         <td className="px-4 py-3.5 text-center"><PosBadge tone={STATUS_TONE[st]}>{st}</PosBadge></td>
@@ -293,37 +293,37 @@ export default function MasterProducts(){
           <form onSubmit={submit} className="bg-white rounded-xl w-full max-w-3xl max-h-[92vh] flex flex-col border shadow-raised overflow-hidden animate-pop">
             <div className="p-4 border-b flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-bold text-[16px] text-[#0b1c30]">{editing ? 'Edit Produk' : 'Produk Baru'}</h3>
-                <div className="text-xs text-[#45464d] mt-0.5">{editing ? (editing.name+' • '+editing.sku) : 'Daftarkan barang ke katalog. Stok ditambahkan setelah produk dibuat.'}</div>
+                <h3 className="font-bold text-[16px] text-ink">{editing ? 'Edit Produk' : 'Produk Baru'}</h3>
+                <div className="text-xs text-ink-2 mt-0.5">{editing ? (editing.name+' • '+editing.sku) : 'Daftarkan barang ke katalog. Stok ditambahkan setelah produk dibuat.'}</div>
               </div>
-              <button type="button" onClick={()=>setShow(false)} className="w-9 h-9 rounded-xl border border-[#e7ecf7] grid place-items-center text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
+              <button type="button" onClick={()=>setShow(false)} className="w-9 h-9 rounded-xl border border-line grid place-items-center text-ink-2 hover:bg-surface-2"><X size={16}/></button>
             </div>
 
             <div className="p-4 space-y-3 overflow-auto">
               {formErr && <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{formErr}</div>}
 
               <div className="grid sm:grid-cols-3 gap-2">
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">SKU / KODE *</span>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">SKU / KODE *</span>
                   <input value={form.sku} onChange={e=>setForm({...form, sku:e.target.value})} placeholder="mis. SEM-40" className={posInput}/></label>
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">BARCODE</span>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">BARCODE</span>
                   <input value={form.barcode} onChange={e=>setForm({...form, barcode:e.target.value})} placeholder="opsional" className={posInput}/></label>
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">SATUAN</span>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">SATUAN</span>
                   <PosSelect size="md" value={form.base_unit_id} onChange={v=>setForm({...form, base_unit_id:v})}>
                     <option value="">Pilih satuan</option>
                     {units.map(u=> <option key={u.id} value={u.id}>{u.code} • {u.name}</option>)}
                   </PosSelect></label>
               </div>
 
-              <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">NAMA PRODUK *</span>
+              <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-ink-2">NAMA PRODUK *</span>
                 <input value={form.name} onChange={e=>setForm({...form, name:e.target.value})} placeholder="mis. Semen Gresik 40kg" className={posInput}/></label>
 
               <div className="grid sm:grid-cols-2 gap-2">
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">KATEGORI</span>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">KATEGORI</span>
                   <PosSelect size="md" value={form.category_id} onChange={v=>setForm({...form, category_id:v})}>
                     <option value="">Tanpa kategori</option>
                     {cats.map(c=> <option key={c.id} value={c.id}>{c.name}</option>)}
                   </PosSelect></label>
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">PAJAK</span>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">PAJAK</span>
                   <PosSelect size="md" value={form.tax_id} onChange={v=>setForm({...form, tax_id:v})}>
                     <option value="">Tanpa pajak</option>
                     {taxes.map(t=> <option key={t.id} value={t.id}>{t.name} ({num(t.rate)}%)</option>)}
@@ -331,17 +331,17 @@ export default function MasterProducts(){
               </div>
 
               <div>
-                <span className="text-[11px] font-bold tracking-wider text-[#45464d] block mb-1">FOTO BARANG</span>
+                <span className="text-[11px] font-bold tracking-wider text-ink-2 block mb-1">FOTO BARANG</span>
                 <div className="flex items-center gap-3">
-                  <div className="w-20 h-20 rounded-xl bg-[#eff4ff] border border-[#e7ecf7] overflow-hidden grid place-items-center shrink-0">
+                  <div className="w-20 h-20 rounded-xl bg-surface-2 border border-line overflow-hidden grid place-items-center shrink-0">
                     {form.image_url
                       ? <img src={form.image_url} alt="Foto produk" className="w-full h-full object-cover"/>
-                      : <ImagePlus size={22} className="text-[#76777d]"/>}
+                      : <ImagePlus size={22} className="text-ink-3"/>}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-1.5">
                       <button type="button" onClick={()=>fotoRef.current?.click()} disabled={fotoBusy}
-                        className={posBtnSm+' bg-[#0051d5] text-white hover:bg-[#003ea8] disabled:opacity-50'}>
+                        className={posBtnSm+' bg-brand text-white hover:bg-[#003ea8] disabled:opacity-50'}>
                         {fotoBusy ? <><Loader2 size={13} className="animate-spin"/> Mengunggah...</> : <><Upload size={13}/> {form.image_url?'Ganti foto':'Unggah foto'}</>}
                       </button>
                       {form.image_url && (
@@ -350,36 +350,36 @@ export default function MasterProducts(){
                         </button>
                       )}
                     </div>
-                    <p className="text-[11px] text-[#76777d] mt-1.5">JPG / PNG / WEBP, maksimal 3 MB. Dipakai di katalog &amp; POS.</p>
+                    <p className="text-[11px] text-ink-3 mt-1.5">JPG / PNG / WEBP, maksimal 3 MB. Dipakai di katalog &amp; POS.</p>
                   </div>
                   <input ref={fotoRef} type="file" className="hidden" accept="image/jpeg,image/png,image/webp"
                     onChange={e=>{ pilihFoto(e.target.files?.[0]); e.target.value=''; }}/>
                 </div>
               </div>
 
-              <div className="rounded-xl border border-[#e7ecf7] bg-[#eff4ff] p-3 space-y-3">
+              <div className="rounded-xl border border-line bg-surface-2 p-3 space-y-3">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-[11px] font-bold tracking-wider text-[#45464d]">BATAS STOK (ALARM)</span>
-                  <span className="text-[11px] text-[#76777d]">dipakai untuk badge KRITIS / WASPADA</span>
+                  <span className="text-[11px] font-bold tracking-wider text-ink-2">BATAS STOK (ALARM)</span>
+                  <span className="text-[11px] text-ink-3">dipakai untuk badge KRITIS / WASPADA</span>
                 </div>
                 <div className="grid sm:grid-cols-3 gap-2">
-                  <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">MINIMUM</span>
+                  <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">MINIMUM</span>
                     <input type="number" value={form.min_stock} onChange={e=>setForm({...form, min_stock:e.target.value})} placeholder="10" className={posInput+' text-right tabular-nums'}/></label>
-                  <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">REORDER POINT</span>
+                  <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">REORDER POINT</span>
                     <input type="number" value={form.reorder_point} onChange={e=>setForm({...form, reorder_point:e.target.value})} placeholder="20" className={posInput+' text-right tabular-nums'}/></label>
-                  <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">MAKSIMUM</span>
+                  <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">MAKSIMUM</span>
                     <input type="number" value={form.max_stock} onChange={e=>setForm({...form, max_stock:e.target.value})} placeholder="opsional" className={posInput+' text-right tabular-nums'}/></label>
                 </div>
-                <div className="text-[11px] text-[#45464d]">Stok di bawah <b>reorder point</b> ditandai KRITIS. Harga jual diatur di <b>Pricing Engine</b>, harga beli dari pembelian/penambahan stok.</div>
+                <div className="text-[11px] text-ink-2">Stok di bawah <b>reorder point</b> ditandai KRITIS. Harga jual diatur di <b>Pricing Engine</b>, harga beli dari pembelian/penambahan stok.</div>
               </div>
 
-              <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">DESKRIPSI</span>
+              <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-ink-2">DESKRIPSI</span>
                 <input value={form.description} onChange={e=>setForm({...form, description:e.target.value})} placeholder="opsional" className={posInput}/></label>
 
               {editing && (
-                <div className="rounded-xl border border-[#e7ecf7] overflow-hidden">
-                  <div className="bg-[#eff4ff] px-3 py-2 border-b border-[#e7ecf7] flex items-center justify-between">
-                    <span className="text-[11px] font-bold tracking-wider text-[#45464d]">STOK PER GUDANG</span>
+                <div className="rounded-xl border border-line overflow-hidden">
+                  <div className="bg-surface-2 px-3 py-2 border-b border-line flex items-center justify-between">
+                    <span className="text-[11px] font-bold tracking-wider text-ink-2">STOK PER GUDANG</span>
                     <button type="button" onClick={()=>tambahStok(editing)} className={posBtnSm+' bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'}>
                       <PackagePlus size={13}/> Tambah Stok
                     </button>
@@ -389,17 +389,17 @@ export default function MasterProducts(){
                       {(detail?.stocks||[]).length ? detail.stocks.map(s=>(
                         <div key={s.id} className="px-3 py-2 flex items-center justify-between gap-2 text-sm">
                           <div className="flex items-center gap-2">
-                            <Warehouse size={14} className="text-[#45464d]"/>
-                            <span className="text-[#2b3445]">{s.warehouse_code||''} {s.warehouse_name||''}</span>
+                            <Warehouse size={14} className="text-ink-2"/>
+                            <span className="text-ink-2">{s.warehouse_code||''} {s.warehouse_name||''}</span>
                             {s.batch_no && <PosBadge tone="slate">batch {s.batch_no}</PosBadge>}
                           </div>
                           <div className="flex items-center gap-3">
-                            <span className="text-xs text-[#45464d]">avg {rupiah(s.avg_cost)}</span>
+                            <span className="text-xs text-ink-2">avg {rupiah(s.avg_cost)}</span>
                             <span className="font-bold tabular-nums">{angka(s.qty_on_hand)}</span>
                           </div>
                         </div>
                       )) : (
-                        <div className="px-3 py-4 text-center text-xs text-[#76777d]">
+                        <div className="px-3 py-4 text-center text-xs text-ink-3">
                           Belum ada baris stok untuk produk ini - klik "Tambah Stok" untuk mengisi stok awal.
                         </div>
                       )}

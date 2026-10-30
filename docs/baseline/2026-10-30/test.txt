@@ -1,0 +1,51 @@
+npm notice run erp-material@1.0.0 test
+npm notice run node --test "tests/*.test.js"
+✔ health check melaporkan DB (153.9614ms)
+✔ login: password salah ditolak (146.0973ms)
+✔ login: admin & kasir & finance (334.6282ms)
+✔ RBAC: kasir tidak boleh akses HR (5.3874ms)
+✔ RBAC: kasir tidak boleh akses approval rules (10.4607ms)
+✔ riwayat order: kasir hanya melihat POS miliknya (22.145ms)
+✔ riwayat order: finance melihat semua (31.3444ms)
+✔ pajak: summary periode berjalan (15.7746ms)
+✔ tutup buku: daftar periode (16.5566ms)
+✔ approval rules: default terpasang (14.8896ms)
+✔ approval check: diskon 15% butuh approval (7.5819ms)
+✔ valuasi stok: total & baris (10.6029ms)
+✔ margin produk: periode default (13.2893ms)
+✔ reorder: daftar saran tanpa membuat PR (13.7506ms)
+✔ rekon: butuh account_id (11.3989ms)
+✔ opname: daftar sesi (10.6702ms)
+✔ lacak publik: token ngawur 404 (18.933ms)
+✔ metrics: hanya admin/auditor (33.8757ms)
+✔ positions map explicitly without granting unknown jobs admin (1.9164ms)
+✔ roleless users cannot open protected pages (0.4571ms)
+✔ username is derived from the name and stays unique-looking (2.4125ms)
+✔ generated passwords are long, mixed and never repeat (0.8718ms)
+✔ unknown job roles collapse to the self-service role (1.5616ms)
+✔ setiap route HR diklasifikasi: guard rbac atau self-service (1.9041ms)
+✔ role pada guard HR konsisten dengan PAGE_ACCESS.hr (0.7298ms)
+✔ role self-service tidak mendapat menu HR maupun modul bisnis (0.4713ms)
+✔ recon-center mengembalikan semua cek (382.7799ms)
+✔ trial balance seimbang (90.5753ms)
+✔ AR dan nilai persediaan cocok dengan buku besar (24.1707ms)
+✔ recon-center hanya untuk peran keuangan (5.8666ms)
+✔ drilldown mengembalikan baris bukti (12.5326ms)
+✔ checkout POS menolak stok tidak cukup dengan 422 INSUFFICIENT_STOCK (255.4483ms)
+✔ harga >5x HPP ditolak (PRICE_OUTLIER_DETECTED) (112.2258ms)
+✔ harga di bawah HPP ditolak untuk kasir (butuh persetujuan) (100.6247ms)
+✔ sales order juga melewati penjaga harga (22.8411ms)
+✔ tabel buku besar tidak bisa dihapus/diubah (immutability) (77.4085ms)
+﹣ pembalik jurnal: sekali jalan, kedua kali ditolak (0.3445ms) # set PHASE1_LEDGER_TEST=1 untuk menguji buku besar
+✔ FEFO: batch diurutkan menurut tanggal kedaluwarsa (194.3035ms)
+✔ peringatan stok mendekati kedaluwarsa (95.8044ms)
+✔ jembatan timbang: ingest lalu bind ke DO, bind ganda ditolak (182.6455ms)
+✔ GRN menolak selisih berat di luar toleransi SNI (role gudang) (24.8299ms)
+ℹ tests 41
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 1011.5665

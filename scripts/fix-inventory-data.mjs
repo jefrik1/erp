@@ -16,6 +16,8 @@
 import dotenv from 'dotenv';
 import pg from 'pg';
 import jwt from 'jsonwebtoken';
+import { assertRepairAllowed } from '../src/lib/repair-guard.js';
+assertRepairAllowed('fix-inventory-data.mjs');
 
 dotenv.config();
 const API = process.env.API_BASE || 'http://localhost:4000/api';

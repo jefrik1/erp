@@ -141,7 +141,28 @@ async function main(){
     fix:'Biasanya harga baris (total) terisi di kolom harga satuan. Perbaiki lewat revisi invoice; menyentuh piutang, PPN & jurnal, jadi perlu persetujuan finance.',
   });
 
-  // 9. Produk aktif tanpa baris stok sama sekali (informasi)
+  // 9. Penjualan di bawah HPP (rugi per transaksi)
+  const belowCost = await q(`
+    WITH cost AS (SELECT product_id,
+                         COALESCE(NULLIF(SUM(ABS(qty_on_hand)*avg_cost)/NULLIF(SUM(ABS(qty_on_hand)),0),0), MAX(avg_cost), 0) AS avg_cost
+                    FROM stocks GROUP BY product_id)
+    SELECT p.sku, p.name, c.avg_cost, d.unit_price,
+           ROUND(((d.unit_price - c.avg_cost) / NULLIF(c.avg_cost,0) * 100)::numeric, 1) AS margin_pct,
+           i.invoice_number, d.qty
+      FROM invoice_details d JOIN invoices i ON i.id=d.invoice_id JOIN products p ON p.id=d.product_id
+      JOIN cost c ON c.product_id=p.id
+     WHERE UPPER(COALESCE(i.status,'')) NOT IN ('CANCELLED','VOID')
+       AND COALESCE(c.avg_cost,0) > 0 AND d.unit_price > 0 AND d.unit_price < c.avg_cost * 0.98
+     ORDER BY margin_pct ASC`);
+  findings.push({
+    id:'JUAL_DI_BAWAH_HPP', level:'P2',
+    title:'Penjualan di bawah HPP (margin negatif per transaksi)',
+    count: belowCost.length,
+    rows: belowCost.slice(0,10).map(r=>({ invoice:r.invoice_number, sku:r.sku, qty:Number(r.qty), hpp:Number(r.avg_cost), harga_jual:Number(r.unit_price), margin:Number(r.margin_pct)+'%' })),
+    fix:'Naikkan harga jual atau koreksi HPP (harga beli) lewat Penambahan Stok. Jangan ditutupi dengan mengubah angka margin.',
+  });
+
+  // 10. Produk aktif tanpa baris stok sama sekali (informasi)
   const noStock = await q(`SELECT p.sku, p.name FROM products p
                             WHERE p.is_active AND NOT EXISTS (SELECT 1 FROM stocks s WHERE s.product_id=p.id)
                             ORDER BY p.sku`);

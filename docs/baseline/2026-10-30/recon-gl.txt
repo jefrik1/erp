@@ -1,0 +1,27 @@
+npm notice run erp-material@1.0.0 recon:gl
+npm notice run node scripts/reconcile-gl-inventory.mjs
+=== REKONSILIASI KEUANGAN (2026-10-30T20:51:48.569+07:00) ===
+
+STATUS  CEK                                                   GL                 SUBLEDGER          SELISIH
+  OK   Piutang Usaha (1-1100) vs sisa tagihan invoice         Rp 270.746.236     Rp 270.746.236             Rp 0
+        ↳ Kelebihan bayar Rp 288.600 (99 invoice) dicatat di 2-1400 Uang Muka Pelanggan, bukan piutang negatif.
+  OK   Hutang Usaha (2-1000) vs invoice pemasok − pembayaran      Rp -3.075.600      Rp -3.075.600             Rp 0
+        ↳ Saldo debit berarti pembayaran AP melebihi kewajiban yang tercatat (penerimaan barang belum dijurnal).
+[P2] GR/IR (2-1150) vs nilai barang diterima − invoice pemasok       Rp 3.005.000       Rp 1.575.000     Rp 1.430.000
+        ↳ 10 GRN senilai Rp 1.014.425.000, baru 9 GRN yang punya jurnal.
+  OK   Persediaan (1-1200) vs nilai stok fisik             Rp 20.000.344.584  Rp 20.000.344.584             Rp 0
+[P2] Kas & Bank (1-1000/1010/1020) vs saldo rekening      Rp 1.613.867.460   Rp 1.613.567.460       Rp 300.000
+  OK   Hutang PPN (2-1100) vs PPN keluaran invoice             Rp 70.476.296      Rp 70.476.296             Rp 0
+        ↳ Termasuk PPN dari invoice POS yang pendapatannya belum dijurnal.
+[P2] Integritas jurnal (tanpa baris / tidak balance / duplikat)                                                      2
+        ↳ {"tanpa_baris":0,"tidak_balance":0,"nomor_duplikat":0,"referensi_duplikat":2}
+  OK   Jurnal menunjuk dokumen yang tidak ada                                                                  0
+        ↳ {}
+
+Neraca saldo: D Rp 27.566.583.680 · K Rp 27.566.583.680 · SEIMBANG ✓
+Status keseluruhan: P2
+
+Pengecualian:
+  - [P2] GR/IR (2-1150) vs nilai barang diterima − invoice pemasok
+  - [P2] Kas & Bank (1-1000/1010/1020) vs saldo rekening
+  - [P2] Integritas jurnal (tanpa baris / tidak balance / duplikat)

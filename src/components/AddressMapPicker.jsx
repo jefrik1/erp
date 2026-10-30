@@ -113,7 +113,7 @@ export default function AddressMapPicker({ valueLat, valueLng, valueAddress, onP
         // label garis pakai locality tujuan jika ada, bukan hardcode Bekasi
         const loc = destLoc || (d<=15 ? 'Dekat Pusat' : d<=40 ? 'Menengah' : 'Jauh');
         line.unbindTooltip();
-        line.bindTooltip(`${d.toFixed(2)} km • ${loc}`, { sticky:true, direction:'top', offset:[0,-6], className:'!bg-[#131b2e] !text-white !border-0 !rounded-full !px-2 !py-1 !text-[11px] !font-bold' });
+        line.bindTooltip(`${d.toFixed(2)} km • ${loc}`, { sticky:true, direction:'top', offset:[0,-6], className:'!bg-navy !text-white !border-0 !rounded-full !px-2 !py-1 !text-[11px] !font-bold' });
         try{ const mid=[(ORIGIN.lat+lat)/2, (ORIGIN.lng+lng)/2]; line.openTooltip(mid); setTimeout(()=>line.closeTooltip(),1600); }catch{}
       };
       updateLine(pos.lat,pos.lng);
@@ -179,42 +179,42 @@ export default function AddressMapPicker({ valueLat, valueLng, valueAddress, onP
   const badgeCls = dist>40 ? "bg-amber-500 text-white border-amber-600" : dist>15 ? "bg-sky-600 text-white border-sky-700" : "bg-emerald-600 text-white border-emerald-700";
 
   return (
-    <div className={"border border-[#e7ecf7] rounded-xl overflow-hidden bg-white shadow-card flex flex-col "+(compact?'':'')}>
-      <div className="px-3 py-2 bg-white border-b border-[#e7ecf7] flex items-center gap-2">
-        <span className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-[#0b1c30] shrink-0"><span className="w-5 h-5 rounded-full bg-[#0051d5] text-white grid place-items-center text-[11px]">◉</span> PETA PENGIRIMAN</span>
-        <span className="flex-1 min-w-0 hidden sm:block text-[11px] text-[#76777d] truncate">klik / drag pin merah • OSM</span>
+    <div className={"border border-line rounded-xl overflow-hidden bg-white shadow-card flex flex-col "+(compact?'':'')}>
+      <div className="px-3 py-2 bg-white border-b border-line flex items-center gap-2">
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-ink shrink-0"><span className="w-5 h-5 rounded-full bg-brand text-white grid place-items-center text-[11px]">◉</span> PETA PENGIRIMAN</span>
+        <span className="flex-1 min-w-0 hidden sm:block text-[11px] text-ink-3 truncate">klik / drag pin merah • OSM</span>
         <span className="ml-auto flex items-center gap-1.5 shrink-0">
-          <span className="text-[11px] px-2.5 py-1 rounded-full bg-[#131b2e] text-white font-bold truncate max-w-[120px]" title={`${ORIGIN.lat}, ${ORIGIN.lng}`}>{pusatLabel}</span>
+          <span className="text-[11px] px-2.5 py-1 rounded-full bg-navy text-white font-bold truncate max-w-[120px]" title={`${ORIGIN.lat}, ${ORIGIN.lng}`}>{pusatLabel}</span>
           <span className={"text-[11px] px-2.5 py-1 rounded-full font-bold border truncate max-w-[130px] "+badgeCls}>{dist} km • {tujuanLabel}</span>
         </span>
       </div>
 
-      <div className="p-2 flex gap-2 bg-[#eff4ff] border-b border-[#e7ecf7]">
+      <div className="p-2 flex gap-2 bg-surface-2 border-b border-line">
         <div className="flex-1 relative min-w-0">
-          <input value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Enter'&&(e.preventDefault(),doSearch())} placeholder="Cari alamat - ex: Jenu Tuban" className="w-full h-9 pl-3 pr-8 bg-white border border-[#e7ecf7] rounded-xl text-[13px] placeholder:text-[#76777d] outline-none focus:border-[#0051d5] focus:ring-2 focus:ring-[#0051d5]/10"/>
-          {q && <button type="button" onClick={()=>setQ('')} className="absolute right-1.5 top-1/2 -translate-y-1/2 w-6 h-6 grid place-items-center rounded-full hover:bg-[#e5eeff] text-[#76777d] text-xs"><X size={13}/></button>}
+          <input value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Enter'&&(e.preventDefault(),doSearch())} placeholder="Cari alamat - ex: Jenu Tuban" className="w-full h-9 pl-3 pr-8 bg-white border border-line rounded-xl text-[13px] placeholder:text-ink-3 outline-none focus:border-brand focus:ring-2 focus:ring-[#0051d5]/10"/>
+          {q && <button type="button" onClick={()=>setQ('')} className="absolute right-1.5 top-1/2 -translate-y-1/2 w-6 h-6 grid place-items-center rounded-full hover:bg-surface-3 text-ink-3 text-xs"><X size={13}/></button>}
         </div>
-        <button type="button" onClick={doSearch} disabled={searching} className="h-9 px-4 rounded-xl bg-[#131b2e] text-white text-xs font-bold hover:bg-black disabled:opacity-50 shrink-0">{searching?'…':'Cari'}</button>
+        <button type="button" onClick={doSearch} disabled={searching} className="h-9 px-4 rounded-xl bg-navy text-white text-xs font-bold hover:bg-black disabled:opacity-50 shrink-0">{searching?'…':'Cari'}</button>
       </div>
 
-      <div className="relative bg-[#e5eeff]">
+      <div className="relative bg-surface-3">
         <div ref={mapRef} className={"w-full "+(compact?'h-[220px]':'h-[300px]')} />
-        <div className="absolute left-2 top-2 bg-white border border-[#e7ecf7] rounded-full px-2.5 py-1 shadow flex items-center gap-2 text-[11px] font-bold">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#0051d5] border border-white"></span> {originName||'Pusat'}
+        <div className="absolute left-2 top-2 bg-white border border-line rounded-full px-2.5 py-1 shadow flex items-center gap-2 text-[11px] font-bold">
+          <span className="w-2.5 h-2.5 rounded-full bg-brand border border-white"></span> {originName||'Pusat'}
           <span className="w-px h-3 bg-[#e7ecf7]"></span>
           <span className="w-2.5 h-2.5 rounded-full bg-[#ba1a1a] border border-white"></span> {destLoc||'Tujuan'}
-          <span className="text-[#45464d] font-normal">• {dist} km</span>
+          <span className="text-ink-2 font-normal">• {dist} km</span>
         </div>
-        <div className="absolute right-2 top-2 bg-[#131b2e]/90 backdrop-blur text-white rounded-full px-2.5 py-1 text-[11px] font-mono shadow">
+        <div className="absolute right-2 top-2 bg-navy/90 backdrop-blur text-white rounded-full px-2.5 py-1 text-[11px] font-mono shadow">
           {pos.lat.toFixed(5)}, {pos.lng.toFixed(5)}
         </div>
       </div>
 
-      {addr && <div className="mx-2 mt-2 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl px-3 py-2"><div className="text-xs font-bold text-[#0b1c30] line-clamp-2 leading-tight">📍 {addr}</div><div className="text-[11px] text-[#45464d] mt-0.5">{dist} km dari {originName||'pusat'} → {destLoc||zone} • zona tarif auto</div></div>}
+      {addr && <div className="mx-2 mt-2 bg-surface-2 border border-line rounded-xl px-3 py-2"><div className="text-xs font-bold text-ink line-clamp-2 leading-tight">📍 {addr}</div><div className="text-[11px] text-ink-2 mt-0.5">{dist} km dari {originName||'pusat'} → {destLoc||zone} • zona tarif auto</div></div>}
 
-      <div className="p-2 flex items-center gap-2 bg-white border-t border-[#e7ecf7]">
-        <span className="flex-1 text-[11px] text-[#45464d] hidden sm:block">Drag pin merah atau klik peta</span>
-        <button type="button" onClick={confirm} className="flex-1 sm:flex-none h-9 px-5 rounded-xl bg-[#0051d5] text-white text-xs font-bold hover:bg-[#0041ab] shadow-card">Pakai alamat & jarak ini</button>
+      <div className="p-2 flex items-center gap-2 bg-white border-t border-line">
+        <span className="flex-1 text-[11px] text-ink-2 hidden sm:block">Drag pin merah atau klik peta</span>
+        <button type="button" onClick={confirm} className="flex-1 sm:flex-none h-9 px-5 rounded-xl bg-brand text-white text-xs font-bold hover:bg-brand-strong shadow-card">Pakai alamat & jarak ini</button>
       </div>
     </div>
   )

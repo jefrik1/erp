@@ -47,3 +47,6 @@ test_*.mjs
 # kredensial akun hasil provisioning tidak boleh masuk repo
 employee-credentials*.csv
 *.credentials.csv
+
+# backup database (pg_dump harian) — jangan masuk repo
+backups/

@@ -375,6 +375,20 @@ router.get('/product-margin', async (req, res)=>{
     res.json({ start, end, data:r.rows,
       // Produk terjual tapi HPP-nya 0 → margin akan tampak 100%. Ditandai agar tidak menyesatkan.
       cost_missing: r.rows.filter(x=>Number(x.revenue)>0 && Number(x.est_cost)===0).length,
+      // Harga jual di baris invoice jauh dari HPP (>5x / <0,2x): biasanya kolom harga
+      // satuan terisi nilai total baris. Margin jadi menggelembung walau HPP sudah ada.
+      price_outliers: await pool.query(`
+        WITH cost AS (SELECT product_id,
+                 COALESCE(NULLIF(SUM(ABS(qty_on_hand)*avg_cost)/NULLIF(SUM(ABS(qty_on_hand)),0),0), MAX(avg_cost), 0) AS avg_cost
+                FROM stocks GROUP BY product_id)
+        SELECT COUNT(*)::int AS n
+          FROM invoice_details d JOIN invoices inv ON inv.id=d.invoice_id
+          JOIN cost c ON c.product_id=d.product_id
+         WHERE inv.invoice_date BETWEEN $1 AND $2
+           AND UPPER(COALESCE(inv.status,'')) NOT IN ('CANCELLED','VOID')
+           AND COALESCE(c.avg_cost,0) > 0
+           AND (d.unit_price > c.avg_cost*5 OR d.unit_price < c.avg_cost*0.2)`, [start, end])
+        .then(x=> x.rows[0]?.n || 0).catch(()=>0),
       totals: r.rows.reduce((a,x)=>({ revenue:a.revenue+Number(x.revenue||0), cost:a.cost+Number(x.est_cost||0), margin:a.margin+Number(x.gross_margin||0) }), {revenue:0,cost:0,margin:0}) });
   }catch(e){ console.error('[margin]',e); res.status(500).json({error:e.message}); }
 });

@@ -122,7 +122,7 @@ export default function MasterSuppliers(){
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <PosStat icon={Truck} tone="bg-[#0051d5]/10 text-[#0051d5]" label="TOTAL SUPPLIER" value={nf(total)} sub={stats.rated+' punya rating'}/>
+        <PosStat icon={Truck} tone="bg-brand/10 text-brand" label="TOTAL SUPPLIER" value={nf(total)} sub={stats.rated+' punya rating'}/>
         <PosStat icon={ShoppingCart} tone="bg-sky-50 text-sky-700" label="NILAI PO (HALAMAN INI)" value={rupiah(stats.nilai)} sub="total purchase order"/>
         <PosStat icon={Wallet} tone="bg-amber-50 text-amber-700" label="PO BELUM SELESAI" value={rupiah(stats.outstanding)} sub="status belum RECEIVED"/>
         <PosStat icon={Package} tone="bg-emerald-50 text-emerald-700" label="BELUM PERNAH PO" value={nf(stats.tanpaPo)} sub="supplier baru / belum dipakai"/>
@@ -136,7 +136,7 @@ export default function MasterSuppliers(){
             </button>
           </>}>
             <div className={posSearchWrap}>
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#76777d]"/>
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3"/>
               <input value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Enter'&&setAppliedQ(q)}
                 placeholder="Cari nama / kode / telepon lalu Enter..." className={posInput+' pl-9'}/>
             </div>
@@ -153,7 +153,7 @@ export default function MasterSuppliers(){
           <>
             <div className="overflow-auto">
               <table className="w-full text-sm">
-                <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                <thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                   <PosTh>SUPPLIER</PosTh><PosTh>KONTAK</PosTh><PosTh align="center">TERMIN</PosTh>
                   <PosTh align="center">RATING</PosTh><PosTh align="right">JUMLAH PO</PosTh>
                   <PosTh align="right">NILAI PO</PosTh><PosTh align="center">PO TERAKHIR</PosTh>
@@ -163,10 +163,10 @@ export default function MasterSuppliers(){
                   {rows.map(s=>(
                     <tr key={s.id} className={posTr}>
                       <td className={posTd}>
-                        <div className="font-bold text-[#0b1c30]">{s.name}</div>
-                        <div className="text-[11px] text-[#45464d] font-mono">{s.code}{s.npwp? ' • NPWP '+s.npwp : ''}</div>
+                        <div className="font-bold text-ink">{s.name}</div>
+                        <div className="text-[11px] text-ink-2 font-mono">{s.code}{s.npwp? ' • NPWP '+s.npwp : ''}</div>
                       </td>
-                      <td className={posTd+' text-xs text-[#45464d]'}>
+                      <td className={posTd+' text-xs text-ink-2'}>
                         <div className="flex items-center gap-1"><Phone size={11}/> {s.phone||'-'}</div>
                         {s.email && <div className="flex items-center gap-1"><Mail size={11}/> {s.email}</div>}
                       </td>
@@ -174,7 +174,7 @@ export default function MasterSuppliers(){
                       <td className={posTd+' text-center'}>
                         {num(s.rating)>0
                           ? <span className="inline-flex items-center gap-1 text-amber-600 font-bold text-xs"><Star size={12}/> {num(s.rating).toFixed(1)}</span>
-                          : <span className="text-xs text-[#76777d]">-</span>}
+                          : <span className="text-xs text-ink-3">-</span>}
                       </td>
                       <td className={posTd+' text-right tabular-nums'}>{nf(s.po_count)}</td>
                       <td className={posTd+' text-right font-bold tabular-nums'}>{rupiah(s.po_value)}</td>
@@ -202,38 +202,38 @@ export default function MasterSuppliers(){
           <form onSubmit={submit} className="bg-white rounded-xl p-5 w-full max-w-2xl max-h-[92vh] overflow-auto space-y-3 border shadow-raised animate-pop">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-bold text-[16px] text-[#0b1c30]">{editing? 'Edit Supplier':'Supplier Baru'}</h3>
-                <div className="text-xs text-[#45464d] mt-0.5">Termin pembayaran dipakai untuk menghitung jatuh tempo hutang</div>
+                <h3 className="font-bold text-[16px] text-ink">{editing? 'Edit Supplier':'Supplier Baru'}</h3>
+                <div className="text-xs text-ink-2 mt-0.5">Termin pembayaran dipakai untuk menghitung jatuh tempo hutang</div>
               </div>
-              <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-[#e7ecf7] grid place-items-center text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
+              <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-line grid place-items-center text-ink-2 hover:bg-surface-2"><X size={16}/></button>
             </div>
             {formErr && <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{formErr}</div>}
             <div className="grid sm:grid-cols-3 gap-2">
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">KODE *</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">KODE *</span>
                 <input value={form.code} onChange={e=>setForm({...form, code:e.target.value})} disabled={!!editing}
                   placeholder="SUP-007" className={posInput+' disabled:opacity-60 font-mono'}/></label>
-              <label className="space-y-1 sm:col-span-2"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">NAMA *</span>
+              <label className="space-y-1 sm:col-span-2"><span className="text-[11px] font-bold tracking-wider text-ink-2">NAMA *</span>
                 <input value={form.name} onChange={e=>setForm({...form, name:e.target.value})} placeholder="mis. PT Semen Indonesia" className={posInput}/></label>
             </div>
             <div className="grid sm:grid-cols-3 gap-2">
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">TELEPON</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">TELEPON</span>
                 <input value={form.phone} onChange={e=>setForm({...form, phone:e.target.value})} className={posInput}/></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">EMAIL</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">EMAIL</span>
                 <input value={form.email} onChange={e=>setForm({...form, email:e.target.value})} className={posInput}/></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">NPWP</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">NPWP</span>
                 <input value={form.npwp} onChange={e=>setForm({...form, npwp:e.target.value})} className={posInput}/></label>
             </div>
             <div className="grid sm:grid-cols-3 gap-2">
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">TERMIN (HARI)</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">TERMIN (HARI)</span>
                 <input type="number" value={form.payment_term_days} onChange={e=>setForm({...form, payment_term_days:e.target.value})} placeholder="0 = COD" className={posInput+' text-right tabular-nums'}/></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">RATING (0-5)</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">RATING (0-5)</span>
                 <input type="number" step="0.1" value={form.rating} onChange={e=>setForm({...form, rating:e.target.value})} placeholder="mis. 4.5" className={posInput+' text-right tabular-nums'}/></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">STATUS</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-ink-2">STATUS</span>
                 <PosSelect size="md" value={form.is_active?'AKTIF':'NONAKTIF'} onChange={v=>setForm({...form, is_active: v==='AKTIF'})}>
                   <option value="AKTIF">Aktif</option><option value="NONAKTIF">Nonaktif</option>
                 </PosSelect></label>
             </div>
-            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">ALAMAT</span>
+            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-ink-2">ALAMAT</span>
               <input value={form.address} onChange={e=>setForm({...form, address:e.target.value})} placeholder="Jalan, kota" className={posInput}/></label>
             <div className="flex justify-end gap-2 pt-1">
               <button type="button" onClick={()=>setModal('')} className={posBtnSecondary+' h-9 px-4 text-xs'}>Batal</button>
@@ -251,34 +251,34 @@ export default function MasterSuppliers(){
           <div className="bg-white rounded-xl w-full max-w-3xl max-h-[92vh] flex flex-col border shadow-raised overflow-hidden animate-pop">
             <div className="p-4 border-b flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-bold text-[16px] text-[#0b1c30]">{detail.name||'Supplier'}</h3>
-                <div className="text-xs text-[#45464d] mt-1 flex items-center gap-2 flex-wrap">
+                <h3 className="font-bold text-[16px] text-ink">{detail.name||'Supplier'}</h3>
+                <div className="text-xs text-ink-2 mt-1 flex items-center gap-2 flex-wrap">
                   <span className="font-mono">{detail.code}</span><span>•</span>
                   <span>{detail.payment_term_days? detail.payment_term_days+' hari termin' : 'COD'}</span>
                   {num(detail.rating)>0 && <PosBadge tone="amber"><Star size={11}/> {num(detail.rating).toFixed(1)}</PosBadge>}
                   <PosBadge tone={detail.is_active?'emerald':'slate'}>{detail.is_active?'AKTIF':'NONAKTIF'}</PosBadge>
                 </div>
               </div>
-              <button onClick={()=>setDetail(null)} className="w-9 h-9 rounded-xl border border-[#e7ecf7] grid place-items-center text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
+              <button onClick={()=>setDetail(null)} className="w-9 h-9 rounded-xl border border-line grid place-items-center text-ink-2 hover:bg-surface-2"><X size={16}/></button>
             </div>
             <div className="p-4 space-y-4 overflow-auto">
               {detailBusy ? <PosSkeleton rows={5} cols={4}/> : (<>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 text-xs">
-                  <div className="rounded-xl border border-[#e7ecf7] bg-[#eff4ff] p-2.5"><div className="text-[#45464d]">Jumlah PO</div><div className="font-bold text-[#0b1c30]">{detail.po_count||0} dokumen</div></div>
-                  <div className="rounded-xl border border-[#e7ecf7] bg-[#eff4ff] p-2.5"><div className="text-[#45464d]">Nilai PO</div><div className="font-bold text-[#0b1c30]">{rupiah(detail.po_value)}</div></div>
-                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-2.5"><div className="text-amber-700">Belum Selesai</div><div className="font-bold text-[#0b1c30]">{rupiah(detail.outstanding)}</div></div>
-                  <div className="rounded-xl border border-[#e7ecf7] bg-[#eff4ff] p-2.5"><div className="text-[#45464d]">NPWP</div><div className="font-bold font-mono">{detail.npwp||'-'}</div></div>
+                  <div className="rounded-xl border border-line bg-surface-2 p-2.5"><div className="text-ink-2">Jumlah PO</div><div className="font-bold text-ink">{detail.po_count||0} dokumen</div></div>
+                  <div className="rounded-xl border border-line bg-surface-2 p-2.5"><div className="text-ink-2">Nilai PO</div><div className="font-bold text-ink">{rupiah(detail.po_value)}</div></div>
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-2.5"><div className="text-amber-700">Belum Selesai</div><div className="font-bold text-ink">{rupiah(detail.outstanding)}</div></div>
+                  <div className="rounded-xl border border-line bg-surface-2 p-2.5"><div className="text-ink-2">NPWP</div><div className="font-bold font-mono">{detail.npwp||'-'}</div></div>
                 </div>
-                <div className="text-xs text-[#45464d] flex flex-wrap gap-3">
+                <div className="text-xs text-ink-2 flex flex-wrap gap-3">
                   {detail.phone && <span className="inline-flex items-center gap-1"><Phone size={12}/> {detail.phone}</span>}
                   {detail.email && <span className="inline-flex items-center gap-1"><Mail size={12}/> {detail.email}</span>}
                   {detail.address && <span className="inline-flex items-center gap-1"><MapPin size={12}/> {detail.address}</span>}
                 </div>
                 <div>
-                  <div className="text-[11px] font-bold tracking-wider text-[#45464d] mb-2">PURCHASE ORDER TERAKHIR ({(detail.orders||[]).length})</div>
-                  <div className="overflow-auto rounded-xl border border-[#e7ecf7]">
+                  <div className="text-[11px] font-bold tracking-wider text-ink-2 mb-2">PURCHASE ORDER TERAKHIR ({(detail.orders||[]).length})</div>
+                  <div className="overflow-auto rounded-xl border border-line">
                     <table className="w-full text-sm">
-                      <thead><tr className="bg-[#e5eeff] border-b border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                      <thead><tr className="bg-surface-3 border-b border-line text-[11px] font-bold tracking-wider text-ink-2">
                         <PosTh>NO PO</PosTh><PosTh align="center">TANGGAL</PosTh><PosTh align="right">NILAI</PosTh><PosTh align="center">STATUS</PosTh>
                       </tr></thead>
                       <tbody>
@@ -296,10 +296,10 @@ export default function MasterSuppliers(){
                   </div>
                 </div>
                 <div>
-                  <div className="text-[11px] font-bold tracking-wider text-[#45464d] mb-2">PRODUK YANG PERNAH DIPASOK ({(detail.products||[]).length})</div>
+                  <div className="text-[11px] font-bold tracking-wider text-ink-2 mb-2">PRODUK YANG PERNAH DIPASOK ({(detail.products||[]).length})</div>
                   <div className="flex flex-wrap gap-1.5">
                     {(detail.products||[]).map(p=> <PosBadge key={p.id} tone="slate">{p.name}</PosBadge>)}
-                    {!(detail.products||[]).length && <span className="text-xs text-[#76777d]">Belum ada data pembelian</span>}
+                    {!(detail.products||[]).length && <span className="text-xs text-ink-3">Belum ada data pembelian</span>}
                   </div>
                 </div>
               </>)}

@@ -17,7 +17,7 @@ const progColor = (p)=> p >= 100 ? 'bg-emerald-500' : p >= 70 ? 'bg-amber-500' :
 const progText = (p)=> p >= 100 ? 'text-emerald-600' : p >= 70 ? 'text-amber-600' : 'text-red-600';
 // Tombol toolbar: satu tinggi (h-9) supaya sejajar dengan PosSelect sm - jangan digabung
 // dengan posBtnSecondary karena kelas h-[42px]-nya bentrok dengan h-9.
-const TB = 'h-9 px-4 inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#e7ecf7] bg-white text-xs font-bold text-[#2b3445] hover:bg-[#eff4ff] active:scale-[0.98] transition whitespace-nowrap';
+const TB = 'h-9 px-4 inline-flex items-center justify-center gap-1.5 rounded-xl border border-line bg-white text-xs font-bold text-ink-2 hover:bg-surface-2 active:scale-[0.98] transition whitespace-nowrap';
 
 function Err({ msg }){ return msg ? <p className="text-[11px] text-red-600 font-semibold mt-1">{msg}</p> : null; }
 
@@ -261,13 +261,13 @@ export default function Budgets(){
       <PosCard>
         <PosCardBody className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-12 gap-3 items-end">
           <div className="xl:col-span-2">
-            <label className="block text-[11px] font-bold tracking-wider text-[#45464d] mb-1">TAHUN ANGGARAN</label>
+            <label className="block text-[11px] font-bold tracking-wider text-ink-2 mb-1">TAHUN ANGGARAN</label>
             <PosSelect value={String(year)} onChange={v=>setYear(Number(v))}>
               {years.map(y=> <option key={y} value={String(y)}>{y}</option>)}
             </PosSelect>
           </div>
           <div className="xl:col-span-3">
-            <label className="block text-[11px] font-bold tracking-wider text-[#45464d] mb-1">AKUN</label>
+            <label className="block text-[11px] font-bold tracking-wider text-ink-2 mb-1">AKUN</label>
             <PosSelect value={accountId} onChange={setAccountId}>
               <option value="">Semua Akun</option>
               {accounts.map(a=> <option key={a.id} value={String(a.id)}>{a.code} {a.name}</option>)}
@@ -288,18 +288,18 @@ export default function Budgets(){
           <PosCard className="flex-1 flex flex-col">
             <PosCardBody className="flex-1 flex flex-col">
               <div className="flex items-center justify-between gap-2 flex-wrap">
-                <h3 className="font-bold text-[#0b1c30]">Realisasi vs Budget - {year}</h3>
-                <span className="text-[11px] text-[#45464d]">12 bulan penuh (bulan tanpa data = 0)</span>
+                <h3 className="font-bold text-ink">Realisasi vs Budget - {year}</h3>
+                <span className="text-[11px] text-ink-2">12 bulan penuh (bulan tanpa data = 0)</span>
               </div>
-              <div className="mt-2 flex items-start gap-1.5 text-[11px] text-[#45464d] bg-[#eff4ff] border border-[#e7ecf7] rounded-xl px-3 py-2">
-                <Info size={13} className="mt-0.5 shrink-0 text-[#0051d5]"/>
+              <div className="mt-2 flex items-start gap-1.5 text-[11px] text-ink-2 bg-surface-2 border border-line rounded-xl px-3 py-2">
+                <Info size={13} className="mt-0.5 shrink-0 text-brand"/>
                 <span>Kolom <b>ACTUAL</b> berasal dari jurnal (journal_entries) yang belum berdimensi akun. Saat filter <b>Akun</b> aktif, angka ACTUAL tetap <b>company-wide</b> - hanya sisi BUDGET yang tersaring.</span>
               </div>
 
               <div className="overflow-auto mt-3 flex-1">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                    <tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                       <th className="px-4 py-3.5 text-left">BULAN</th>
                       <th className="px-4 py-3.5 text-right">BUDGET</th>
                       <th className="px-4 py-3.5 text-right">ACTUAL</th>
@@ -313,15 +313,15 @@ export default function Budgets(){
                       const p = Number(c.progress) || 0;
                       const w = Math.max(0, Math.min(100, p));
                       return (
-                        <tr key={c.period_month} className="border-b border-[#e5eeff] hover:bg-[#eff4ff] transition bg-white">
-                          <td className="px-4 py-3 font-bold text-[#0b1c30]">{monthLabel(c.period_month)}</td>
+                        <tr key={c.period_month} className="border-b border-line hover:bg-surface-2 transition bg-white">
+                          <td className="px-4 py-3 font-bold text-ink">{monthLabel(c.period_month)}</td>
                           <td className="px-4 py-3 text-right tabular-nums">{angka(c.budget)}</td>
                           <td className="px-4 py-3 text-right tabular-nums">{angka(c.actual)}</td>
                           <td className={'px-4 py-3 text-right font-bold tabular-nums ' + (Number(c.variance) >= 0 ? 'text-emerald-600' : 'text-red-600')}>{angka(c.variance)}</td>
                           <td className={'px-4 py-3 text-right font-bold tabular-nums ' + progText(p)}>{c.pct}%</td>
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-2">
-                              <div className="h-2 w-full max-w-[110px] bg-[#e5eeff] rounded-full overflow-hidden">
+                              <div className="h-2 w-full max-w-[110px] bg-surface-3 rounded-full overflow-hidden">
                                 <div className={'h-full rounded-full transition-all ' + progColor(p)} style={{ width: w + '%' }} />
                               </div>
                               <span className={'text-[11px] font-bold tabular-nums shrink-0 ' + progText(p)}>{p}%</span>
@@ -331,18 +331,18 @@ export default function Budgets(){
                       );
                     })}
                     {comparisonRows.length === 0 && (
-                      <tr><td colSpan={6} className="p-4 text-center text-[#76777d]">Belum ada data perbandingan</td></tr>
+                      <tr><td colSpan={6} className="p-4 text-center text-ink-3">Belum ada data perbandingan</td></tr>
                     )}
                   </tbody>
                   {ytd && (
                     <tfoot>
-                      <tr className="bg-[#eff4ff] border-t-2 border-[#e7ecf7] font-bold text-[#0b1c30]">
+                      <tr className="bg-surface-2 border-t-2 border-line font-bold text-ink">
                         <td className="px-4 py-3.5">YTD (TOTAL)</td>
                         <td className="px-4 py-3.5 text-right tabular-nums">{angka(ytd.budget)}</td>
                         <td className="px-4 py-3.5 text-right tabular-nums">{angka(ytd.actual)}</td>
                         <td className={'px-4 py-3.5 text-right tabular-nums ' + (Number(ytd.variance) >= 0 ? 'text-emerald-600' : 'text-red-600')}>{angka(ytd.variance)}</td>
                         <td className={'px-4 py-3.5 text-right tabular-nums ' + progText(Number(ytd.pct)||0)}>{ytd.pct}%</td>
-                        <td className="px-4 py-3.5 text-[11px] font-semibold text-[#45464d]">Akumulasi Jan-Des</td>
+                        <td className="px-4 py-3.5 text-[11px] font-semibold text-ink-2">Akumulasi Jan-Des</td>
                       </tr>
                     </tfoot>
                   )}
@@ -354,7 +354,7 @@ export default function Budgets(){
 
         {/* ------------------------------------------------------- cashflow */}
         <div className="flex flex-col gap-3">
-          <div className="bg-[#131b2e] text-white rounded-xl p-5" title={cf?.formula || 'Kas Sekarang + Piutang jatuh tempo - Hutang jatuh tempo - Budget expense'}>
+          <div className="bg-navy text-white rounded-xl p-5" title={cf?.formula || 'Kas Sekarang + Piutang jatuh tempo - Hutang jatuh tempo - Budget expense'}>
             <div className="flex items-center justify-between gap-2">
               <h3 className="font-bold">Cashflow {cf?.horizon_days || 90} Hari</h3>
               <span className={'text-[11px] font-bold px-2 py-1 rounded-full border ' + (netPositive ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30' : 'bg-red-500/20 text-red-300 border-red-400/30')}>
@@ -388,38 +388,38 @@ export default function Budgets(){
           <PosCard className="flex-1 flex flex-col">
             <PosCardBody className="flex-1 flex flex-col">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="font-bold text-[#0b1c30]">Simulasi Skenario</h3>
-                {scenLoading && <span className="text-[11px] font-bold text-[#0051d5]">menghitung...</span>}
+                <h3 className="font-bold text-ink">Simulasi Skenario</h3>
+                {scenLoading && <span className="text-[11px] font-bold text-brand">menghitung...</span>}
               </div>
 
               <div className="grid grid-cols-3 gap-2 mt-3">
                 <div>
-                  <label className="block text-[11px] font-bold tracking-wider text-[#45464d] mb-1">% PENJUALAN</label>
+                  <label className="block text-[11px] font-bold tracking-wider text-ink-2 mb-1">% PENJUALAN</label>
                   <input type="number" value={assum.sales_pct} onChange={e=>setAssum(a=>({ ...a, sales_pct: e.target.value }))}
-                    className="w-full h-[38px] px-2 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm text-right tabular-nums outline-none focus:bg-white focus:border-[#0051d5] focus:ring-2 focus:ring-[#0051d5]/10 transition" />
+                    className="w-full h-[38px] px-2 bg-surface-2 border border-line rounded-xl text-sm text-right tabular-nums outline-none focus:bg-white focus:border-brand focus:ring-2 focus:ring-[#0051d5]/10 transition" />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold tracking-wider text-[#45464d] mb-1">% COLLECTION</label>
+                  <label className="block text-[11px] font-bold tracking-wider text-ink-2 mb-1">% COLLECTION</label>
                   <input type="number" value={assum.collection_pct} onChange={e=>setAssum(a=>({ ...a, collection_pct: e.target.value }))}
-                    className="w-full h-[38px] px-2 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm text-right tabular-nums outline-none focus:bg-white focus:border-[#0051d5] focus:ring-2 focus:ring-[#0051d5]/10 transition" />
+                    className="w-full h-[38px] px-2 bg-surface-2 border border-line rounded-xl text-sm text-right tabular-nums outline-none focus:bg-white focus:border-brand focus:ring-2 focus:ring-[#0051d5]/10 transition" />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold tracking-wider text-[#45464d] mb-1">% OPEX</label>
+                  <label className="block text-[11px] font-bold tracking-wider text-ink-2 mb-1">% OPEX</label>
                   <input type="number" value={assum.opex_pct} onChange={e=>setAssum(a=>({ ...a, opex_pct: e.target.value }))}
-                    className="w-full h-[38px] px-2 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm text-right tabular-nums outline-none focus:bg-white focus:border-[#0051d5] focus:ring-2 focus:ring-[#0051d5]/10 transition" />
+                    className="w-full h-[38px] px-2 bg-surface-2 border border-line rounded-xl text-sm text-right tabular-nums outline-none focus:bg-white focus:border-brand focus:ring-2 focus:ring-[#0051d5]/10 transition" />
                 </div>
               </div>
-              <p className="text-[11px] text-[#76777d] mt-1.5">% Penjualan boleh negatif. Perubahan dihitung ulang otomatis (sekitar 0,4 detik).</p>
+              <p className="text-[11px] text-ink-3 mt-1.5">% Penjualan boleh negatif. Perubahan dihitung ulang otomatis (sekitar 0,4 detik).</p>
 
               {scen ? (
                 <>
                   <div className="grid grid-cols-2 gap-2 mt-3">
-                    <div className="bg-[#eff4ff] border border-[#e7ecf7] rounded-xl p-3">
-                      <p className="text-[11px] font-bold tracking-wider text-[#45464d]">PIUTANG TERTAGIH</p>
-                      <p className="text-sm font-bold text-[#0b1c30] tabular-nums mt-1">{rupiah(scen.ar_collected)}</p>
+                    <div className="bg-surface-2 border border-line rounded-xl p-3">
+                      <p className="text-[11px] font-bold tracking-wider text-ink-2">PIUTANG TERTAGIH</p>
+                      <p className="text-sm font-bold text-ink tabular-nums mt-1">{rupiah(scen.ar_collected)}</p>
                     </div>
-                    <div className="bg-[#eff4ff] border border-[#e7ecf7] rounded-xl p-3">
-                      <p className="text-[11px] font-bold tracking-wider text-[#45464d]">NET CASH</p>
+                    <div className="bg-surface-2 border border-line rounded-xl p-3">
+                      <p className="text-[11px] font-bold tracking-wider text-ink-2">NET CASH</p>
                       <p className={'text-sm font-bold tabular-nums mt-1 ' + (Number(scen.net_cash) >= 0 ? 'text-emerald-600' : 'text-red-600')}>{rupiah(scen.net_cash)}</p>
                     </div>
                   </div>
@@ -427,7 +427,7 @@ export default function Budgets(){
                   <div className="overflow-auto mt-3">
                     <table className="w-full text-xs">
                       <thead>
-                        <tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                        <tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                           <th className="px-2 py-2.5 text-left">SKENARIO</th>
                           <th className="px-2 py-2.5 text-right">REVENUE</th>
                           <th className="px-2 py-2.5 text-right">OPEX</th>
@@ -437,21 +437,21 @@ export default function Budgets(){
                       </thead>
                       <tbody>
                         {(scen.scenarios || []).map(s=>(
-                          <tr key={s.scenario} className="border-b border-[#e5eeff] hover:bg-[#eff4ff] transition bg-white">
-                            <td className="px-2 py-2.5 font-bold text-[#0b1c30]">{s.scenario}</td>
+                          <tr key={s.scenario} className="border-b border-line hover:bg-surface-2 transition bg-white">
+                            <td className="px-2 py-2.5 font-bold text-ink">{s.scenario}</td>
                             <td className="px-2 py-2.5 text-right tabular-nums">{angka(s.revenue)}</td>
                             <td className="px-2 py-2.5 text-right tabular-nums text-red-600">-{angka(s.opex)}</td>
                             <td className={'px-2 py-2.5 text-right font-bold tabular-nums ' + (Number(s.profit) >= 0 ? 'text-emerald-600' : 'text-red-600')}>{angka(s.profit)}</td>
-                            <td className="px-2 py-2.5 text-right font-bold tabular-nums text-[#2b3445]">{s.margin_pct}%</td>
+                            <td className="px-2 py-2.5 text-right font-bold tabular-nums text-ink-2">{s.margin_pct}%</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
-                  <p className="text-[11px] text-[#76777d] mt-2">Base revenue: {rupiah(scen.base_revenue)} - Piutang terbuka: {rupiah(scen.open_ar)}</p>
+                  <p className="text-[11px] text-ink-3 mt-2">Base revenue: {rupiah(scen.base_revenue)} - Piutang terbuka: {rupiah(scen.open_ar)}</p>
                 </>
               ) : (
-                <p className="mt-3 text-xs text-[#76777d]">Memuat skenario...</p>
+                <p className="mt-3 text-xs text-ink-3">Memuat skenario...</p>
               )}
             </PosCardBody>
           </PosCard>
@@ -461,41 +461,41 @@ export default function Budgets(){
       {/* ---------------------------------------------------------- input form */}
       <PosCard>
         <PosCardBody>
-          <h3 className="font-bold text-[#0b1c30]">Input Budget</h3>
-          <p className="text-xs text-[#45464d] mt-0.5">Kombinasi tahun + akun + bulan bersifat unik. Menyimpan kombinasi yang sama akan <b>menimpa</b> nilai lama.</p>
+          <h3 className="font-bold text-ink">Input Budget</h3>
+          <p className="text-xs text-ink-2 mt-0.5">Kombinasi tahun + akun + bulan bersifat unik. Menyimpan kombinasi yang sama akan <b>menimpa</b> nilai lama.</p>
 
           <form onSubmit={submit} className="grid md:grid-cols-3 xl:grid-cols-6 gap-3 mt-3">
             <div>
-              <label className="block text-[11px] font-bold tracking-wider text-[#45464d] mb-1">TAHUN *</label>
+              <label className="block text-[11px] font-bold tracking-wider text-ink-2 mb-1">TAHUN *</label>
               <input type="number" value={form.fiscal_year} onChange={e=>setField('fiscal_year', e.target.value)} placeholder="2026"
-                className={'w-full h-[42px] px-3 bg-[#eff4ff] border rounded-xl text-sm outline-none focus:bg-white focus:ring-2 focus:ring-[#0051d5]/10 transition ' + (errors.fiscal_year ? 'border-red-400' : 'border-[#e7ecf7] focus:border-[#0051d5]')} />
+                className={'w-full h-[42px] px-3 bg-surface-2 border rounded-xl text-sm outline-none focus:bg-white focus:ring-2 focus:ring-[#0051d5]/10 transition ' + (errors.fiscal_year ? 'border-red-400' : 'border-line focus:border-brand')} />
               <Err msg={errors.fiscal_year}/>
             </div>
             <div>
-              <label className="block text-[11px] font-bold tracking-wider text-[#45464d] mb-1">AKUN *</label>
+              <label className="block text-[11px] font-bold tracking-wider text-ink-2 mb-1">AKUN *</label>
               <select value={form.account_id} onChange={e=>setField('account_id', e.target.value)}
-                className={'w-full h-[42px] px-3 bg-[#eff4ff] border rounded-xl text-sm outline-none focus:bg-white focus:border-[#0051d5] focus:ring-2 focus:ring-[#0051d5]/10 transition ' + (errors.account_id ? 'border-red-400' : 'border-[#e7ecf7]')}>
+                className={'w-full h-[42px] px-3 bg-surface-2 border rounded-xl text-sm outline-none focus:bg-white focus:border-brand focus:ring-2 focus:ring-[#0051d5]/10 transition ' + (errors.account_id ? 'border-red-400' : 'border-line')}>
                 <option value="">Pilih Akun</option>
                 {accounts.map(a=> <option key={a.id} value={String(a.id)}>{a.code} {a.name}</option>)}
               </select>
               <Err msg={errors.account_id}/>
             </div>
             <div>
-              <label className="block text-[11px] font-bold tracking-wider text-[#45464d] mb-1">BULAN (1-12) *</label>
+              <label className="block text-[11px] font-bold tracking-wider text-ink-2 mb-1">BULAN (1-12) *</label>
               <input type="number" min="1" max="12" value={form.period_month} onChange={e=>setField('period_month', e.target.value)} placeholder="9"
-                className={'w-full h-[42px] px-3 bg-[#eff4ff] border rounded-xl text-sm outline-none focus:bg-white focus:ring-2 focus:ring-[#0051d5]/10 transition ' + (errors.period_month ? 'border-red-400' : 'border-[#e7ecf7] focus:border-[#0051d5]')} />
+                className={'w-full h-[42px] px-3 bg-surface-2 border rounded-xl text-sm outline-none focus:bg-white focus:ring-2 focus:ring-[#0051d5]/10 transition ' + (errors.period_month ? 'border-red-400' : 'border-line focus:border-brand')} />
               <Err msg={errors.period_month}/>
             </div>
             <div>
-              <label className="block text-[11px] font-bold tracking-wider text-[#45464d] mb-1">NILAI BUDGET *</label>
+              <label className="block text-[11px] font-bold tracking-wider text-ink-2 mb-1">NILAI BUDGET *</label>
               <input type="number" value={form.budget_amount} onChange={e=>setField('budget_amount', e.target.value)} placeholder="0"
-                className={'w-full h-[42px] px-3 bg-[#eff4ff] border rounded-xl text-sm text-right tabular-nums outline-none focus:bg-white focus:ring-2 focus:ring-[#0051d5]/10 transition ' + (errors.budget_amount ? 'border-red-400' : 'border-[#e7ecf7] focus:border-[#0051d5]')} />
+                className={'w-full h-[42px] px-3 bg-surface-2 border rounded-xl text-sm text-right tabular-nums outline-none focus:bg-white focus:ring-2 focus:ring-[#0051d5]/10 transition ' + (errors.budget_amount ? 'border-red-400' : 'border-line focus:border-brand')} />
               <Err msg={errors.budget_amount}/>
             </div>
             <div>
-              <label className="block text-[11px] font-bold tracking-wider text-[#45464d] mb-1">CATATAN</label>
+              <label className="block text-[11px] font-bold tracking-wider text-ink-2 mb-1">CATATAN</label>
               <input value={form.notes} onChange={e=>setField('notes', e.target.value)} placeholder="opsional"
-                className="w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm outline-none focus:bg-white focus:border-[#0051d5] focus:ring-2 focus:ring-[#0051d5]/10 transition" />
+                className="w-full h-[42px] px-3 bg-surface-2 border border-line rounded-xl text-sm outline-none focus:bg-white focus:border-brand focus:ring-2 focus:ring-[#0051d5]/10 transition" />
             </div>
             <div className="md:col-span-3 xl:col-span-6 flex items-center gap-2 flex-wrap">
               <button type="submit" disabled={saving} className={posBtnPrimary + (saving ? ' opacity-60 pointer-events-none' : '')}>
@@ -504,11 +504,11 @@ export default function Budgets(){
               <button type="button" onClick={()=>{ setForm(f=>({ ...f, period_month:'', budget_amount:'', notes:'' })); setErrors({}); }} className={posBtnSecondary}>
                 Reset
               </button>
-              <span className="text-[11px] text-[#76777d]">* wajib diisi</span>
+              <span className="text-[11px] text-ink-3">* wajib diisi</span>
             </div>
           </form>
           <Err msg={errors.branch_id}/>
-          <p className="text-[11px] text-[#45464d] mt-2 flex items-center gap-1.5"><MapPin size={12}/> Lokasi operasional: <b className="text-[#0b1c30]">{LOCATION.name}</b> ({LOCATION_COORDINATES}) - dipakai otomatis untuk semua budget.</p>
+          <p className="text-[11px] text-ink-2 mt-2 flex items-center gap-1.5"><MapPin size={12}/> Lokasi operasional: <b className="text-ink">{LOCATION.name}</b> ({LOCATION_COORDINATES}) - dipakai otomatis untuk semua budget.</p>
         </PosCardBody>
       </PosCard>
 
@@ -517,8 +517,8 @@ export default function Budgets(){
         <PosCardBody>
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div>
-              <h3 className="font-bold text-[#0b1c30]">Budget List {year}</h3>
-              <p className="text-xs text-[#45464d] mt-0.5">{rows.length} baris{accountId ? ' (terfilter)' : ''} - Total {rupiah(totalList)}</p>
+              <h3 className="font-bold text-ink">Budget List {year}</h3>
+              <p className="text-xs text-ink-2 mt-0.5">{rows.length} baris{accountId ? ' (terfilter)' : ''} - Total {rupiah(totalList)}</p>
             </div>
             <ExportButtons dataset="list" disabled={!rows.length} prefix="List"/>
           </div>
@@ -532,7 +532,7 @@ export default function Budgets(){
           <div className="overflow-auto mt-3">
             <table className="w-full text-xs">
               <thead>
-                <tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                <tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2">
                   <th className="px-4 py-3.5 text-left">TAHUN</th>
                   
                   <th className="px-4 py-3.5 text-left">AKUN</th>
@@ -544,46 +544,46 @@ export default function Budgets(){
               </thead>
               <tbody>
                 {rows.map(r=>(
-                  <tr key={r.id} className="border-b border-[#e5eeff] hover:bg-[#eff4ff] transition bg-white">
-                    <td className="px-4 py-3 font-bold text-[#0b1c30]">{r.fiscal_year}</td>
+                  <tr key={r.id} className="border-b border-line hover:bg-surface-2 transition bg-white">
+                    <td className="px-4 py-3 font-bold text-ink">{r.fiscal_year}</td>
                     
                     <td className="px-4 py-3">{r.account_code} {r.account_name}</td>
-                    <td className="px-4 py-3">{monthLabel(r.period_month)} <span className="text-[#76777d]">({r.period_month})</span></td>
+                    <td className="px-4 py-3">{monthLabel(r.period_month)} <span className="text-ink-3">({r.period_month})</span></td>
                     <td className="px-4 py-3 text-right">
                       {editingId === r.id ? (
                         <div className="flex items-center justify-end gap-1">
                           <input autoFocus type="number" value={editValue} onChange={e=>setEditValue(e.target.value)}
                             onKeyDown={e=>{ if (e.key === 'Enter'){ e.preventDefault(); saveEdit(r); } if (e.key === 'Escape'){ cancelEdit(); } }}
-                            className="h-9 w-36 px-2 bg-white border border-[#0051d5] rounded-lg text-xs text-right tabular-nums outline-none focus:ring-2 focus:ring-[#0051d5]/10" />
+                            className="h-9 w-36 px-2 bg-white border border-brand rounded-lg text-xs text-right tabular-nums outline-none focus:ring-2 focus:ring-[#0051d5]/10" />
                           <button title="Simpan" onClick={()=>saveEdit(r)} disabled={busyId === r.id}
-                            className="w-8 h-8 grid place-items-center rounded-lg bg-[#0051d5] text-white hover:bg-[#0041ab] disabled:opacity-50"><Check size={14}/></button>
-                          <button title="Batal" onClick={cancelEdit} className="w-8 h-8 grid place-items-center rounded-lg bg-white border border-[#e7ecf7] text-[#45464d] hover:bg-[#eff4ff]"><X size={14}/></button>
+                            className="w-8 h-8 grid place-items-center rounded-lg bg-brand text-white hover:bg-brand-strong disabled:opacity-50"><Check size={14}/></button>
+                          <button title="Batal" onClick={cancelEdit} className="w-8 h-8 grid place-items-center rounded-lg bg-white border border-line text-ink-2 hover:bg-surface-2"><X size={14}/></button>
                         </div>
                       ) : (
                         <span className="font-bold tabular-nums">{rupiah(r.budget_amount)}</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-[#45464d]">{r.notes || '-'}</td>
+                    <td className="px-4 py-3 text-ink-2">{r.notes || '-'}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
                         <button title="Ubah nilai" onClick={()=>startEdit(r)} disabled={editingId === r.id || busyId === r.id}
-                          className="w-8 h-8 grid place-items-center rounded-lg bg-white border border-[#e7ecf7] text-[#2b3445] hover:bg-[#eff4ff] disabled:opacity-40"><Pencil size={13}/></button>
+                          className="w-8 h-8 grid place-items-center rounded-lg bg-white border border-line text-ink-2 hover:bg-surface-2 disabled:opacity-40"><Pencil size={13}/></button>
                         <button title="Hapus" onClick={()=>hapus(r)} disabled={busyId === r.id}
-                          className="w-8 h-8 grid place-items-center rounded-lg bg-white border border-[#e7ecf7] text-red-600 hover:bg-red-50 disabled:opacity-40"><Trash2 size={13}/></button>
+                          className="w-8 h-8 grid place-items-center rounded-lg bg-white border border-line text-red-600 hover:bg-red-50 disabled:opacity-40"><Trash2 size={13}/></button>
                       </div>
                     </td>
                   </tr>
                 ))}
                 {rows.length === 0 && !loadingList && (
-                  <tr><td colSpan={6} className="p-4 text-center text-[#76777d]">Belum ada budget untuk filter ini</td></tr>
+                  <tr><td colSpan={6} className="p-4 text-center text-ink-3">Belum ada budget untuk filter ini</td></tr>
                 )}
                 {loadingList && rows.length === 0 && (
-                  <tr><td colSpan={6} className="p-4 text-center text-[#76777d]">Memuat...</td></tr>
+                  <tr><td colSpan={6} className="p-4 text-center text-ink-3">Memuat...</td></tr>
                 )}
               </tbody>
               {rows.length > 0 && (
                 <tfoot>
-                  <tr className="bg-[#eff4ff] border-t-2 border-[#e7ecf7] font-bold text-[#0b1c30]">
+                  <tr className="bg-surface-2 border-t-2 border-line font-bold text-ink">
                     <td className="px-4 py-3.5" colSpan={3}>TOTAL ({rows.length} baris)</td>
                     <td className="px-4 py-3.5 text-right tabular-nums">{rupiah(totalList)}</td>
                     <td className="px-4 py-3.5" colSpan={2}></td>
