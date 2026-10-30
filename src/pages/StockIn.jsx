@@ -217,17 +217,17 @@ export default function StockIn(){
           const active = mode===m.key;
           return (
             <button key={m.key} onClick={()=>setMode(m.key)}
-              className={'text-left rounded-[20px] border p-4 transition shadow-sm '+(active
-                ? 'border-[#1E40AF] bg-[#1E40AF]/5 ring-2 ring-[#1E40AF]/20'
-                : 'border-[#E2E8F0] bg-white hover:bg-[#F8FAFC]')}>
+              className={'text-left rounded-xl border p-4 transition shadow-card '+(active
+                ? 'border-[#0051d5] bg-[#0051d5]/5 ring-2 ring-[#0051d5]/20'
+                : 'border-[#e7ecf7] bg-white hover:bg-[#eff4ff]')}>
               <div className="flex items-center gap-2">
                 <span className={'w-8 h-8 rounded-xl grid place-items-center '+(m.tone==='emerald'?'bg-emerald-50 text-emerald-700':m.tone==='red'?'bg-red-50 text-red-700':'bg-sky-50 text-sky-700')}>
                   <Icon size={15}/>
                 </span>
-                <span className="font-black text-[14px] text-[#0F172A]">{m.label}</span>
+                <span className="font-bold text-[14px] text-[#0b1c30]">{m.label}</span>
                 {active && <PosBadge tone={TYPE_TONE[m.key]}>dipilih</PosBadge>}
               </div>
-              <div className="text-[11px] text-[#64748B] mt-2 leading-relaxed">{m.help}</div>
+              <div className="text-[11px] text-[#45464d] mt-2 leading-relaxed">{m.help}</div>
             </button>
           );
         })}
@@ -238,9 +238,9 @@ export default function StockIn(){
         <form onSubmit={submit}>
           <PosCardBody className="space-y-3">
             <div className="flex items-start gap-3">
-              <span className="w-7 h-7 rounded-lg grid place-items-center bg-[#1E40AF]/10 text-[#1E40AF] shrink-0"><Info size={14}/></span>
-              <div className="text-xs text-[#475569] leading-relaxed">
-                <b className="text-[#0F172A]">{modeDef.label}</b> - {modeDef.help}
+              <span className="w-7 h-7 rounded-lg grid place-items-center bg-[#0051d5]/10 text-[#0051d5] shrink-0"><Info size={14}/></span>
+              <div className="text-xs text-[#45464d] leading-relaxed">
+                <b className="text-[#0b1c30]">{modeDef.label}</b> - {modeDef.help}
                 {mode==='IN' && ' Stok juga bisa masuk lewat <b>Goods Receipt</b> kalau barangnya datang dari Purchase Order.'}
               </div>
             </div>
@@ -252,34 +252,34 @@ export default function StockIn(){
             )}
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">GUDANG *</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">GUDANG *</span>
                 <PosSelect size="md" value={head.warehouse_id} onChange={v=>setHead({...head, warehouse_id:v})}>
                   <option value="">Pilih gudang</option>
                   {warehouses.map(w=> <option key={w.id} value={w.id}>{w.code} • {w.name}</option>)}
                 </PosSelect></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">TANGGAL</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">TANGGAL</span>
                 <input type="date" value={head.adjustment_date} onChange={e=>setHead({...head, adjustment_date:e.target.value})} className={posInput}/></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">ALASAN *</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">ALASAN *</span>
                 <PosSelect size="md" value={head.reason} onChange={v=>setHead({...head, reason:v})}>
                   {reasonOptions.map(r=> <option key={r} value={r}>{REASON_LABEL[r]||r}</option>)}
                 </PosSelect></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">NO. REFERENSI</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">NO. REFERENSI</span>
                 <input value={head.reference_no} onChange={e=>setHead({...head, reference_no:e.target.value})}
                   placeholder="mis. nota supplier / berita acara" className={posInput}/></label>
             </div>
 
-            <div className="rounded-[20px] border border-[#E2E8F0] overflow-hidden">
-              <div className="bg-[#F8FAFC] px-3 py-2 border-b border-[#E2E8F0] flex flex-wrap items-center justify-between gap-2">
-                <span className="text-[11px] font-bold tracking-widest text-[#64748B]">DAFTAR PRODUK</span>
+            <div className="rounded-xl border border-[#e7ecf7] overflow-hidden">
+              <div className="bg-[#eff4ff] px-3 py-2 border-b border-[#e7ecf7] flex flex-wrap items-center justify-between gap-2">
+                <span className="text-[11px] font-bold tracking-wider text-[#45464d]">DAFTAR PRODUK</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-[#94A3B8]">{mode==='SET' ? 'isi jumlah nyata hasil hitung' : mode==='OUT' ? 'jumlah yang keluar' : 'jumlah yang masuk'}</span>
+                  <span className="text-[11px] text-[#76777d]">{mode==='SET' ? 'isi jumlah nyata hasil hitung' : mode==='OUT' ? 'jumlah yang keluar' : 'jumlah yang masuk'}</span>
                   <button type="button" onClick={()=>addRow('')} className={posBtnSm}><Plus size={13}/> Baris</button>
                 </div>
               </div>
 
               <div className="overflow-auto">
                 <table className="w-full text-sm">
-                  <thead><tr className="bg-[#F1F5F9] border-b border-[#E2E8F0] text-[11px] font-bold tracking-widest text-[#64748B]">
+                  <thead><tr className="bg-[#e5eeff] border-b border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
                     <PosTh>PRODUK</PosTh><PosTh align="center">STOK SEKARANG</PosTh>
                     <PosTh align="right">{mode==='SET'?'JUMLAH NYATA':'JUMLAH'}</PosTh>
                     {mode!=='OUT' && <PosTh align="right">HARGA SATUAN</PosTh>}
@@ -299,7 +299,7 @@ export default function StockIn(){
                               {products.map(p=> <option key={p.id} value={p.id}>{p.name}{p.sku?(' • '+p.sku):''}</option>)}
                             </PosSelect>
                           </td>
-                          <td className={posTd+' text-center tabular-nums text-[#64748B]'}>
+                          <td className={posTd+' text-center tabular-nums text-[#45464d]'}>
                             {r.product_id ? nf(pv.before) : '-'}
                           </td>
                           <td className={posTd}>
@@ -317,7 +317,7 @@ export default function StockIn(){
                               ? <PosBadge tone={kurang?'red':(pv.delta===0?'slate':'emerald')}>
                                   {nf(pv.before)} → {nf(pv.after)} {pv.delta!==0 && '('+(pv.delta>0?'+':'')+nf(pv.delta)+')'}
                                 </PosBadge>
-                              : <span className="text-xs text-[#94A3B8]">-</span>}
+                              : <span className="text-xs text-[#76777d]">-</span>}
                           </td>
                           {mode==='IN' && (
                             <td className={posTd}>
@@ -336,9 +336,9 @@ export default function StockIn(){
                     {!rows.length && (
                       <tr><td colSpan={mode==='IN'?7:5}>
                         <div className="py-8 text-center">
-                          <div className="w-12 h-12 rounded-[20px] bg-[#F1F5F9] text-[#64748B] grid place-items-center mx-auto"><Boxes size={20}/></div>
-                          <div className="mt-3 text-sm font-bold text-[#0F172A]">Belum ada produk di daftar</div>
-                          <div className="text-xs text-[#94A3B8] mt-1">Klik "Baris" untuk mulai menambah produk.</div>
+                          <div className="w-12 h-12 rounded-xl bg-[#e5eeff] text-[#45464d] grid place-items-center mx-auto"><Boxes size={20}/></div>
+                          <div className="mt-3 text-sm font-bold text-[#0b1c30]">Belum ada produk di daftar</div>
+                          <div className="text-xs text-[#76777d] mt-1">Klik "Baris" untuk mulai menambah produk.</div>
                           <button type="button" onClick={()=>addRow('')} className={posBtnPrimary+' h-9 px-4 text-xs mt-3'}><Plus size={14}/> Tambah Baris</button>
                         </div>
                       </td></tr>
@@ -348,22 +348,22 @@ export default function StockIn(){
               </div>
 
               {!!rows.length && (
-                <div className="px-3 py-2 bg-[#1E40AF]/5 border-t border-[#1E40AF]/20 flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-[11px] font-bold tracking-widest text-[#1E40AF]">
+                <div className="px-3 py-2 bg-[#0051d5]/5 border-t border-[#0051d5]/20 flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-[11px] font-bold tracking-wider text-[#0051d5]">
                     {rows.length} BARIS • TOTAL {nf(totalQty)} UNIT
                   </span>
-                  {mode!=='OUT' && <span className="font-black text-[#0F172A]">Nilai: {rupiah(totalNilai)}</span>}
+                  {mode!=='OUT' && <span className="font-bold text-[#0b1c30]">Nilai: {rupiah(totalNilai)}</span>}
                 </div>
               )}
             </div>
 
-            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">CATATAN</span>
+            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">CATATAN</span>
               <input value={head.note} onChange={e=>setHead({...head, note:e.target.value})}
                 placeholder="mis. hasil hitung gudang 16 Okt, ditemani kepala gudang" className={posInput}/></label>
           </PosCardBody>
 
           <div className="p-3 border-t flex flex-wrap items-center justify-between gap-2">
-            <div className="text-[11px] text-[#64748B]">
+            <div className="text-[11px] text-[#45464d]">
               {mode==='IN' ? 'Stok bertambah + harga rata-rata ikut dihitung ulang bila harga satuan diisi.'
                : mode==='OUT' ? 'Stok berkurang, harga rata-rata tidak berubah.'
                : 'Stok disamakan dengan jumlah nyata yang Anda isi.'}
@@ -388,7 +388,7 @@ export default function StockIn(){
             <PosExportButtons onExport={downloadExport} busyKey={expBusy} prefix="Riwayat"/>
           </>}>
             <div className={posSearchWrap}>
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]"/>
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#76777d]"/>
               <input value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Enter'&&setAppliedQ(q)}
                 placeholder="Cari no dokumen / catatan lalu Enter..." className={posInput+' pl-9'}/>
             </div>
@@ -400,7 +400,7 @@ export default function StockIn(){
                 {t==='Semua'?'Semua':TYPE_LABEL[t]}
               </PosChip>
             ))}
-            <span className="ml-auto text-[11px] text-[#64748B]">{histTotal} dokumen</span>
+            <span className="ml-auto text-[11px] text-[#45464d]">{histTotal} dokumen</span>
           </PosChipRow>
         </PosCardBody>
 
@@ -408,7 +408,7 @@ export default function StockIn(){
           <>
             <div className="overflow-auto">
               <table className="w-full text-sm">
-                <thead><tr className="bg-[#F1F5F9] border-y border-[#E2E8F0] text-[11px] font-bold tracking-widest text-[#64748B]">
+                <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
                   <PosTh>NO DOKUMEN</PosTh><PosTh>TANGGAL</PosTh><PosTh align="center">JENIS</PosTh>
                   <PosTh>ALASAN</PosTh><PosTh>GUDANG</PosTh><PosTh align="right">ITEM</PosTh>
                   <PosTh align="right">QTY</PosTh><PosTh align="right">NILAI</PosTh><PosTh align="right">AKSI</PosTh>
@@ -443,24 +443,24 @@ export default function StockIn(){
       {/* detail modal */}
       {detail && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50">
-          <div className="bg-white rounded-[20px] w-full max-w-3xl max-h-[92vh] flex flex-col border shadow-xl overflow-hidden animate-pop">
+          <div className="bg-white rounded-xl w-full max-w-3xl max-h-[92vh] flex flex-col border shadow-raised overflow-hidden animate-pop">
             <div className="p-4 border-b flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-black text-[16px] text-[#0F172A]">{detail.adjustment_number||('Dokumen #'+detail.id)}</h3>
-                <div className="text-xs text-[#64748B] mt-1 flex items-center gap-2 flex-wrap">
+                <h3 className="font-bold text-[16px] text-[#0b1c30]">{detail.adjustment_number||('Dokumen #'+detail.id)}</h3>
+                <div className="text-xs text-[#45464d] mt-1 flex items-center gap-2 flex-wrap">
                   <PosBadge tone={TYPE_TONE[detail.type]||'slate'}>{TYPE_LABEL[detail.type]||detail.type}</PosBadge>
                   <span>{REASON_LABEL[detail.reason]||detail.reason}</span>
                   <span>•</span><span>{detail.warehouse_code||'-'} {detail.warehouse_name||''}</span>
                   <span>•</span><span>{String(detail.adjustment_date||'').slice(0,10)}</span>
                 </div>
               </div>
-              <button onClick={()=>setDetail(null)} className="w-9 h-9 rounded-xl border border-[#E2E8F0] grid place-items-center text-[#64748B] hover:bg-[#F8FAFC]"><X size={16}/></button>
+              <button onClick={()=>setDetail(null)} className="w-9 h-9 rounded-xl border border-[#e7ecf7] grid place-items-center text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
             </div>
             <div className="p-4 overflow-auto">
               {detailBusy ? <PosSkeleton rows={4} cols={4}/> : (
-                <div className="overflow-auto rounded-xl border border-[#E2E8F0]">
+                <div className="overflow-auto rounded-xl border border-[#e7ecf7]">
                   <table className="w-full text-sm">
-                    <thead><tr className="bg-[#F1F5F9] border-b border-[#E2E8F0] text-[11px] font-bold tracking-widest text-[#64748B]">
+                    <thead><tr className="bg-[#e5eeff] border-b border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
                       <PosTh>PRODUK</PosTh><PosTh align="center">SEBELUM</PosTh><PosTh align="center">DIMASUKKAN</PosTh>
                       <PosTh align="center">SESUDAH</PosTh><PosTh align="right">HARGA</PosTh><PosTh align="right">NILAI</PosTh>
                     </tr></thead>
@@ -468,8 +468,8 @@ export default function StockIn(){
                       {(detail.items||[]).map(i=>(
                         <tr key={i.id} className={posTr}>
                           <td className={posTd}>
-                            <div className="font-bold text-[#0F172A]">{i.product_name||('Produk #'+i.product_id)}</div>
-                            <div className="text-xs text-[#94A3B8] font-mono">{i.sku||'-'}{i.batch_no?(' • batch '+i.batch_no):''}</div>
+                            <div className="font-bold text-[#0b1c30]">{i.product_name||('Produk #'+i.product_id)}</div>
+                            <div className="text-xs text-[#76777d] font-mono">{i.sku||'-'}{i.batch_no?(' • batch '+i.batch_no):''}</div>
                           </td>
                           <td className={posTd+' text-center tabular-nums'}>{nf(i.qty_before)}</td>
                           <td className={posTd+' text-center font-bold tabular-nums'}>{nf(i.qty)}</td>
@@ -483,8 +483,8 @@ export default function StockIn(){
                   </table>
                 </div>
               )}
-              {detail.note && <div className="mt-3 text-xs text-[#64748B] bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-3">Catatan: {detail.note}</div>}
-              {detail.reference_no && <div className="mt-2 text-xs text-[#64748B]">Referensi: <span className="font-mono">{detail.reference_no}</span></div>}
+              {detail.note && <div className="mt-3 text-xs text-[#45464d] bg-[#eff4ff] border border-[#e7ecf7] rounded-xl p-3">Catatan: {detail.note}</div>}
+              {detail.reference_no && <div className="mt-2 text-xs text-[#45464d]">Referensi: <span className="font-mono">{detail.reference_no}</span></div>}
             </div>
             <div className="p-3 border-t flex justify-end">
               <button onClick={()=>setDetail(null)} className={posBtnSecondary+' h-9 px-4 text-xs'}>Tutup</button>

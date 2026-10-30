@@ -261,7 +261,7 @@ export default function Returns(){
             </button>
           </>}>
             <div className={posSearchWrap}>
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]"/>
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#76777d]"/>
               <input value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Enter'&&setAppliedQ(q)}
                 placeholder="Cari no retur / customer / supplier / klaim lalu Enter..." className={posInput+' pl-9'}/>
             </div>
@@ -271,7 +271,7 @@ export default function Returns(){
             <PosChip active={tab==='sales'} onClick={()=>setTab('sales')}>Retur Penjualan</PosChip>
             <PosChip active={tab==='purchase'} onClick={()=>setTab('purchase')}>Retur Pembelian</PosChip>
             <PosChip active={tab==='claims'} onClick={()=>setTab('claims')}>Klaim</PosChip>
-            <span className="text-[11px] font-bold tracking-widest text-[#64748B] ml-3">STATUS</span>
+            <span className="text-[11px] font-bold tracking-wider text-[#45464d] ml-3">STATUS</span>
             {(tab==='claims' ? ['Semua','SUBMITTED','APPROVED','PARTIAL','PAID','REJECTED'] : ['Semua','DRAFT','APPROVED','SETTLED']).map(s=>(
               <PosChip key={s} active={status===s} onClick={()=>setStatus(s)}>{s==='Semua'?'Semua':s}</PosChip>
             ))}
@@ -284,7 +284,7 @@ export default function Returns(){
               <table className="w-full text-sm">
                 {tab==='sales' && (
                   <>
-                    <thead><tr className="bg-[#F1F5F9] border-y border-[#E2E8F0] text-[11px] font-bold tracking-widest text-[#64748B]">
+                    <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
                       <PosTh>NO RETUR</PosTh><PosTh>CUSTOMER</PosTh><PosTh>INVOICE</PosTh><PosTh align="center">ALASAN</PosTh>
                       <PosTh align="center">SETTLEMENT</PosTh><PosTh align="right">ITEM</PosTh><PosTh align="right">TOTAL</PosTh>
                       <PosTh align="center">STATUS</PosTh><PosTh align="right">AKSI</PosTh>
@@ -293,11 +293,11 @@ export default function Returns(){
                       {pageRows.map(r=>(
                         <tr key={r.id} className={posTr}>
                           <td className={posTd+' font-mono text-xs font-bold'}>{r.return_number}</td>
-                          <td className={posTd+' font-bold text-[#0F172A]'}>{r.customer_name||'-'}</td>
-                          <td className={posTd+' font-mono text-xs text-[#64748B]'}>{r.invoice_number||'-'}</td>
+                          <td className={posTd+' font-bold text-[#0b1c30]'}>{r.customer_name||'-'}</td>
+                          <td className={posTd+' font-mono text-xs text-[#45464d]'}>{r.invoice_number||'-'}</td>
                           <td className={posTd+' text-center'}><PosBadge tone={REASON_TONE[r.reason]||'slate'}>{REASON_LABEL[r.reason]||r.reason||'-'}</PosBadge></td>
                           <td className={posTd+' text-center text-xs'}>{SETTLE_LABEL[r.settlement_type]||r.settlement_type||'-'}</td>
-                          <td className={posTd+' text-right tabular-nums'}>{r.item_count||0} <span className="text-xs text-[#94A3B8]">({nf(r.total_qty)})</span></td>
+                          <td className={posTd+' text-right tabular-nums'}>{r.item_count||0} <span className="text-xs text-[#76777d]">({nf(r.total_qty)})</span></td>
                           <td className={posTd+' text-right font-bold tabular-nums'}>{rupiah(r.total)}</td>
                           <td className={posTd+' text-center'}><PosBadge tone={r.status==='APPROVED'?'emerald':'amber'}>{r.status||'DRAFT'}</PosBadge></td>
                           <td className={posTd}>
@@ -317,7 +317,7 @@ export default function Returns(){
 
                 {tab==='purchase' && (
                   <>
-                    <thead><tr className="bg-[#F1F5F9] border-y border-[#E2E8F0] text-[11px] font-bold tracking-widest text-[#64748B]">
+                    <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
                       <PosTh>NO RETUR</PosTh><PosTh>TANGGAL</PosTh><PosTh>SUPPLIER</PosTh>
                       <PosTh align="center">ALASAN</PosTh><PosTh align="right">TOTAL</PosTh><PosTh align="center">STATUS</PosTh>
                     </tr></thead>
@@ -326,7 +326,7 @@ export default function Returns(){
                         <tr key={r.id} className={posTr}>
                           <td className={posTd+' font-mono text-xs font-bold'}>{r.return_number}</td>
                           <td className={posTd+' text-xs'}>{String(r.return_date||'').slice(0,10)||'-'}</td>
-                          <td className={posTd+' font-bold text-[#0F172A]'}>{r.supplier_name||'-'}</td>
+                          <td className={posTd+' font-bold text-[#0b1c30]'}>{r.supplier_name||'-'}</td>
                           <td className={posTd+' text-center'}><PosBadge tone={REASON_TONE[r.reason]||'slate'}>{REASON_LABEL[r.reason]||r.reason||'-'}</PosBadge></td>
                           <td className={posTd+' text-right font-bold tabular-nums'}>{rupiah(r.total)}</td>
                           <td className={posTd+' text-center'}><PosBadge tone={CLAIM_TONE[r.status]||'slate'}>{r.status||'-'}</PosBadge></td>
@@ -339,7 +339,7 @@ export default function Returns(){
 
                 {tab==='claims' && (
                   <>
-                    <thead><tr className="bg-[#F1F5F9] border-y border-[#E2E8F0] text-[11px] font-bold tracking-widest text-[#64748B]">
+                    <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
                       <PosTh>NO KLAIM</PosTh><PosTh align="center">TIPE</PosTh><PosTh>REFERENSI</PosTh>
                       <PosTh align="right">DIAJUKAN</PosTh><PosTh align="right">DISELESAIKAN</PosTh>
                       <PosTh align="right">SISA</PosTh><PosTh align="center">STATUS</PosTh><PosTh align="right">AKSI</PosTh>
@@ -352,16 +352,16 @@ export default function Returns(){
                           <tr key={c.id} className={posTr}>
                             <td className={posTd+' font-mono text-xs font-bold'}>{c.claim_number}</td>
                             <td className={posTd+' text-center'}><PosBadge tone="slate">{CLAIM_TYPE_LABEL[c.claim_type]||c.claim_type||'-'}</PosBadge></td>
-                            <td className={posTd+' text-xs text-[#64748B]'}>{c.reference_type? `${c.reference_type} #${c.reference_id ?? '-'}` : '-'}</td>
+                            <td className={posTd+' text-xs text-[#45464d]'}>{c.reference_type? `${c.reference_type} #${c.reference_id ?? '-'}` : '-'}</td>
                             <td className={posTd+' text-right tabular-nums'}>{rupiah(c.amount_claimed)}</td>
                             <td className={posTd+' text-right tabular-nums text-emerald-700'}>{rupiah(c.amount_settled)}</td>
-                            <td className={posTd+' text-right tabular-nums '+((sisa>0)?'text-amber-700':'text-[#64748B]')}>{rupiah(sisa)}</td>
+                            <td className={posTd+' text-right tabular-nums '+((sisa>0)?'text-amber-700':'text-[#45464d]')}>{rupiah(sisa)}</td>
                             <td className={posTd+' text-center'}><PosBadge tone={CLAIM_TONE[c.status]||'slate'}>{c.status||'-'}</PosBadge></td>
                             <td className={posTd}>
                               <div className="flex justify-end">
                                 {!done
                                   ? <button onClick={()=>openSettle(c)} className={posBtnSm+' bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'}><Banknote size={13}/> Selesaikan</button>
-                                  : <span className="text-xs text-[#94A3B8]">selesai</span>}
+                                  : <span className="text-xs text-[#76777d]">selesai</span>}
                               </div>
                             </td>
                           </tr>
@@ -381,32 +381,32 @@ export default function Returns(){
       {/* ------------------------------------------------------- detail retur */}
       {detail && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50">
-          <div className="bg-white rounded-[20px] w-full max-w-3xl max-h-[92vh] flex flex-col border shadow-xl overflow-hidden animate-pop">
+          <div className="bg-white rounded-xl w-full max-w-3xl max-h-[92vh] flex flex-col border shadow-raised overflow-hidden animate-pop">
             <div className="p-4 border-b flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-black text-[16px] text-[#0F172A]">Retur {detail.return_number||('#'+detail.id)}</h3>
-                <div className="text-xs text-[#64748B] mt-1 flex items-center gap-2 flex-wrap">
+                <h3 className="font-bold text-[16px] text-[#0b1c30]">Retur {detail.return_number||('#'+detail.id)}</h3>
+                <div className="text-xs text-[#45464d] mt-1 flex items-center gap-2 flex-wrap">
                   <span>{detail.name||'-'}</span><span>•</span>
                   <span>{REASON_LABEL[detail.reason]||detail.reason||'-'}</span><span>•</span>
                   <span>{SETTLE_LABEL[detail.settlement_type]||detail.settlement_type||'-'}</span>
                   <PosBadge tone={detail.status==='APPROVED'?'emerald':'amber'}>{detail.status||'DRAFT'}</PosBadge>
                 </div>
               </div>
-              <button onClick={()=>setDetail(null)} className="w-9 h-9 rounded-xl border border-[#E2E8F0] grid place-items-center text-[#64748B] hover:bg-[#F8FAFC]"><X size={16}/></button>
+              <button onClick={()=>setDetail(null)} className="w-9 h-9 rounded-xl border border-[#e7ecf7] grid place-items-center text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
             </div>
             <div className="p-4 space-y-4 overflow-auto">
               {detailBusy ? <PosSkeleton rows={4} cols={4}/> : (
                 <>
-                  <div className="overflow-auto rounded-xl border border-[#E2E8F0]">
+                  <div className="overflow-auto rounded-xl border border-[#e7ecf7]">
                     <table className="w-full text-sm">
-                      <thead><tr className="bg-[#F1F5F9] border-b border-[#E2E8F0] text-[11px] font-bold tracking-widest text-[#64748B]">
+                      <thead><tr className="bg-[#e5eeff] border-b border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
                         <PosTh>PRODUK</PosTh><PosTh align="right">QTY</PosTh><PosTh align="right">HARGA</PosTh>
                         <PosTh align="right">TOTAL</PosTh><PosTh align="center">KONDISI</PosTh>
                       </tr></thead>
                       <tbody>
                         {(detail.items||[]).map(it=>(
                           <tr key={it.id} className={posTr}>
-                            <td className={posTd+' font-bold text-[#0F172A]'}>{it.name||('-')}</td>
+                            <td className={posTd+' font-bold text-[#0b1c30]'}>{it.name||('-')}</td>
                             <td className={posTd+' text-right tabular-nums'}>{nf(it.qty)}</td>
                             <td className={posTd+' text-right tabular-nums'}>{rupiah(it.unit_price)}</td>
                             <td className={posTd+' text-right font-bold tabular-nums'}>{rupiah(it.total)}</td>
@@ -418,12 +418,12 @@ export default function Returns(){
                     </table>
                   </div>
                   <div>
-                    <div className="text-[11px] font-bold tracking-widest text-[#64748B] mb-2">KLAIM TERKAIT ({(detail.claims||[]).length})</div>
+                    <div className="text-[11px] font-bold tracking-wider text-[#45464d] mb-2">KLAIM TERKAIT ({(detail.claims||[]).length})</div>
                     {(detail.claims||[]).length ? (
                       <div className="space-y-2">
                         {detail.claims.map(c=>(
-                          <div key={c.id} className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3 flex flex-wrap items-center justify-between gap-2">
-                            <div className="text-sm font-bold text-[#0F172A]">{c.claim_number} <span className="text-xs font-normal text-[#64748B]">• {CLAIM_TYPE_LABEL[c.claim_type]||c.claim_type}</span></div>
+                          <div key={c.id} className="rounded-xl border border-[#e7ecf7] bg-[#eff4ff] p-3 flex flex-wrap items-center justify-between gap-2">
+                            <div className="text-sm font-bold text-[#0b1c30]">{c.claim_number} <span className="text-xs font-normal text-[#45464d]">• {CLAIM_TYPE_LABEL[c.claim_type]||c.claim_type}</span></div>
                             <div className="flex items-center gap-2">
                               <span className="text-sm tabular-nums">{rupiah(c.amount_claimed)}</span>
                               <PosBadge tone={CLAIM_TONE[c.status]||'slate'}>{c.status}</PosBadge>
@@ -453,48 +453,48 @@ export default function Returns(){
       {/* -------------------------------------------------- modal retur jual */}
       {modal==='sales' && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50">
-          <form onSubmit={submitSales} className="bg-white rounded-[20px] w-full max-w-3xl max-h-[92vh] flex flex-col border shadow-xl overflow-hidden animate-pop">
+          <form onSubmit={submitSales} className="bg-white rounded-xl w-full max-w-3xl max-h-[92vh] flex flex-col border shadow-raised overflow-hidden animate-pop">
             <div className="p-4 border-b flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-black text-[16px] text-[#0F172A]">Retur Penjualan</h3>
-                <div className="text-xs text-[#64748B] mt-0.5">Pilih invoice → item otomatis muncul → isi qty yang diretur</div>
+                <h3 className="font-bold text-[16px] text-[#0b1c30]">Retur Penjualan</h3>
+                <div className="text-xs text-[#45464d] mt-0.5">Pilih invoice → item otomatis muncul → isi qty yang diretur</div>
               </div>
-              <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-[#E2E8F0] grid place-items-center text-[#64748B] hover:bg-[#F8FAFC]"><X size={16}/></button>
+              <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-[#e7ecf7] grid place-items-center text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
             </div>
             <div className="p-4 space-y-3 overflow-auto">
               {formErr && <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">{formErr}</div>}
-              <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">INVOICE</span>
+              <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">INVOICE</span>
                 <PosSelect size="md" value={sForm.invoice_id} onChange={pickInvoice}>
                   <option value="">Pilih invoice (opsional)</option>
                   {invoices.map(i=> <option key={i.id} value={i.id}>{i.invoice_number} • {i.customer_name||'-'} • {rupiah(i.total)}</option>)}
                 </PosSelect></label>
               <div className="grid sm:grid-cols-3 gap-2">
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">CUSTOMER</span>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">CUSTOMER</span>
                   <PosSelect size="md" value={sForm.customer_id} onChange={v=>setSForm({...sForm, customer_id:v})}>
                     <option value="">Tanpa customer</option>
                     {invoices.filter(i=>i.customer_id).map(i=> <option key={'c'+i.id} value={i.customer_id}>{i.customer_name}</option>)}
                   </PosSelect></label>
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">ALASAN</span>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">ALASAN</span>
                   <PosSelect size="md" value={sForm.reason} onChange={v=>setSForm({...sForm, reason:v})}>
                     {Object.entries(REASON_LABEL).map(([k,v])=> <option key={k} value={k}>{v}</option>)}
                   </PosSelect></label>
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">SETTLEMENT</span>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">SETTLEMENT</span>
                   <PosSelect size="md" value={sForm.settlement_type} onChange={v=>setSForm({...sForm, settlement_type:v})}>
                     {Object.entries(SETTLE_LABEL).map(([k,v])=> <option key={k} value={k}>{v}</option>)}
                   </PosSelect></label>
               </div>
 
-              <div className="rounded-[20px] border border-[#E2E8F0] overflow-hidden">
-                <div className="bg-[#F8FAFC] px-3 py-2 border-b border-[#E2E8F0] flex items-center justify-between">
-                  <span className="text-[11px] font-bold tracking-widest text-[#64748B]">ITEM DIRETUR</span>
-                  <span className="text-[11px] text-[#94A3B8]">kosongkan qty kalau item tidak diretur</span>
+              <div className="rounded-xl border border-[#e7ecf7] overflow-hidden">
+                <div className="bg-[#eff4ff] px-3 py-2 border-b border-[#e7ecf7] flex items-center justify-between">
+                  <span className="text-[11px] font-bold tracking-wider text-[#45464d]">ITEM DIRETUR</span>
+                  <span className="text-[11px] text-[#76777d]">kosongkan qty kalau item tidak diretur</span>
                 </div>
-                <div className="divide-y divide-[#F1F5F9]">
+                <div className="divide-y divide-[#e5eeff]">
                   {sForm.items.map((it,i)=>(
                     <div key={i} className="p-3 flex flex-wrap items-center gap-2">
                       <div className="flex-1 min-w-[180px]">
-                        <div className="text-sm font-bold text-[#0F172A]">{it.name}</div>
-                        <div className="text-[11px] text-[#94A3B8]">dipesan {nf(it.max_qty)} • harga {rupiah(it.unit_price)} {it.sku?('• '+it.sku):''}</div>
+                        <div className="text-sm font-bold text-[#0b1c30]">{it.name}</div>
+                        <div className="text-[11px] text-[#76777d]">dipesan {nf(it.max_qty)} • harga {rupiah(it.unit_price)} {it.sku?('• '+it.sku):''}</div>
                       </div>
                       <input type="number" value={it.qty} placeholder="0" max={it.max_qty||undefined}
                         onChange={e=>{ const c=[...sForm.items]; c[i]={...c[i], qty:e.target.value}; setSForm({...sForm, items:c}); }}
@@ -507,17 +507,17 @@ export default function Returns(){
                       <div className="w-[110px] text-right text-sm font-bold tabular-nums">{rupiah(num(it.qty)*num(it.unit_price))}</div>
                     </div>
                   ))}
-                  {!sForm.items.length && <div className="p-4 text-center text-xs text-[#94A3B8]">Pilih invoice untuk memuat item otomatis.</div>}
+                  {!sForm.items.length && <div className="p-4 text-center text-xs text-[#76777d]">Pilih invoice untuk memuat item otomatis.</div>}
                 </div>
-                <div className="px-3 py-2 bg-[#1E40AF]/5 border-t border-[#1E40AF]/20 flex items-center justify-between">
-                  <span className="text-[11px] font-bold tracking-widest text-[#1E40AF]">TOTAL RETUR</span>
-                  <span className="font-black text-[#0F172A]">{rupiah(sForm.items.reduce((a,it)=> a + num(it.qty)*num(it.unit_price), 0))}</span>
+                <div className="px-3 py-2 bg-[#0051d5]/5 border-t border-[#0051d5]/20 flex items-center justify-between">
+                  <span className="text-[11px] font-bold tracking-wider text-[#0051d5]">TOTAL RETUR</span>
+                  <span className="font-bold text-[#0b1c30]">{rupiah(sForm.items.reduce((a,it)=> a + num(it.qty)*num(it.unit_price), 0))}</span>
                 </div>
               </div>
 
-              <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">CATATAN</span>
+              <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">CATATAN</span>
                 <input value={sForm.notes} onChange={e=>setSForm({...sForm, notes:e.target.value})} placeholder="mis. 2 sak sobek saat bongkar" className={posInput}/></label>
-              <div className="text-[11px] text-[#64748B] bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2">
+              <div className="text-[11px] text-[#45464d] bg-[#eff4ff] border border-[#e7ecf7] rounded-xl p-2">
                 Barang masuk gudang karantina. Nota kredit otomatis memotong piutang invoice.
               </div>
             </div>
@@ -534,49 +534,49 @@ export default function Returns(){
       {/* ---------------------------------------------- modal retur pembelian */}
       {modal==='purchase' && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50">
-          <form onSubmit={submitPurchase} className="bg-white rounded-[20px] w-full max-w-2xl max-h-[92vh] flex flex-col border shadow-xl overflow-hidden animate-pop">
+          <form onSubmit={submitPurchase} className="bg-white rounded-xl w-full max-w-2xl max-h-[92vh] flex flex-col border shadow-raised overflow-hidden animate-pop">
             <div className="p-4 border-b flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-black text-[16px] text-[#0F172A]">Retur Pembelian</h3>
-                <div className="text-xs text-[#64748B] mt-0.5">Kirim balik barang rusak/salah ke supplier, hitung nilai retur dari harga beli</div>
+                <h3 className="font-bold text-[16px] text-[#0b1c30]">Retur Pembelian</h3>
+                <div className="text-xs text-[#45464d] mt-0.5">Kirim balik barang rusak/salah ke supplier, hitung nilai retur dari harga beli</div>
               </div>
-              <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-[#E2E8F0] grid place-items-center text-[#64748B] hover:bg-[#F8FAFC]"><X size={16}/></button>
+              <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-[#e7ecf7] grid place-items-center text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
             </div>
             <div className="p-4 space-y-3 overflow-auto">
               {formErr && <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{formErr}</div>}
               <div className="grid sm:grid-cols-2 gap-2">
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">SUPPLIER *</span>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">SUPPLIER *</span>
                   <PosSelect size="md" value={pForm.supplier_id} onChange={v=>setPForm({...pForm, supplier_id:v})}>
                     <option value="">Pilih supplier</option>
                     {suppliers.map(s=> <option key={s.id} value={s.id}>{s.name}</option>)}
                   </PosSelect></label>
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">ALASAN</span>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">ALASAN</span>
                   <PosSelect size="md" value={pForm.reason} onChange={v=>setPForm({...pForm, reason:v})}>
                     {Object.entries(REASON_LABEL).map(([k,v])=> <option key={k} value={k}>{v}</option>)}
                   </PosSelect></label>
               </div>
 
-              <div className="rounded-[20px] border border-[#E2E8F0] overflow-hidden">
-                <div className="bg-[#F8FAFC] px-3 py-2 border-b border-[#E2E8F0] flex items-center justify-between">
-                  <span className="text-[11px] font-bold tracking-widest text-[#64748B]">ITEM RETUR</span>
+              <div className="rounded-xl border border-[#e7ecf7] overflow-hidden">
+                <div className="bg-[#eff4ff] px-3 py-2 border-b border-[#e7ecf7] flex items-center justify-between">
+                  <span className="text-[11px] font-bold tracking-wider text-[#45464d]">ITEM RETUR</span>
                   <button type="button" onClick={()=>setPForm({...pForm, items:[...pForm.items, { product_id:'', qty:'', unit_cost:'' }]})} className={posBtnSm}><Plus size={13}/> Baris</button>
                 </div>
                 <div className="p-3 space-y-2">
                   {pForm.items.map((it,i)=>(
                     <div key={i} className="grid grid-cols-12 gap-2 items-end">
                       <div className="col-span-12 sm:col-span-6">
-                        <span className="text-[10px] font-bold tracking-widest text-[#94A3B8]">PRODUK</span>
+                        <span className="text-[11px] font-bold tracking-wider text-[#76777d]">PRODUK</span>
                         <PosSelect size="md" value={it.product_id} onChange={v=>{ const c=[...pForm.items]; c[i]={...c[i], product_id:v}; setPForm({...pForm, items:c}); }}>
                           <option value="">Pilih produk</option>
                           {products.map(p=> <option key={p.id} value={p.id}>{p.name}</option>)}
                         </PosSelect>
                       </div>
                       <div className="col-span-4 sm:col-span-2">
-                        <span className="text-[10px] font-bold tracking-widest text-[#94A3B8]">QTY</span>
+                        <span className="text-[11px] font-bold tracking-wider text-[#76777d]">QTY</span>
                         <input type="number" value={it.qty} onChange={e=>{ const c=[...pForm.items]; c[i]={...c[i], qty:e.target.value}; setPForm({...pForm, items:c}); }} className={posInput+' text-right tabular-nums'}/>
                       </div>
                       <div className="col-span-4 sm:col-span-3">
-                        <span className="text-[10px] font-bold tracking-widest text-[#94A3B8]">HARGA BELI</span>
+                        <span className="text-[11px] font-bold tracking-wider text-[#76777d]">HARGA BELI</span>
                         <input type="number" value={it.unit_cost} onChange={e=>{ const c=[...pForm.items]; c[i]={...c[i], unit_cost:e.target.value}; setPForm({...pForm, items:c}); }} className={posInput+' text-right tabular-nums'}/>
                       </div>
                       <button type="button" onClick={()=>setPForm({...pForm, items:pForm.items.filter((_,idx)=>idx!==i)})}
@@ -584,13 +584,13 @@ export default function Returns(){
                     </div>
                   ))}
                 </div>
-                <div className="px-3 py-2 bg-[#1E40AF]/5 border-t border-[#1E40AF]/20 flex items-center justify-between">
-                  <span className="text-[11px] font-bold tracking-widest text-[#1E40AF]">TOTAL RETUR</span>
-                  <span className="font-black text-[#0F172A]">{rupiah(pForm.items.reduce((a,it)=> a + num(it.qty)*num(it.unit_cost), 0))}</span>
+                <div className="px-3 py-2 bg-[#0051d5]/5 border-t border-[#0051d5]/20 flex items-center justify-between">
+                  <span className="text-[11px] font-bold tracking-wider text-[#0051d5]">TOTAL RETUR</span>
+                  <span className="font-bold text-[#0b1c30]">{rupiah(pForm.items.reduce((a,it)=> a + num(it.qty)*num(it.unit_cost), 0))}</span>
                 </div>
               </div>
 
-              <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">CATATAN</span>
+              <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">CATATAN</span>
                 <input value={pForm.notes} onChange={e=>setPForm({...pForm, notes:e.target.value})} placeholder="mis. 3 sak rusak dari supplier" className={posInput}/></label>
             </div>
             <div className="p-3 border-t flex justify-end gap-2">
@@ -606,21 +606,21 @@ export default function Returns(){
       {/* -------------------------------------------------------- modal klaim */}
       {modal==='claim' && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50">
-          <form onSubmit={submitClaim} className="bg-white rounded-[20px] p-5 w-full max-w-lg space-y-3 border shadow-xl animate-pop">
+          <form onSubmit={submitClaim} className="bg-white rounded-xl p-5 w-full max-w-lg space-y-3 border shadow-raised animate-pop">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-black text-[16px] text-[#0F172A]">Klaim Baru</h3>
-                <div className="text-xs text-[#64748B] mt-0.5">Klaim ganti rugi ke supplier / ekspedisi atas barang rusak atau hilang</div>
+                <h3 className="font-bold text-[16px] text-[#0b1c30]">Klaim Baru</h3>
+                <div className="text-xs text-[#45464d] mt-0.5">Klaim ganti rugi ke supplier / ekspedisi atas barang rusak atau hilang</div>
               </div>
-              <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-[#E2E8F0] grid place-items-center text-[#64748B] hover:bg-[#F8FAFC]"><X size={16}/></button>
+              <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-[#e7ecf7] grid place-items-center text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
             </div>
             {formErr && <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{formErr}</div>}
             <div className="grid grid-cols-2 gap-2">
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">TIPE KLAIM</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">TIPE KLAIM</span>
                 <PosSelect size="md" value={cForm.claim_type} onChange={v=>setCForm({...cForm, claim_type:v})}>
                   {Object.entries(CLAIM_TYPE_LABEL).map(([k,v])=> <option key={k} value={k}>{v}</option>)}
                 </PosSelect></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">SUMBER DOKUMEN</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">SUMBER DOKUMEN</span>
                 <PosSelect size="md" value={cForm.reference_type} onChange={v=>setCForm({...cForm, reference_type:v})}>
                   <option value="SALES_RETURN">Retur Penjualan</option>
                   <option value="PURCHASE_RETURN">Retur Pembelian</option>
@@ -629,15 +629,15 @@ export default function Returns(){
                 </PosSelect></label>
             </div>
             {cForm.reference_type==='SALES_RETURN' && (
-              <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">RETUR TERKAIT</span>
+              <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">RETUR TERKAIT</span>
                 <PosSelect size="md" value={cForm.reference_id} onChange={v=>setCForm({...cForm, reference_id:v})}>
                   <option value="">Tanpa dokumen</option>
                   {sales.map(s=> <option key={s.id} value={s.id}>{s.return_number} • {s.customer_name||'-'}</option>)}
                 </PosSelect></label>
             )}
-            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">NILAI KLAIM Rp *</span>
+            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">NILAI KLAIM Rp *</span>
               <input type="number" value={cForm.amount_claimed} onChange={e=>setCForm({...cForm, amount_claimed:e.target.value})} className={posInput+' text-right tabular-nums'}/></label>
-            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">CATATAN</span>
+            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">CATATAN</span>
               <input value={cForm.notes} onChange={e=>setCForm({...cForm, notes:e.target.value})} placeholder="mis. 2 sak sobek, ekspedisi setuju ganti" className={posInput}/></label>
             <div className="flex justify-end gap-2 pt-1">
               <button type="button" onClick={()=>setModal('')} className={posBtnSecondary+' h-9 px-4 text-xs'}>Batal</button>
@@ -652,24 +652,24 @@ export default function Returns(){
       {/* ----------------------------------------------------- modal settle */}
       {modal==='settle' && settleRow && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50">
-          <form onSubmit={submitSettle} className="bg-white rounded-[20px] p-5 w-full max-w-md space-y-3 border shadow-xl animate-pop">
+          <form onSubmit={submitSettle} className="bg-white rounded-xl p-5 w-full max-w-md space-y-3 border shadow-raised animate-pop">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-black text-[16px] text-[#0F172A]">Selesaikan Klaim</h3>
-                <div className="text-xs text-[#64748B] mt-0.5">{settleRow.claim_number} • diajukan {rupiah(settleRow.amount_claimed)}</div>
+                <h3 className="font-bold text-[16px] text-[#0b1c30]">Selesaikan Klaim</h3>
+                <div className="text-xs text-[#45464d] mt-0.5">{settleRow.claim_number} • diajukan {rupiah(settleRow.amount_claimed)}</div>
               </div>
-              <button type="button" onClick={()=>{ setModal(''); setSettleRow(null); }} className="w-9 h-9 rounded-xl border border-[#E2E8F0] grid place-items-center text-[#64748B] hover:bg-[#F8FAFC]"><X size={16}/></button>
+              <button type="button" onClick={()=>{ setModal(''); setSettleRow(null); }} className="w-9 h-9 rounded-xl border border-[#e7ecf7] grid place-items-center text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
             </div>
             {formErr && <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{formErr}</div>}
-            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">NILAI DISELESAIKAN Rp *</span>
+            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">NILAI DISELESAIKAN Rp *</span>
               <input type="number" value={sSettle.amount_settled} onChange={e=>setSSettle({...sSettle, amount_settled:e.target.value})} className={posInput+' text-right tabular-nums'}/></label>
-            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">STATUS</span>
+            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">STATUS</span>
               <PosSelect size="md" value={sSettle.status} onChange={v=>setSSettle({...sSettle, status:v})}>
                 <option value="PAID">PAID - dibayar penuh</option>
                 <option value="PARTIAL">PARTIAL - dibayar sebagian</option>
                 <option value="REJECTED">REJECTED - ditolak</option>
               </PosSelect></label>
-            <div className="text-[11px] text-[#64748B]">Sisa klaim: <b className="text-[#0F172A]">{rupiah(num(settleRow.amount_claimed)-num(settleRow.amount_settled))}</b></div>
+            <div className="text-[11px] text-[#45464d]">Sisa klaim: <b className="text-[#0b1c30]">{rupiah(num(settleRow.amount_claimed)-num(settleRow.amount_settled))}</b></div>
             <div className="flex justify-end gap-2 pt-1">
               <button type="button" onClick={()=>{ setModal(''); setSettleRow(null); }} className={posBtnSecondary+' h-9 px-4 text-xs'}>Batal</button>
               <button disabled={saving} className={posBtnPrimary+' h-9 px-4 text-xs disabled:opacity-50'}>

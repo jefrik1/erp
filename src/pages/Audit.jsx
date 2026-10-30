@@ -144,13 +144,13 @@ export default function Audit(){
   const alerts = tab==='fraud' ? (fraud?.alerts||0) : tab==='segregation' ? (seg?.alerts||0) : 0;
 
   const FraudSection = ({ icon:Icon, title, hint, rows, columns, render, tone='amber' }) => (
-    <div className="rounded-[20px] border border-[#E2E8F0] overflow-hidden">
-      <div className="bg-[#F8FAFC] px-3 py-2 border-b border-[#E2E8F0] flex items-center justify-between gap-2">
+    <div className="rounded-xl border border-[#e7ecf7] overflow-hidden">
+      <div className="bg-[#eff4ff] px-3 py-2 border-b border-[#e7ecf7] flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className={'w-7 h-7 rounded-lg grid place-items-center '+(tone==='red'?'bg-red-50 text-red-700':'bg-amber-50 text-amber-700')}><Icon size={14}/></span>
           <div>
-            <div className="text-sm font-bold text-[#0F172A]">{title}</div>
-            <div className="text-[11px] text-[#64748B]">{hint}</div>
+            <div className="text-sm font-bold text-[#0b1c30]">{title}</div>
+            <div className="text-[11px] text-[#45464d]">{hint}</div>
           </div>
         </div>
         <PosBadge tone={rows?.length? (tone==='red'?'red':'amber') : 'emerald'}>{rows?.length||0} temuan</PosBadge>
@@ -158,7 +158,7 @@ export default function Audit(){
       {rows?.length ? (
         <div className="overflow-auto max-h-[260px]">
           <table className="w-full text-sm">
-            <thead><tr className="bg-white border-b border-[#F1F5F9] text-[11px] font-bold tracking-widest text-[#64748B]">
+            <thead><tr className="bg-white border-b border-[#e5eeff] text-[11px] font-bold tracking-wider text-[#45464d]">
               {columns.map((c,i)=> <PosTh key={i} align={c.align||'left'}>{c.label}</PosTh>)}
             </tr></thead>
             <tbody>
@@ -184,7 +184,7 @@ export default function Audit(){
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <PosStat icon={History} tone="bg-[#1E40AF]/10 text-[#1E40AF]" label="TOTAL AKTIVITAS" value={summary? nf(summary.total):'-'} sub={start||end? 'periode terpilih' : 'semua waktu'}/>
+        <PosStat icon={History} tone="bg-[#0051d5]/10 text-[#0051d5]" label="TOTAL AKTIVITAS" value={summary? nf(summary.total):'-'} sub={start||end? 'periode terpilih' : 'semua waktu'}/>
         <PosStat icon={Clock} tone="bg-emerald-50 text-emerald-700" label="AKTIVITAS HARI INI" value={summary? nf(summary.today):'-'} sub="sejak 00:00"/>
         <PosStat icon={UserCheck} tone="bg-sky-50 text-sky-700" label="PENGGUNA TERLIBAT" value={summary? nf(summary.users):'-'} sub={(summary?.by_user||[])[0]? 'terbanyak: '+summary.by_user[0].username : ''}/>
         <PosStat icon={AlertTriangle} tone={alerts? 'bg-red-50 text-red-700':'bg-emerald-50 text-emerald-700'} label="TEMUAN (TAB INI)" value={nf(alerts)} sub={tab==='fraud'? 'pola transaksi tidak wajar' : tab==='segregation'? 'pelanggaran pemisahan tugas' : 'lihat tab Deteksi & Segregasi'}/>
@@ -200,7 +200,7 @@ export default function Audit(){
           </>}>
             {(tab==='logs' || tab==='changes') && (
               <div className={posSearchWrap}>
-                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]"/>
+                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#76777d]"/>
                 <input value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Enter'&&setAppliedQ(q)}
                   placeholder={tab==='logs'? 'Cari pengguna / jenis data / nilai lalu Enter...' : 'Cari tabel / kolom / nilai lalu Enter...'}
                   className={posInput+' pl-9'}/>
@@ -233,7 +233,7 @@ export default function Audit(){
             {(tab==='logs' || tab==='changes') && (
               <>
                 <input type="date" value={start} onChange={e=>setStart(e.target.value)} className={posInput+' sm:w-[150px]'}/>
-                <span className="text-[11px] text-[#94A3B8] self-center">s/d</span>
+                <span className="text-[11px] text-[#76777d] self-center">s/d</span>
                 <input type="date" value={end} onChange={e=>setEnd(e.target.value)} className={posInput+' sm:w-[150px]'}/>
               </>
             )}
@@ -245,7 +245,7 @@ export default function Audit(){
             <PosChip active={tab==='fraud'} onClick={()=>setTab('fraud')}>Deteksi Tidak Wajar</PosChip>
             <PosChip active={tab==='segregation'} onClick={()=>setTab('segregation')}>Segregasi Tugas</PosChip>
             {tab==='logs' && <>
-              <span className="text-[11px] font-bold tracking-widest text-[#64748B] ml-3">AKSI</span>
+              <span className="text-[11px] font-bold tracking-wider text-[#45464d] ml-3">AKSI</span>
               {['Semua','CREATE','UPDATE','DELETE','APPROVE','MIGRATE'].map(a=>(
                 <PosChip key={a} active={actionFilter===a} onClick={()=>setActionFilter(a)}>{a==='Semua'?'Semua':(ACTION_LABEL[a]||a)}</PosChip>
               ))}
@@ -258,7 +258,7 @@ export default function Audit(){
           {tab==='logs' && (<>
             <div className="overflow-auto">
               <table className="w-full text-sm">
-                <thead><tr className="bg-[#F1F5F9] border-y border-[#E2E8F0] text-[11px] font-bold tracking-widest text-[#64748B]">
+                <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
                   <PosTh>WAKTU</PosTh><PosTh>PENGGUNA</PosTh><PosTh align="center">AKSI</PosTh>
                   <PosTh>JENIS DATA</PosTh><PosTh align="center">ID</PosTh><PosTh>RINGKASAN NILAI</PosTh>
                   <PosTh align="right">AKSI</PosTh>
@@ -267,11 +267,11 @@ export default function Audit(){
                   {logs.map(l=>(
                     <tr key={l.id} className={posTr}>
                       <td className={posTd+' text-xs whitespace-nowrap font-mono'}>{stamp(l.created_at)}</td>
-                      <td className={posTd+' font-bold text-[#0F172A]'}>{l.username||'(sistem)'}</td>
+                      <td className={posTd+' font-bold text-[#0b1c30]'}>{l.username||'(sistem)'}</td>
                       <td className={posTd+' text-center'}><PosBadge tone={ACTION_TONE[l.action]||'slate'}>{ACTION_LABEL[l.action]||l.action}</PosBadge></td>
                       <td className={posTd+' text-xs'}>{ENTITY_LABEL[l.entity_type]||l.entity_type}</td>
                       <td className={posTd+' text-center text-xs tabular-nums'}>{l.entity_id}</td>
-                      <td className={posTd+' text-xs text-[#64748B] font-mono max-w-[280px] truncate'}>
+                      <td className={posTd+' text-xs text-[#45464d] font-mono max-w-[280px] truncate'}>
                         {l.new_value? JSON.stringify(l.new_value).slice(0,70) : '-'}
                       </td>
                       <td className={posTd}>
@@ -292,7 +292,7 @@ export default function Audit(){
           {tab==='changes' && (<>
             <div className="overflow-auto">
               <table className="w-full text-sm">
-                <thead><tr className="bg-[#F1F5F9] border-y border-[#E2E8F0] text-[11px] font-bold tracking-widest text-[#64748B]">
+                <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
                   <PosTh>WAKTU</PosTh><PosTh>TABEL / RECORD</PosTh><PosTh>KOLOM</PosTh>
                   <PosTh>NILAI LAMA</PosTh><PosTh>NILAI BARU</PosTh><PosTh>OLEH</PosTh><PosTh>ALASAN</PosTh>
                 </tr></thead>
@@ -300,12 +300,12 @@ export default function Audit(){
                   {changes.map(c=>(
                     <tr key={c.id} className={posTr}>
                       <td className={posTd+' text-xs whitespace-nowrap font-mono'}>{stamp(c.changed_at)}</td>
-                      <td className={posTd+' text-xs'}>{c.table_name} <span className="text-[#94A3B8]">#{c.record_id}</span></td>
+                      <td className={posTd+' text-xs'}>{c.table_name} <span className="text-[#76777d]">#{c.record_id}</span></td>
                       <td className={posTd+' text-xs font-mono'}>{c.field_name}</td>
                       <td className={posTd+' text-xs text-red-600 line-through'}>{c.old_value||'-'}</td>
                       <td className={posTd+' text-xs text-emerald-700 font-bold'}>{c.new_value||'-'}</td>
                       <td className={posTd+' text-xs'}>{c.changed_by_name||'-'}</td>
-                      <td className={posTd+' text-xs text-[#64748B]'}>{c.reason||'-'}</td>
+                      <td className={posTd+' text-xs text-[#45464d]'}>{c.reason||'-'}</td>
                     </tr>
                   ))}
                   {!changes.length && <PosEmpty colSpan={7} text="Belum ada perubahan nilai tercatat"/>}
@@ -318,19 +318,19 @@ export default function Audit(){
           {/* --------------------------------------------------- fraud */}
           {tab==='fraud' && fraud && (
             <PosCardBody className="space-y-3">
-              <div className="rounded-[20px] border border-[#E2E8F0] bg-[#F8FAFC] p-3">
-                <div className="text-[11px] font-bold tracking-widest text-[#64748B] mb-2">AMBANG BATAS PEMERIKSAAN</div>
+              <div className="rounded-xl border border-[#e7ecf7] bg-[#eff4ff] p-3">
+                <div className="text-[11px] font-bold tracking-wider text-[#45464d] mb-2">AMBANG BATAS PEMERIKSAAN</div>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-                  <label className="space-y-1"><span className="text-[10px] font-bold tracking-widest text-[#94A3B8]">DISKON LEBIH DARI (%)</span>
+                  <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#76777d]">DISKON LEBIH DARI (%)</span>
                     <input type="number" value={thresholds.diskon} onChange={e=>setThresholds({...thresholds, diskon:e.target.value})} className={posInput+' text-right tabular-nums'}/></label>
-                  <label className="space-y-1"><span className="text-[10px] font-bold tracking-widest text-[#94A3B8]">QTY BESAR LEBIH DARI</span>
+                  <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#76777d]">QTY BESAR LEBIH DARI</span>
                     <input type="number" value={thresholds.qty} onChange={e=>setThresholds({...thresholds, qty:e.target.value})} className={posInput+' text-right tabular-nums'}/></label>
-                  <label className="space-y-1"><span className="text-[10px] font-bold tracking-widest text-[#94A3B8]">TRANSAKSI MALAM SEBELUM JAM</span>
+                  <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#76777d]">TRANSAKSI MALAM SEBELUM JAM</span>
                     <input type="number" value={thresholds.jam} onChange={e=>setThresholds({...thresholds, jam:e.target.value})} className={posInput+' text-right tabular-nums'}/></label>
-                  <label className="space-y-1"><span className="text-[10px] font-bold tracking-widest text-[#94A3B8]">NILAI ORDER BESAR Rp</span>
+                  <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#76777d]">NILAI ORDER BESAR Rp</span>
                     <input type="number" value={thresholds.nilai} onChange={e=>setThresholds({...thresholds, nilai:e.target.value})} className={posInput+' text-right tabular-nums'}/></label>
                 </div>
-                <div className="text-[11px] text-[#64748B] mt-2">Ubah angkanya lalu tekan <b>Jalankan Ulang</b> untuk menyesuaikan kebijakan pemeriksaan toko.</div>
+                <div className="text-[11px] text-[#45464d] mt-2">Ubah angkanya lalu tekan <b>Jalankan Ulang</b> untuk menyesuaikan kebijakan pemeriksaan toko.</div>
               </div>
 
               <FraudSection icon={Percent} title="Diskon tidak wajar" tone="red"
@@ -413,9 +413,9 @@ export default function Audit(){
           {/* ---------------------------------------------- segregasi tugas */}
           {tab==='segregation' && seg && (
             <PosCardBody className="space-y-3">
-              <div className="rounded-[20px] border border-[#E2E8F0] bg-[#F8FAFC] p-3 text-xs text-[#475569] flex items-start gap-2">
-                <Scale size={14} className="text-[#1E40AF] shrink-0 mt-0.5"/>
-                <div><b className="text-[#0F172A]">Kenapa ini penting?</b> Pemisahan tugas (segregation of duties) mencegah satu orang
+              <div className="rounded-xl border border-[#e7ecf7] bg-[#eff4ff] p-3 text-xs text-[#45464d] flex items-start gap-2">
+                <Scale size={14} className="text-[#0051d5] shrink-0 mt-0.5"/>
+                <div><b className="text-[#0b1c30]">Kenapa ini penting?</b> Pemisahan tugas (segregation of duties) mencegah satu orang
                 membuat sekaligus menyetujui dokumen, atau membuat barang masuk tanpa dasar pembelian - celah klasik penggelapan.</div>
               </div>
 
@@ -457,30 +457,30 @@ export default function Audit(){
       {/* detail modal jejak audit */}
       {detail && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50">
-          <div className="bg-white rounded-[20px] w-full max-w-2xl max-h-[90vh] flex flex-col border shadow-xl overflow-hidden animate-pop">
+          <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col border shadow-raised overflow-hidden animate-pop">
             <div className="p-4 border-b flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-black text-[16px] text-[#0F172A]">Detail Aktivitas</h3>
-                <div className="text-xs text-[#64748B] mt-1 flex items-center gap-2 flex-wrap">
+                <h3 className="font-bold text-[16px] text-[#0b1c30]">Detail Aktivitas</h3>
+                <div className="text-xs text-[#45464d] mt-1 flex items-center gap-2 flex-wrap">
                   <span className="font-mono">{stamp(detail.created_at)}</span><span>•</span>
                   <span>{detail.username||'(sistem)'}</span><span>•</span>
                   <PosBadge tone={ACTION_TONE[detail.action]||'slate'}>{ACTION_LABEL[detail.action]||detail.action}</PosBadge>
                   <span>{ENTITY_LABEL[detail.entity_type]||detail.entity_type} #{detail.entity_id}</span>
                 </div>
               </div>
-              <button onClick={()=>setDetail(null)} className="w-9 h-9 rounded-xl border border-[#E2E8F0] grid place-items-center text-[#64748B] hover:bg-[#F8FAFC]"><X size={16}/></button>
+              <button onClick={()=>setDetail(null)} className="w-9 h-9 rounded-xl border border-[#e7ecf7] grid place-items-center text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
             </div>
             <div className="p-4 space-y-3 overflow-auto text-xs">
-              {detail.ip_address && <div className="text-[#64748B]">IP: <span className="font-mono">{detail.ip_address}</span></div>}
+              {detail.ip_address && <div className="text-[#45464d]">IP: <span className="font-mono">{detail.ip_address}</span></div>}
               <div>
-                <div className="text-[11px] font-bold tracking-widest text-[#64748B] mb-1">NILAI SEBELUM</div>
-                <pre className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-3 overflow-auto text-[11px] text-red-700">
+                <div className="text-[11px] font-bold tracking-wider text-[#45464d] mb-1">NILAI SEBELUM</div>
+                <pre className="bg-[#eff4ff] border border-[#e7ecf7] rounded-xl p-3 overflow-auto text-[11px] text-red-700">
 {detail.old_value? JSON.stringify(detail.old_value, null, 2) : '(tidak ada / data baru)'}
                 </pre>
               </div>
               <div>
-                <div className="text-[11px] font-bold tracking-widest text-[#64748B] mb-1">NILAI SESUDAH</div>
-                <pre className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-3 overflow-auto text-[11px] text-emerald-700">
+                <div className="text-[11px] font-bold tracking-wider text-[#45464d] mb-1">NILAI SESUDAH</div>
+                <pre className="bg-[#eff4ff] border border-[#e7ecf7] rounded-xl p-3 overflow-auto text-[11px] text-emerald-700">
 {detail.new_value? JSON.stringify(detail.new_value, null, 2) : '(kosong)'}
                 </pre>
               </div>

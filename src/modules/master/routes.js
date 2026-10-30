@@ -1,10 +1,36 @@
 import express from 'express';
 import { pool } from '../../config/db.js';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import crypto from 'node:crypto';
 import { paginate } from '../../utils/helpers.js';
 import { sendReport } from '../../lib/exporters.js';
 const router = express.Router();
 
 // products
+// ---------------------------------------------------- foto katalog produk
+const FOTO_ROOT = path.resolve('uploads','products');
+const FOTO_MIME = { 'image/jpeg':'jpg', 'image/png':'png', 'image/webp':'webp' };
+const FOTO_MAX = 3 * 1024 * 1024;
+
+router.post('/products/photo', async (req,res)=>{
+  const { name, mime, data } = req.body||{};
+  const ext = FOTO_MIME[String(mime||'').toLowerCase()];
+  if(!data) return res.status(400).json({error:'Berkas kosong'});
+  if(!ext) return res.status(400).json({error:'Foto harus JPG, PNG, atau WEBP'});
+  try{
+    const buf = Buffer.from(String(data).replace(/^data:[^;]+;base64,/,''),'base64');
+    if(!buf.length) return res.status(400).json({error:'Berkas tidak terbaca'});
+    if(buf.length > FOTO_MAX) return res.status(400).json({error:'Ukuran foto maksimal 3 MB'});
+    const bulan = new Date(Date.now()+7*3600*1000).toISOString().slice(0,7);
+    const dir = path.join(FOTO_ROOT, bulan);
+    await fs.mkdir(dir,{ recursive:true });
+    const fname = crypto.randomBytes(12).toString('hex')+'.'+ext;
+    await fs.writeFile(path.join(dir,fname), buf);
+    res.json({ url:'/api/media/products/'+bulan+'/'+fname, name:String(name||('foto.'+ext)).slice(0,120), size:buf.length });
+  }catch(e){ res.status(500).json({error:'Gagal menyimpan foto: '+e.message}); }
+});
+
 router.get('/products', async (req,res)=>{
   const { limit, offset } = paginate(req);
   const search = req.query.search || '';
@@ -37,8 +63,8 @@ router.get('/products', async (req,res)=>{
   res.json({ data: data.rows, total: parseInt(count.rows[0].count), page: Math.floor(offset/limit)+1 });
 });
 router.post('/products', async (req,res)=>{
-  const {sku, barcode, name, category_id, base_unit_id, tax_id, min_stock, reorder_point, description} = req.body;
-  const r=await pool.query('INSERT INTO products (sku, barcode, name, category_id, base_unit_id, tax_id, min_stock, reorder_point, description) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id', [sku, barcode, name, category_id, base_unit_id, tax_id, min_stock, reorder_point, description]);
+  const {sku, barcode, name, category_id, base_unit_id, tax_id, min_stock, reorder_point, description, image_url} = req.body;
+  const r=await pool.query('INSERT INTO products (sku, barcode, name, category_id, base_unit_id, tax_id, min_stock, reorder_point, description, image_url) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id', [sku, barcode, name, category_id, base_unit_id, tax_id, min_stock, reorder_point, description, image_url||null]);
   res.json(r.rows[0]);
 });
 router.get('/products/:id', async (req,res)=>{
@@ -49,7 +75,7 @@ router.get('/products/:id', async (req,res)=>{
   res.json({...r.rows[0], units: units.rows, stocks: stocks.rows});
 });
 router.put('/products/:id', async (req,res)=>{
-  const fields=['name','sku','barcode','category_id','base_unit_id','min_stock','reorder_point','is_active','description'];
+  const fields=['name','sku','barcode','category_id','base_unit_id','min_stock','reorder_point','is_active','description','image_url'];
   const sets=[]; const vals=[]; let idx=1;
   for(const f of fields) if(req.body[f]!==undefined){ sets.push(f+'=$'+idx); vals.push(req.body[f]); idx++; }
   if(sets.length){ vals.push(req.params.id); await pool.query('UPDATE products SET '+sets.join(',')+' WHERE id=$'+idx, vals); }

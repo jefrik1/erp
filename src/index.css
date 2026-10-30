@@ -1,10 +1,103 @@
-@tailwind base; @tailwind components; @tailwind utilities;
-*{font-family:'Inter Variable',Inter,system-ui,sans-serif}
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:999px}
-.badge{font-size:11px;letter-spacing:.06em;font-weight:700;padding:3px 8px;border-radius:999px}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* Animasi modal (pengganti class animate-in yang butuh plugin tailwindcss-animate) */
-@keyframes pop-in{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:none}}
-.animate-pop{animation:pop-in .18s cubic-bezier(.16,1,.3,1)}
-@media (prefers-reduced-motion: reduce){.animate-pop{animation:none}}
+/* ---------- token layer (Stitch: UI Redesign and Polish) ---------- */
+:root {
+  --bg: 248 249 255;
+  --surface: 255 255 255;
+  --surface-2: 239 244 255;
+  --surface-3: 229 238 255;
+  --surface-4: 220 233 255;
+  --line: 231 236 247;
+  --line-strong: 198 198 205;
+  --ink: 11 28 48;
+  --ink-2: 69 70 77;
+  --ink-3: 118 119 125;
+  --navy: 19 27 46;
+  --navy-2: 33 49 69;
+  --brand: 0 81 213;
+  --brand-strong: 0 65 171;
+  --brand-tint: 49 107 243;
+  --brand-soft: 219 225 255;
+  --success: 0 150 104;
+  --success-soft: 232 251 242;
+  --success-line: 168 235 196;
+  --warning: 180 83 9;
+  --warning-soft: 255 248 236;
+  --warning-line: 255 216 168;
+  --danger: 186 26 26;
+  --danger-soft: 255 218 214;
+  --danger-line: 255 180 171;
+  --info: 0 81 213;
+  --info-soft: 239 244 255;
+  --info-line: 180 197 255;
+}
+
+@layer base {
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  body {
+    background: rgb(var(--bg));
+    color: rgb(var(--ink));
+    font-family: 'Inter Variable', Inter, system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    font-feature-settings: 'cv05' 1, 'ss01' 1;
+  }
+  h1, h2, h3, .font-display { font-family: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', 'Inter Variable', Inter, sans-serif; }
+  .num, td.num, input.num { font-variant-numeric: tabular-nums lining-nums; }
+  .mono { font-family: ui-monospace, 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace; }
+  :focus-visible { outline: 2px solid rgb(var(--brand-tint)); outline-offset: 2px; border-radius: 6px; }
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px }
+::-webkit-scrollbar-thumb { background: #cbdbf5; border-radius: 999px; border: 3px solid transparent; background-clip: content-box }
+::-webkit-scrollbar-track { background: transparent }
+
+.badge { font-size: 11px; letter-spacing: .04em; font-weight: 600; padding: 3px 8px; border-radius: 999px }
+
+/* Animasi modal */
+@keyframes pop-in { from { opacity: 0; transform: scale(.98) translateY(6px) } to { opacity: 1; transform: none } }
+.animate-pop { animation: pop-in .18s cubic-bezier(.16,1,.3,1) }
+@media (prefers-reduced-motion: reduce) { .animate-pop { animation: none } }
+
+/* Halo berdenyut di ikon status notifikasi absensi (desain Stitch) */
+@keyframes pulse-ring {
+  0% { transform: scale(.95); opacity: .8 }
+  50% { transform: scale(1.08); opacity: .4 }
+  100% { transform: scale(.95); opacity: .8 }
+}
+.animate-pulse-ring { animation: pulse-ring 3s cubic-bezier(.4,0,.6,1) infinite }
+@media (prefers-reduced-motion: reduce) { .animate-pulse-ring { animation: none } }
+
+@keyframes shimmer { 100% { transform: translateX(100%) } }
+.skeleton { position: relative; overflow: hidden; background: rgb(var(--surface-3)) }
+.skeleton::after {
+  content: ''; position: absolute; inset: 0; transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+  animation: shimmer 1.4s infinite;
+}
+@media (prefers-reduced-motion: reduce) { .skeleton::after { animation: none } }
+
+/* ---------------------------------------------------------------------------
+   Transisi antar halaman: konten masuk halus (180ms ease-out), sidebar diam.
+   Keyframe dipakai Layout pada <main key={pathname}>, jadi hanya area konten
+   yang di-remount. Dihormati prefers-reduced-motion.
+--------------------------------------------------------------------------- */
+@keyframes page-enter { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: none } }
+.page-enter { animation: page-enter .18s cubic-bezier(0,0,.2,1) both; }
+@media (prefers-reduced-motion: reduce) { .page-enter { animation: none } }
+
+/* Bar tipis di atas saat chunk halaman dimuat (Suspense fallback). */
+@keyframes route-progress { 0% { transform: translateX(-100%) } 100% { transform: translateX(100%) } }
+.route-progress { animation: route-progress 1s linear infinite; }
+
+
+/* ---------- cetak dokumen (surat jalan / invoice) ---------- */
+@media print {
+  aside, header, .no-print { display: none !important; }
+  main { padding: 0 !important; margin: 0 !important; max-width: none !important; }
+  .page-enter { animation: none !important; }
+  body { background: #fff !important; }
+  #surat-jalan { box-shadow: none !important; border: 0 !important; }
+}

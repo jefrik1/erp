@@ -36,11 +36,23 @@ services:
     ports:
       - "4000:4000"
     environment:
-      DATABASE_URL: postgres://erp:erp_secret@postgres:5432/erp_db
-      JWT_SECRET: erp_jwt_super_secret_2024
-      JWT_REFRESH_SECRET: erp_refresh_secret_2024
+      DATABASE_URL: ${DATABASE_URL_DOCKER:-postgres://erp:erp_secret@postgres:5432/erp_db}
+      # Secret diambil dari .env (jangan hardcode). Jalankan `openssl rand -hex 32`.
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET wajib diisi di .env}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET wajib diisi di .env}
       REDIS_URL: redis://redis:6379
       PORT: 4000
+      NODE_ENV: ${NODE_ENV:-development}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:5174}
+      TRUST_PROXY: "1"
+      APP_VERSION: ${APP_VERSION:-1.0.0}
+      RATE_LIMIT_PER_MIN: ${RATE_LIMIT_PER_MIN:-600}
+      LOGIN_MAX_FAILS: ${LOGIN_MAX_FAILS:-5}
+      LOGIN_LOCK_MINUTES: ${LOGIN_LOCK_MINUTES:-15}
+      WA_GATEWAY_URL: ${WA_GATEWAY_URL:-}
+      WA_GATEWAY_TOKEN: ${WA_GATEWAY_TOKEN:-}
+      SMTP_URL: ${SMTP_URL:-}
+      SMTP_TOKEN: ${SMTP_TOKEN:-}
     depends_on:
       postgres:
         condition: service_healthy
@@ -49,6 +61,12 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4000/api/health >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 25s
 
   frontend:
     build:
@@ -58,8 +76,39 @@ services:
     restart: unless-stopped
     ports:
       - "5174:80"
+      - "5443:443"
+    volumes:
+      # Sertifikat bisa diganti tanpa rebuild (taruh fullchain.pem & privkey.pem di sini).
+      - ./docker/certs:/etc/nginx/certs:ro
     depends_on:
       - backend
+
+  # Backup harian otomatis (pg_dump custom format) + retensi 14 hari.
+  # File tersimpan di ./backups di host. Restore: scripts/restore-db.sh <file>.
+  backup:
+    image: postgres:16-alpine
+    container_name: erp_backup
+    restart: unless-stopped
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:-erp_secret}
+    volumes:
+      - ./backups:/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint: ["/bin/sh","-c"]
+    command: >
+      "echo '[backup] worker start';
+       while true; do
+         ts=$$(date +%Y%m%d-%H%M%S);
+         if pg_dump -h postgres -U erp -d erp_db -Fc -f /backups/erp_$$ts.dump; then
+           echo \"[backup] $$ts ok\";
+         else
+           echo \"[backup] $$ts GAGAL\";
+         fi;
+         find /backups -name 'erp_*.dump' -type f -mtime +14 -delete 2>/dev/null;
+         sleep 86400;
+       done"
 
 volumes:
   pgdata:

@@ -3,17 +3,40 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { pool } from '../../config/db.js';
 import { auth } from '../../middleware/auth.js';
+import { loginKey, loginLockRemaining, registerLoginFail, clearLoginFails, passwordProblem, LOCK_MINUTES } from '../../middleware/security.js';
+import mfaRoutes from './mfa-routes.js';
 const router = express.Router();
+router.use('/mfa', mfaRoutes);
 
 router.post('/login', async (req,res)=>{
   const { username, password } = req.body;
   if(!username||!password) return res.status(400).json({error:'Username & password required'});
+  // Lockout: 5 kali gagal → tahan 15 menit (per username+IP), cegah brute force.
+  const key = loginKey(req, username);
+  const lockLeft = loginLockRemaining(key);
+  if(lockLeft > 0){
+    res.setHeader('Retry-After', String(lockLeft));
+    return res.status(429).json({error:`Terlalu banyak percobaan gagal. Coba lagi dalam ${Math.ceil(lockLeft/60)} menit.`});
+  }
   const u = await pool.query("SELECT u.*, b.name as branch_name, array_agg(r.name) as roles FROM users u LEFT JOIN branches b ON b.id=u.branch_id LEFT JOIN user_roles ur ON ur.user_id=u.id LEFT JOIN roles r ON r.id=ur.role_id WHERE u.username=$1 GROUP BY u.id, b.name",[username]);
-  if(u.rows.length===0) return res.status(401).json({error:'User not found'});
+  if(u.rows.length===0){
+    const f = registerLoginFail(key);
+    return res.status(401).json({error: f.locked? `Terlalu banyak percobaan gagal. Akun dikunci sementara ${Math.round(LOCK_MINUTES)} menit.` : 'User not found'});
+  }
   const user = u.rows[0];
   if(!user.is_active) return res.status(403).json({error:'User disabled'});
   const ok = await bcrypt.compare(password, user.password_hash);
-  if(!ok) return res.status(401).json({error:'Wrong password'});
+  if(!ok){
+    const f = registerLoginFail(key);
+    await pool.query("INSERT INTO audit_logs (user_id, action, entity_type, ip_address) VALUES ($1,'LOGIN_FAILED','AUTH',$2)",[user.id, String(req.headers['x-forwarded-for']||req.socket?.remoteAddress||'').slice(0,45)]).catch(()=>{});
+    return res.status(401).json({error: f.locked? `Password salah ${f.count}× — akun dikunci sementara ${Math.round(LOCK_MINUTES)} menit.` : `Wrong password (sisa ${f.remaining} percobaan)`});
+  }
+  clearLoginFails(key);
+  // MFA aktif → terbitkan token sementara (5 menit) untuk langkah verifikasi kode.
+  if(user.mfa_enabled){
+    const mfa_token = jwt.sign({ id:user.id, scope:'mfa' }, process.env.JWT_SECRET||'erp_jwt_super_secret_2024', { expiresIn:'5m' });
+    return res.json({ mfa_required:true, mfa_token, username:user.username });
+  }
   await pool.query('UPDATE users SET last_login=NOW() WHERE id=$1',[user.id]);
   await pool.query("INSERT INTO audit_logs (user_id, action, entity_type, ip_address) VALUES ($1,'LOGIN','AUTH',$2)",[user.id, String(req.headers['x-forwarded-for']||req.socket?.remoteAddress||'').slice(0,45)]).catch(()=>{});
   const roles = user.roles.filter(Boolean);
@@ -88,7 +111,9 @@ router.delete('/users/:id', auth, async (req,res)=>{
 router.post('/change-password', auth, async (req,res)=>{
   const {old_password, new_password} = req.body||{};
   if(!old_password || !new_password) return res.status(400).json({error:'Password lama dan password baru wajib diisi'});
-  if(String(new_password).length < 6) return res.status(400).json({error:'Password baru minimal 6 karakter'});
+  const pwErr = passwordProblem(new_password);
+  if(pwErr) return res.status(400).json({error: pwErr});
+  if(String(old_password) === String(new_password)) return res.status(400).json({error:'Password baru tidak boleh sama dengan password lama'});
   try{
     const r = await pool.query('SELECT password_hash FROM users WHERE id=$1',[req.user.id]);
     if(!r.rows[0]) return res.status(404).json({error:'User tidak ditemukan'});

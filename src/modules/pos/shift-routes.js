@@ -1,5 +1,6 @@
 import express from 'express';
 import { pool } from '../../config/db.js';
+import { creditCash } from '../finance/routes.js';
 const router = express.Router();
 
 const REGISTER_WEB = 1; // register default untuk POS web (satu kasir = satu shift terbuka)
@@ -66,8 +67,29 @@ router.post('/close', async (req,res)=>{
          closing_cash=$1, expected_closing=$2, variance=$3, variance_pct=$4, notes=$5
        WHERE id=$6 RETURNING *`,
       [closing, expected, variance, variance_pct, notes, shift.id]);
+
+    // Uang hasil penjualan tunai dari shift ini masuk ke KAS TUNAI dulu (bukan
+    // langsung ke bank). Kas awal (opening float) sudah dihitung sebagai uang kas
+    // yang ada, jadi yang dikreditkan hanya kelebihan kas fisik (closing - opening).
+    // Idempotent: shift yang sama tidak dikreditkan dua kali pada sesi buka ini.
+    let cash=null;
+    const masukKas = Math.max(0, closing - opening);
+    try{
+      const already=await pool.query(
+        `SELECT 1 FROM cash_movements WHERE source='SHIFT_CLOSE' AND reference_type='SHIFT' AND reference_id=$1 AND created_at >= $2 LIMIT 1`,
+        [shift.id, shift.login_time]);
+      if(!already.rows[0] && masukKas>0){
+        cash=await creditCash({
+          amount: masukKas, source:'SHIFT_CLOSE', referenceType:'SHIFT', referenceId: shift.id,
+          notes: `Tutup shift #${shift.id} - penjualan tunai (kas ${closing} - kas awal ${opening})`,
+          createdBy: req.user.id,
+        });
+      }
+    }catch(e){ console.error('[shift cash]', e.message); }
+
     res.json({ ok:true, shift:upd.rows[0],
-      summary:{ opening, cash_sales:s.cash, transaksi_cash:s.n, expected, closing, variance } });
+      summary:{ opening, cash_sales:s.cash, transaksi_cash:s.n, expected, closing, variance, masuk_kas:masukKas },
+      cash_account: cash });
   }catch(e){ res.status(500).json({error:e.message}); }
 });
 

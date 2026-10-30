@@ -2,6 +2,7 @@ import express from 'express';
 import { pool } from '../../config/db.js';
 import { paginate } from '../../utils/helpers.js';
 import { sendReport } from '../../lib/exporters.js';
+import { rbac } from '../../middleware/auth.js';
 const router = express.Router();
 
 router.get('/ping', (req,res)=>res.json({ok:true, routes:['/ar','/ar/debug','/ap','/cash'], note:'AR POS/DO/SO only'}));
@@ -142,11 +143,127 @@ router.post('/ap/pay', async (req,res)=>{
   res.json({ok:true, payment_number: payNo, amount: payAmt});
 });
 router.get('/cash', async (req,res)=>{ try{
+  await ensureCashAccount();
   await pool.query(`DELETE FROM bank_accounts WHERE id NOT IN (SELECT MAX(id) FROM bank_accounts GROUP BY bank_name, account_no)`);
   try{ await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS ux_bank_acc ON bank_accounts(bank_name, account_no)`); }catch{}
-  const r=await pool.query(`SELECT id, bank_name, account_no, account_name, balance FROM bank_accounts ORDER BY bank_name`);
+  const r=await pool.query(`SELECT id, bank_name, account_no, account_name, balance, COALESCE(kind,'BANK') AS kind FROM bank_accounts ORDER BY (COALESCE(kind,'BANK')='CASH') DESC, bank_name`);
   res.json(r.rows);
 }catch(e){ console.error('cash',e.message); res.json([]); } });
+
+// ── Kas Tunai ───────────────────────────────────────────────────────────────
+// Semua uang fisik dari tutup shift masuk ke akun CASH dulu, baru disetor ke bank.
+let cashEnsured=false;
+async function ensureCashAccount(){
+  if(cashEnsured) return;
+  try{
+    await pool.query(`ALTER TABLE bank_accounts ADD COLUMN IF NOT EXISTS kind VARCHAR(10) DEFAULT 'BANK'`).catch(()=>{});
+    await pool.query(`CREATE TABLE IF NOT EXISTS cash_movements (
+      id SERIAL PRIMARY KEY,
+      account_id INT REFERENCES bank_accounts(id),
+      direction VARCHAR(4) NOT NULL,
+      amount NUMERIC(15,2) NOT NULL DEFAULT 0,
+      source VARCHAR(20) NOT NULL,
+      reference_type VARCHAR(30),
+      reference_id INT,
+      notes TEXT,
+      created_by INT REFERENCES users(id),
+      created_at TIMESTAMP DEFAULT NOW())`).catch(()=>{});
+    // Sub-akun COA untuk kas tunai & bank (dipakai jurnal setor kas).
+    await pool.query(`INSERT INTO accounts (code,name,type) VALUES ('1-1010','Kas Tunai','ASSET') ON CONFLICT (code) DO NOTHING`).catch(()=>{});
+    await pool.query(`INSERT INTO accounts (code,name,type) VALUES ('1-1020','Bank','ASSET') ON CONFLICT (code) DO NOTHING`).catch(()=>{});
+    const has=await pool.query(`SELECT id FROM bank_accounts WHERE COALESCE(kind,'BANK')='CASH' LIMIT 1`);
+    if(!has.rows[0]){
+      await pool.query(`INSERT INTO bank_accounts (bank_name, account_no, account_name, balance, kind) VALUES ('Kas Tunai','KAS-001','Kas Kasir / Tunai',0,'CASH')`).catch(()=>{});
+    }
+    cashEnsured=true;
+  }catch(e){ console.error('[ensure cash]', e.message); }
+}
+
+async function cashAccount(){
+  await ensureCashAccount();
+  const r=await pool.query(`SELECT * FROM bank_accounts WHERE COALESCE(kind,'BANK')='CASH' ORDER BY id LIMIT 1`);
+  return r.rows[0] || null;
+}
+async function coaId(code){
+  const r=await pool.query('SELECT id FROM accounts WHERE code=$1',[code]);
+  return r.rows[0]?.id || null;
+}
+/** Catat uang masuk ke Kas Tunai + jurnal Dr Kas Tunai / Cr Penjualan. */
+export async function creditCash({ amount, source, referenceType, referenceId, notes, createdBy }){
+  const amt = parseFloat(amount)||0;
+  if(amt<=0) return null;
+  await ensureCashAccount();
+  const acc = await cashAccount();
+  if(!acc) return null;
+  const client = await pool.connect();
+  try{
+    await client.query('BEGIN');
+    const up = await client.query('UPDATE bank_accounts SET balance = COALESCE(balance,0) + $1 WHERE id=$2 RETURNING balance',[amt, acc.id]);
+    await client.query(`INSERT INTO cash_movements (account_id, direction, amount, source, reference_type, reference_id, notes, created_by)
+      VALUES ($1,'IN',$2,$3,$4,$5,$6,$7)`,[acc.id, amt, source||'MANUAL', referenceType||null, referenceId||null, notes||null, createdBy||null]);
+    const kas = await coaId('1-1010');
+    const jual = await coaId('4-1000');
+    if(kas && jual){
+      const je = await client.query(`INSERT INTO journal_entries (entry_number, entry_date, reference_type, reference_id, description, total_debit, total_credit, posted, created_by)
+        VALUES ($1, CURRENT_DATE, $2, $3, $4, $5, $5, true, $6) RETURNING id`,
+        ['JE-'+Date.now(), referenceType||'CASH_IN', referenceId||null, notes||('Kas masuk '+(source||'')), amt, createdBy||null]);
+      await client.query('INSERT INTO journal_details (journal_id, account_id, debit, credit, description) VALUES ($1,$2,$3,0,$5),($1,$4,0,$3,$5)',
+        [je.rows[0].id, kas, amt, jual, notes||'Kas masuk']);
+    }
+    await client.query('COMMIT');
+    return { account_id: acc.id, balance: parseFloat(up.rows[0].balance) };
+  }catch(e){ try{ await client.query('ROLLBACK'); }catch{}; console.error('[creditCash]', e.message); return null; }
+  finally{ client.release(); }
+}
+
+// Riwayat mutasi kas tunai
+router.get('/cash/movements', async (req,res)=>{
+  await ensureCashAccount();
+  try{
+    const acc=await cashAccount();
+    if(!acc) return res.json({ data:[], account:null });
+    const limit=Math.min(parseInt(req.query.limit||'30')||30, 100);
+    const r=await pool.query(`SELECT cm.*, u.username FROM cash_movements cm LEFT JOIN users u ON u.id=cm.created_by
+      WHERE cm.account_id=$1 ORDER BY cm.id DESC LIMIT $2`,[acc.id, limit]);
+    res.json({ account: acc, data: r.rows });
+  }catch(e){ res.status(500).json({error:e.message}); }
+});
+
+// Setor kas tunai ke bank: saldo kas berkurang, saldo bank bertambah + jurnal Dr Bank / Cr Kas Tunai
+router.post('/cash/deposit', rbac('finance','direktur','super_admin'), async (req,res)=>{
+  await ensureCashAccount();
+  const amount=parseFloat(req.body?.amount)||0;
+  const bankId=parseInt(req.body?.bank_account_id);
+  const notes=req.body?.notes||null;
+  if(amount<=0) return res.status(400).json({error:'Nominal setor harus lebih dari 0'});
+  if(!bankId) return res.status(400).json({error:'Pilih rekening bank tujuan'});
+  const acc=await cashAccount();
+  if(!acc) return res.status(400).json({error:'Akun Kas Tunai belum ada'});
+  const bank=await pool.query(`SELECT * FROM bank_accounts WHERE id=$1 AND COALESCE(kind,'BANK')<>'CASH'`,[bankId]);
+  if(!bank.rows[0]) return res.status(404).json({error:'Rekening bank tujuan tidak ditemukan'});
+  const saldo=parseFloat(acc.balance||0);
+  if(amount > saldo + 0.5) return res.status(400).json({error:`Saldo Kas Tunai tidak cukup (Rp ${new Intl.NumberFormat('id-ID').format(saldo)})`});
+  const client=await pool.connect();
+  try{
+    await client.query('BEGIN');
+    await client.query('UPDATE bank_accounts SET balance = COALESCE(balance,0) - $1 WHERE id=$2',[amount, acc.id]);
+    await client.query('UPDATE bank_accounts SET balance = COALESCE(balance,0) + $1 WHERE id=$2',[amount, bankId]);
+    await client.query(`INSERT INTO cash_movements (account_id, direction, amount, source, reference_type, reference_id, notes, created_by)
+      VALUES ($1,'OUT',$2,'DEPOSIT_TO_BANK','BANK_ACCOUNT',$3,$4,$5)`,[acc.id, amount, bankId, notes||('Setor ke '+bank.rows[0].bank_name), req.user.id]);
+    const kas=await coaId('1-1010'); const bankCoa=await coaId('1-1020');
+    if(kas && bankCoa){
+      const je=await client.query(`INSERT INTO journal_entries (entry_number, entry_date, reference_type, reference_id, description, total_debit, total_credit, posted, created_by)
+        VALUES ($1, CURRENT_DATE, 'CASH_DEPOSIT', $2, $3, $4, $4, true, $5) RETURNING id`,
+        ['JE-'+Date.now(), bankId, 'Setor kas ke '+bank.rows[0].bank_name, amount, req.user.id]);
+      await client.query('INSERT INTO journal_details (journal_id, account_id, debit, credit, description) VALUES ($1,$2,$3,0,$4),($1,$5,0,$3,$4)',
+        [je.rows[0].id, bankCoa, amount, 'Setor kas ke bank', kas]);
+    }
+    await client.query('COMMIT');
+    const after=await pool.query('SELECT balance FROM bank_accounts WHERE id=$1',[acc.id]);
+    res.json({ ok:true, amount, cash_balance: parseFloat(after.rows[0].balance), bank: bank.rows[0].bank_name });
+  }catch(e){ try{ await client.query('ROLLBACK'); }catch{}; console.error('[cash deposit]',e); res.status(500).json({error:e.message}); }
+  finally{ client.release(); }
+});
 router.get('/trial-balance', async (req,res)=>{
   try{ const r=await pool.query("SELECT a.code, a.name, a.type, COALESCE(SUM(jd.debit),0) as debit, COALESCE(SUM(jd.credit),0) as credit FROM accounts a LEFT JOIN journal_details jd ON jd.account_id=a.id LEFT JOIN journal_entries je ON je.id=jd.journal_id WHERE je.posted=true OR je.posted IS NULL GROUP BY a.code, a.name, a.type ORDER BY a.code"); res.json(r.rows.map(x=>({...x, debit:parseFloat(x.debit), credit:parseFloat(x.credit)}))); }catch(e){ console.error('tb',e.message); res.json([]); }
 });

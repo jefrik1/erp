@@ -43,7 +43,17 @@ router.get('/delivered-notes', async (req,res)=>{
 router.get('/deliveries', async (req,res)=>{
   try{
     await ensurePodCols();
-    const r=await pool.query(`SELECT d.*, c.name as customer_name, so.so_number, e.name as driver_name
+    // Kolom tanda tangan (base64) sengaja tidak ikut di daftar supaya payload ringan;
+    // UI hanya butuh status sudah/belum ditandatangani.
+    const r=await pool.query(`SELECT d.id, d.do_number, d.so_id, d.customer_id, d.warehouse_id,
+        d.delivery_date, d.vehicle_no, d.driver_id, d.status, d.received_by, d.delivered_at, d.invoice_handed,
+        d.delivery_address, d.delivery_lat, d.delivery_lng, d.distance_km,
+        d.est_weight_ton, d.est_volume_m3, d.est_zone, d.est_cost, d.est_cost_dalam, d.est_cost_luar,
+        (d.sender_signature_url IS NOT NULL) AS sender_signed,
+        (d.driver_signature_url IS NOT NULL) AS driver_signed,
+        (d.pod_signature_url IS NOT NULL) AS pod_signed,
+        d.sender_signed_by, d.sender_signed_at, d.office_confirmed_at,
+        c.name as customer_name, so.so_number, e.name as driver_name
       FROM delivery_orders d
       LEFT JOIN customers c ON c.id=d.customer_id
       LEFT JOIN sales_orders so ON so.id=d.so_id
@@ -74,9 +84,32 @@ router.get('/fleet-stats', async (req,res)=>{
   const invoiced=await pool.query("SELECT COUNT(*) FROM delivery_orders WHERE status='INVOICED'");
   res.json({ total: parseInt(tot.rows[0].count), available: parseInt(avail.rows[0].count), in_transit: parseInt(intransit.rows[0].count), delivered: parseInt(delivered.rows[0].count), invoiced: parseInt(invoiced.rows[0].count) });
 });
+router.post('/deliveries/:id/confirm-office', async (req,res)=>{
+  await ensurePodCols();
+  const {sender_signature_url, sender_signed_by, notes} = req.body;
+  const chk=await pool.query('SELECT * FROM delivery_orders WHERE id=$1',[req.params.id]);
+  if(!chk.rows[0]) return res.status(404).json({error:'DO not found'});
+  const doRow=chk.rows[0];
+  // Tanda tangan pengirim bisa dipakai ulang bila gudang sudah menandatangani saat
+  // DO dibuat (barang keluar gudang) - kantor cukup mengonfirmasi.
+  const sig = sender_signature_url || doRow.sender_signature_url || null;
+  if(!sig || !String(sig).startsWith('data:')) return res.status(400).json({error:'Tanda tangan Pengirim/Gudang wajib'});
+  if(!String(sig).startsWith('data:image/')) return res.status(400).json({error:'Format tanda tangan pengirim tidak valid'});
+  if(String(sig).length > 2_000_000) return res.status(400).json({error:'Ukuran tanda tangan terlalu besar'});
+  const by = String(sender_signed_by||doRow.sender_signed_by||'').trim() || (req.user?.name || req.user?.username || '');
+  if(!by) return res.status(400).json({error:'Nama petugas gudang/pengirim wajib diisi'});
+  if(doRow.status!=='DELIVERED' && doRow.status!=='INVOICED') return res.status(400).json({error:'Only DELIVERED/Invoiced DO can be confirmed by office'});
+  await pool.query(`UPDATE delivery_orders
+      SET sender_signature_url=$1,
+          sender_signed_at=COALESCE(sender_signed_at, NOW()),
+          sender_signed_by=$2,
+          office_confirmed_at=NOW(), office_confirmed_by=$4
+    WHERE id=$3`,[sig, by, req.params.id, by]);
+  res.json({ok:true, sender_signature_url:sig, sender_signed_by:by, notes:notes||null});
+});
 router.post('/deliveries/:id/pod', async (req,res)=>{
   await ensurePodCols();
-  const {received_by, signature_url, pod_signature_url, pod_photo_url, pod_notes, notes} = req.body;
+  const {received_by, signature_url, pod_signature_url, pod_photo_url, pod_notes, notes, invoice_handed} = req.body;
   const sig = pod_signature_url || signature_url || null;
   const photo = pod_photo_url || null;
   const note = pod_notes || notes || null;
@@ -89,7 +122,7 @@ router.post('/deliveries/:id/pod', async (req,res)=>{
   let soCompleted=false;
   try{
     await client.query('BEGIN');
-    await client.query(`UPDATE delivery_orders SET status='DELIVERED', received_by=$1, pod_signature_url=$2, pod_photo_url=$3, pod_notes=$4, delivered_at=NOW() WHERE id=$5`,[received_by, sig, photo, note, req.params.id]);
+    await client.query(`UPDATE delivery_orders SET status='DELIVERED', received_by=$1, pod_signature_url=$2, pod_photo_url=$3, pod_notes=$4, delivered_at=NOW()${invoice_handed ? ', invoice_handed=TRUE' : ''} WHERE id=$5`,[received_by, sig, photo, note, req.params.id]);
     if(chk.rows[0].vehicle_no){
       await client.query("UPDATE vehicles SET status='AVAILABLE' WHERE plat_no=$1",[chk.rows[0].vehicle_no]);
     }
@@ -100,4 +133,5 @@ router.post('/deliveries/:id/pod', async (req,res)=>{
   const updated=await pool.query(`SELECT d.*, c.name as customer_name, so.so_number, so.status as so_status FROM delivery_orders d LEFT JOIN customers c ON c.id=d.customer_id LEFT JOIN sales_orders so ON so.id=d.so_id WHERE d.id=$1`,[req.params.id]);
   res.json({ok:true, delivery: updated.rows[0], so_completed: soCompleted});
 });
+
 export default router;

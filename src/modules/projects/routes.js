@@ -27,7 +27,9 @@ router.get('/export', async (req,res)=>{
 router.get('/:id', async(req,res)=>{
   const pr=await pool.query('SELECT pr.*, c.name as customer_name FROM projects pr LEFT JOIN customers c ON c.id=pr.customer_id WHERE pr.id=$1',[req.params.id]);
   if(!pr.rows[0]) return res.status(404).json({error:'Not found'});
-  const terms=await pool.query('SELECT * FROM project_terms WHERE project_id=$1 ORDER BY term_number',[req.params.id]);
+  const terms=await pool.query(`SELECT t.*, i.invoice_number, i.status AS invoice_status, i.paid_amount
+    FROM project_terms t LEFT JOIN invoices i ON i.id=t.invoice_id
+    WHERE t.project_id=$1 ORDER BY t.term_number`,[req.params.id]);
   const prices=await pool.query('SELECT pp.*, p.name as product_name, p.sku FROM project_prices pp JOIN products p ON p.id=pp.product_id WHERE pp.project_id=$1',[req.params.id]);
   const docs=await pool.query('SELECT * FROM project_documents WHERE project_id=$1 ORDER BY doc_date DESC',[req.params.id]);
   const rab=await pool.query('SELECT r.*, p.name as product_name, p.sku FROM project_rab r JOIN products p ON p.id=r.product_id WHERE r.project_id=$1',[req.params.id]);

@@ -45,8 +45,9 @@ export default function InventoryStocks(){
   const [page, setPage] = useState(1);
   const [expBusy, setExpBusy] = useState('');
 
-  const load = useCallback(async ()=>{
-    setLoading(true); setErr('');
+  const load = useCallback(async (silent)=>{
+    if(!silent) setLoading(true);
+    if(!silent) setErr('');
     try{
       const params = { limit: 3000, offset: 0 };
       if (wh) params.warehouse_id = wh;
@@ -60,12 +61,23 @@ export default function InventoryStocks(){
       setTotal(Number(detailRes.data?.total) || data.length);
       setSummary(Array.isArray(sumRes.data) ? sumRes.data : []);
     }catch(e){
-      setErr(e.response?.data?.error || e.message); setRows([]); setSummary([]); setTotal(0);
-    }finally{ setLoading(false); }
+      // Saat refresh otomatis (silent) jangan kosongkan tabel - cukup pertahankan data terakhir.
+      if(!silent){ setErr(e.response?.data?.error || e.message); setRows([]); setSummary([]); setTotal(0); }
+    }finally{ if(!silent) setLoading(false); }
   },[wh, appliedQ]);
 
   useEffect(()=>{ api.get('/master/warehouses').then(r=>setWarehouses(Array.isArray(r.data)?r.data:(r.data?.data||[]))).catch(()=>{}); },[]);
   useEffect(()=>{ load(); },[load]);
+  // Stok bergerak karena POS/DO/GR - tarik ulang otomatis supaya angka tidak basi
+  // tanpa harus klik "Muat Ulang".
+  useEffect(()=>{
+    const iv=setInterval(()=>{ if(document.visibilityState==='visible') load(true); }, 10000);
+    const onFocus=()=>load(true);
+    const onVis=()=>{ if(document.visibilityState==='visible') load(true); };
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVis);
+    return ()=>{ clearInterval(iv); window.removeEventListener('focus', onFocus); document.removeEventListener('visibilitychange', onVis); };
+  },[load]);
   useEffect(()=>{ setPage(1); },[wh, appliedQ, statusFilter, view]);
 
   // Ringkas: satu baris per produk. Detail: satu baris per gudang+batch.
@@ -99,6 +111,27 @@ export default function InventoryStocks(){
 
   // Perawatan: gabungkan baris stok ganda (1 produk 1 gudang seharusnya 1 baris).
   const [rapiBusy, setRapiBusy] = useState(false);
+  const [reorderBusy, setReorderBusy] = useState(false);
+
+  // Buat Purchase Request otomatis untuk produk di bawah reorder point.
+  const reorder = async ()=>{
+    setReorderBusy(true);
+    try{
+      const pre = await api.get('/inventory/reorder/suggestions');
+      const list = Array.isArray(pre.data) ? pre.data : [];
+      if(!list.length){ await dialog.alert('Tidak ada produk di bawah reorder point.', { title:'Reorder otomatis' }); return; }
+      const ok = await dialog.confirm(
+        `Buat Purchase Request otomatis untuk ${list.length} produk di bawah reorder point? Produk yang sudah punya PR terbuka akan dilewati.`,
+        { title:'Reorder otomatis', confirmText:'Ya, buat PR' });
+      if(!ok) return;
+      const r = await api.post('/inventory/reorder/run', { needed_days:7 });
+      await dialog.alert(r.data?.message || 'Selesai.', { title:'Reorder otomatis' });
+      load();
+    }catch(e){
+      await dialog.alert(e.response?.data?.error || e.message || 'Gagal membuat PR otomatis', { title:'Gagal' });
+    }finally{ setReorderBusy(false); }
+  };
+
   const rapikan = async ()=>{
     setRapiBusy(true);
     try{
@@ -127,16 +160,20 @@ export default function InventoryStocks(){
   return (
     <div className="space-y-3">
       <PosPageHeader icon={Package} title="Stok per Gudang"
-        subtitle="Posisi stok semua gudang. Angka di sini berasal dari barang masuk/keluar - bukan diketik manual."
-        badge={`${angka(jumlahBaris)} ${view==='ringkas'?'produk':'baris stok'}`}
+        subtitle="Posisi stok semua gudang. Angka di sini berasal dari barang masuk/keluar - bukan diketik manual, dan ikut turun otomatis setelah POS/DO tanpa refresh."
+        badge={`${angka(jumlahBaris)} ${view==='ringkas'?'produk':'baris stok'} • live`}
         actions={<>
           <button onClick={()=>navigate('/inventory/movements')} className={posBtnSecondary+' h-9 px-4 text-xs'}><Boxes size={14}/> Kartu Stok</button>
-          <button onClick={()=>navigate('/inventory/stock-in')} className={posBtnPrimary+' h-9 px-4 text-xs'}><PackagePlus size={14}/> Tambah Stok</button>
+          <button onClick={reorder} disabled={reorderBusy} title="Buat PR otomatis untuk produk di bawah reorder point"
+              className={posBtnSecondary+' h-9 px-4 text-xs disabled:opacity-50'}>
+              <PackagePlus size={13}/> {reorderBusy? 'Memproses...':'Reorder Otomatis'}
+            </button>
+            <button onClick={()=>navigate('/inventory/stock-in')} className={posBtnPrimary+' h-9 px-4 text-xs'}><PackagePlus size={14}/> Tambah Stok</button>
         </>}
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <PosStat icon={Layers} tone="bg-[#EFF6FF] text-[#1E40AF]" label={view==='ringkas'?'PRODUK BERSTOK':'BARIS STOK'} value={angka(jumlahBaris)} sub={`${angka(totalQty)} unit • ${warehouses.length} gudang`}/>
+        <PosStat icon={Layers} tone="bg-[#e5eeff] text-[#0051d5]" label={view==='ringkas'?'PRODUK BERSTOK':'BARIS STOK'} value={angka(jumlahBaris)} sub={`${angka(totalQty)} unit • ${warehouses.length} gudang`}/>
         <PosStat icon={AlertTriangle} tone="bg-red-50 text-red-700" label="STOK KRITIS" value={angka(kritis)} sub="≤ reorder point"/>
         <PosStat icon={AlertTriangle} tone="bg-amber-50 text-amber-700" label="WASPADA" value={angka(waspada)} sub="mendekati batas minimum"/>
         <PosStat icon={Warehouse} tone="bg-emerald-50 text-emerald-700" label="NILAI STOK" value={rupiah(nilaiStok)} sub="qty on hand × avg cost"/>
@@ -145,16 +182,16 @@ export default function InventoryStocks(){
       {/* penjelasan: dari mana stok bertambah/berkurang */}
       <PosCard>
         <PosCardBody className="flex items-start gap-3">
-          <span className="w-7 h-7 rounded-lg grid place-items-center bg-[#1E40AF]/10 text-[#1E40AF] shrink-0"><Info size={14}/></span>
-          <div className="text-xs text-[#475569] leading-relaxed">
-            <b className="text-[#0F172A]">Dari mana angka stok datang?</b> Stok <b>bertambah</b> lewat:
+          <span className="w-7 h-7 rounded-lg grid place-items-center bg-[#0051d5]/10 text-[#0051d5] shrink-0"><Info size={14}/></span>
+          <div className="text-xs text-[#45464d] leading-relaxed">
+            <b className="text-[#0b1c30]">Dari mana angka stok datang?</b> Stok <b>bertambah</b> lewat:
             <span className="font-semibold"> Goods Receipt</span> (barang dari Purchase Order),
             <span className="font-semibold"> Penambahan Stok</span> (stok awal, pembelian tanpa PO, retur customer),
             dan <span className="font-semibold">Transfer</span> masuk.
             Stok <b>berkurang</b> lewat: <span className="font-semibold">POS / Sales Order</span> (penjualan),
             <span className="font-semibold"> Susut &amp; Pecah</span>, <span className="font-semibold">Transfer</span> keluar,
             dan <span className="font-semibold">Pengurangan Stok</span> (rusak/pakai internal).
-            <span className="text-[#64748B]"> Semua jejaknya bisa dilihat di Kartu Stok.</span>
+            <span className="text-[#45464d]"> Semua jejaknya bisa dilihat di Kartu Stok.</span>
           </div>
           <div className="hidden lg:flex flex-col gap-1.5 shrink-0">
             <button onClick={()=>navigate('/purchase/receipts')} className={posBtnSm}><Warehouse size={13}/> Goods Receipt</button>
@@ -179,7 +216,7 @@ export default function InventoryStocks(){
             <button onClick={()=>navigate('/inventory/stock-in')} className={posBtnPrimary+' h-9 px-4 text-xs'}><PackagePlus size={14}/> Tambah Stok</button>
           </>}>
             <div className={posSearchWrap}>
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]"/>
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#76777d]"/>
               <input value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Enter'&&setAppliedQ(q)}
                 placeholder="Cari nama produk / SKU lalu Enter..." className={posInput+' pl-9'}/>
             </div>
@@ -194,7 +231,7 @@ export default function InventoryStocks(){
           <PosChipRow label="TAMPILAN">
             <PosChip active={view==='ringkas'} onClick={()=>setView('ringkas')}>Ringkas (per produk)</PosChip>
             <PosChip active={view==='detail'} onClick={()=>setView('detail')}>Detail (per gudang/batch)</PosChip>
-            <span className="text-[11px] font-bold tracking-widest text-[#64748B] ml-3">STATUS</span>
+            <span className="text-[11px] font-bold tracking-wider text-[#45464d] ml-3">STATUS</span>
             {FILTERS.map(f=> <PosChip key={f} active={statusFilter===f} onClick={()=>setStatusFilter(f)}>{f}</PosChip>)}
           </PosChipRow>
         </PosCardBody>
@@ -205,7 +242,7 @@ export default function InventoryStocks(){
           <>
             <div className="overflow-auto">
               <table className="w-full text-sm">
-                <thead><tr className="bg-[#F1F5F9] border-y border-[#E2E8F0] text-[11px] font-bold tracking-widest text-[#64748B]">
+                <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
                   <PosTh>PRODUK</PosTh>
                   <PosTh align="center">{view==='ringkas' ? 'GUDANG' : 'GUDANG / BATCH'}</PosTh>
                   <PosTh align="right">ON HAND</PosTh>
@@ -221,20 +258,20 @@ export default function InventoryStocks(){
                     const st = stockStatus(s);
                     const key = view==='ringkas' ? s.product_id : s.id;
                     return (
-                      <tr key={key ?? idx} className="border-b border-[#F1F5F9] hover:bg-[#F8FAFC] transition bg-white">
+                      <tr key={key ?? idx} className="border-b border-[#e5eeff] hover:bg-[#eff4ff] transition bg-white">
                         <td className="px-4 py-3.5">
-                          <div className="font-semibold text-[#0F172A]">{s.product_name}</div>
-                          <div className="text-[11px] text-[#64748B]">
+                          <div className="font-semibold text-[#0b1c30]">{s.product_name}</div>
+                          <div className="text-[11px] text-[#45464d]">
                             {s.sku} • Min {angka(s.min_stock)} • Reorder {angka(s.reorder_point)}
-                            {view==='ringkas' && s.row_count>1 && <span className="text-[#94A3B8]"> • {s.row_count} baris batch</span>}
+                            {view==='ringkas' && s.row_count>1 && <span className="text-[#76777d]"> • {s.row_count} baris batch</span>}
                           </div>
                         </td>
                         <td className="px-4 py-3.5 text-center"><PosBadge tone="slate">{s.warehouse_code||'-'}</PosBadge></td>
                         <td className="px-4 py-3.5 text-right font-bold tabular-nums">{angka(s.qty_on_hand)}</td>
                         {view==='detail' && <td className="px-4 py-3.5 text-right text-amber-700 tabular-nums">{angka(s.qty_reserved)}</td>}
-                        <td className={'px-4 py-3.5 text-right font-black tabular-nums '+(st==='KRITIS'?'text-red-600':st==='WASPADA'?'text-amber-600':'text-emerald-700')}>{angka(s.qty_available)}</td>
-                        <td className="px-4 py-3.5 text-right text-xs text-[#334155] tabular-nums">{rupiah(s.avg_cost)}</td>
-                        <td className="px-4 py-3.5 text-right text-xs text-[#334155] tabular-nums">{rupiah((Number(s.qty_on_hand)||0)*(Number(s.avg_cost)||0))}</td>
+                        <td className={'px-4 py-3.5 text-right font-bold tabular-nums '+(st==='KRITIS'?'text-red-600':st==='WASPADA'?'text-amber-600':'text-emerald-700')}>{angka(s.qty_available)}</td>
+                        <td className="px-4 py-3.5 text-right text-xs text-[#2b3445] tabular-nums">{rupiah(s.avg_cost)}</td>
+                        <td className="px-4 py-3.5 text-right text-xs text-[#2b3445] tabular-nums">{rupiah((Number(s.qty_on_hand)||0)*(Number(s.avg_cost)||0))}</td>
                         <td className="px-4 py-3.5 text-center"><PosBadge tone={STATUS_TONE[st]}>{st}</PosBadge></td>
                         <td className="px-4 py-3.5">
                           <div className="flex justify-end">

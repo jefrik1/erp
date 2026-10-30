@@ -1,237 +1,601 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { ArrowUpRight, ArrowDownRight, AlertTriangle, Wallet, Clock, TrendingUp, FileText, RefreshCw } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid } from 'recharts';
+import {
+  ArrowUpRight, ArrowDownRight, TrendingUp, AlertTriangle, Wallet, Clock, FileText, RefreshCw,
+  PackageSearch, ShoppingCart, Users, Truck, CalendarCheck, Plane, Boxes, Receipt,
+} from 'lucide-react';
 import api from '../lib/api';
 import { useAuth } from '../store/auth';
-import { PosPageHeader, PosCard, PosSkeleton, PosError, posBtnSecondary } from '../components/PosUI';
+import { PAGE_ACCESS, canAccess } from '../config/access';
+import {
+  PosPageHeader, PosCard, PosSkeleton, PosError, PosBadge, PosStat, posBtnSecondary,
+} from '../components/PosUI';
 
 const nf = (n)=> new Intl.NumberFormat('id-ID').format(Math.round(Number(n)||0));
 const rupiah = (n)=> 'Rp ' + nf(n);
 const d10 = (v)=> String(v||'').slice(0,10);
+const tgl = (v)=> v ? new Date(v).toLocaleDateString('id-ID',{day:'2-digit',month:'short'}) : '-';
 const tickD = (v)=> String(v).slice(8,10)+'/'+String(v).slice(5,7);
-const FIN_ROLES = ['direktur','finance','super_admin','admin','auditor'];
+const low = (arr)=> (arr||[]).map(r=>String(r).toLowerCase());
 
-export default function Dashboard(){
-  const { user } = useAuth();
-  const myRoles = (user?.roles||[]).map(r=>String(r).toLowerCase());
-  const canFinance = myRoles.length===0 || myRoles.some(r=>FIN_ROLES.includes(r));
+// Role yang boleh melihat angka penjualan — samakan dengan SALES_VIEWERS di
+// src/modules/dashboard/routes.js. Backend mengembalikan 403 untuk role lain.
+const SALES_ROLES = ['direktur','super_admin','sales','sales_trading','pos_cashier','pos_supervisor','pos_manager'];
+const FIN_ROLES   = ['direktur','super_admin','finance','auditor'];
 
-  const [kpi,setKpi]=useState(null); const [trend,setTrend]=useState([]); const [topP,setTopP]=useState([]);
-  const [topC,setTopC]=useState([]); const [profit,setProfit]=useState([]); const [notif,setNotif]=useState(null);
-  const [loading,setLoading]=useState(true); const [err,setErr]=useState(''); const [updatedAt,setUpdatedAt]=useState(null);
-
-  const now=new Date();
-  const months=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-  const monthYear=`${months[now.getMonth()]} ${now.getFullYear()}`;
-
+/** Ambil beberapa endpoint sekaligus. Endpoint yang ditolak (403) tidak
+ *  menjatuhkan seluruh board — kartu lain tetap tampil. */
+function useBoard(paths){
+  const key = paths.join('|');
+  const [res,setRes]=useState(null);
+  const [loading,setLoading]=useState(true);
+  const [err,setErr]=useState('');
+  const [at,setAt]=useState(null);
   const load=useCallback(async()=>{
     setErr('');
     try{
-      const [k,t,p,c,pr,n]=await Promise.all([
-        api.get('/dashboard/kpi'),
-        api.get('/dashboard/sales-trend'),
-        api.get('/dashboard/top-products'),
-        api.get('/dashboard/top-customers'),
-        api.get('/dashboard/profit-margin'),
-        api.get('/dashboard/notifications'),
-      ]);
-      setKpi(k.data);
-      setTrend((t.data||[]).map(x=>({...x, date:d10(x.date)})));
-      setTopP(p.data||[]);
-      setTopC(c.data||[]);
-      setProfit((pr.data||[]).map(x=>({...x, date:d10(x.date)})));
-      setNotif(n.data||null);
-      setUpdatedAt(new Date());
+      const out = await Promise.all(paths.map(p=> api.get(p).catch(e=>({ data:null, status:e.response?.status }))));
+      setRes(out.map(r=>r.data));
+      setAt(new Date());
+      if(out.every(r=>r.data===null)) setErr('Data dashboard belum bisa dimuat untuk role ini.');
     }catch(e){ setErr(e.response?.data?.error||e.message||'Gagal memuat dashboard'); }
     finally{ setLoading(false); }
-  },[]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[key]);
   useEffect(()=>{ load(); const iv=setInterval(load, 5*60*1000); return ()=>clearInterval(iv); },[load]);
+  return { res, loading, err, at, reload:load };
+}
 
-  const marginPct=useMemo(()=>{
-    const rev=profit.reduce((a,x)=>a+Number(x.revenue||0),0);
-    const pft=profit.reduce((a,x)=>a+Number(x.profit||0),0);
-    return rev>0 ? Math.round((pft/rev)*1000)/10 : null;
-  },[profit]);
-  const maxCust=useMemo(()=>Math.max(1,...topC.map(c=>Number(c.total||0))),[topC]);
-  const counts=notif?.counts||{};
+function Head({ icon, title, subtitle, at, loading, onRefresh, children }){
+  const sub = subtitle + (at? ' - diperbarui '+at.toLocaleTimeString('id-ID')+' - auto-refresh 5 menit' : '');
+  return (
+    <PosPageHeader icon={icon} title={title} subtitle={sub} actions={<>
+      {children}
+      <button onClick={onRefresh} className={posBtnSecondary+' h-9 px-4 text-xs'}>
+        <RefreshCw size={13} className={loading?'animate-spin':''}/> Muat Ulang
+      </button>
+    </>}/>
+  );
+}
 
-  if(loading && !kpi) return (
-    <div className="space-y-3">
-      <PosPageHeader icon={FileText} title="Dashboard" subtitle="Memuat ringkasan operasional..."/>
-      <PosCard><PosSkeleton rows={10} cols={4}/></PosCard>
+function Shell({ children, loading, err, onRetry }){
+  if(loading && !children) return <PosCard><PosSkeleton rows={8} cols={4}/></PosCard>;
+  if(err) return <PosCard><PosError message={err} onRetry={onRetry}/></PosCard>;
+  return children;
+}
+
+function Quick({ items }){
+  return (
+    <PosCard className="p-5">
+      <h3 className="font-display text-headline-sm font-bold text-ink">Aksi Cepat</h3>
+      <div className="mt-3 space-y-2">
+        {items.map(([to,label,primary])=>(
+          <Link key={to+label} to={to}
+            className={primary
+              ? 'block p-3 rounded-xl bg-[#0051d5] text-white text-sm font-bold text-center hover:bg-[#0041ab] transition'
+              : 'block p-3 rounded-xl bg-[#eff4ff] border border-[#e7ecf7] hover:border-[#0051d5]/40 transition text-sm font-semibold'}>
+            {label}
+          </Link>
+        ))}
+      </div>
+    </PosCard>
+  );
+}
+
+function Row({ title, sub, right, children }){
+  return (
+    <div className="flex items-center gap-3 py-2.5">
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-semibold truncate">{title}</div>
+        <div className="text-xs text-[#76777d] truncate">{sub}</div>
+      </div>
+      {right}
+      {children}
     </div>
   );
-  if(err && !kpi) return (
-    <div className="space-y-3">
-      <PosPageHeader icon={FileText} title="Dashboard"/>
-      <PosCard><PosError message={err} onRetry={load}/></PosCard>
-    </div>
-  );
+}
 
-  const growth=kpi?.growth_pct;
-  const sub='Ringkasan operasional'+(updatedAt? ' - diperbarui '+updatedAt.toLocaleTimeString('id-ID') : '')+' - auto-refresh tiap 5 menit';
+/* ══════════════════════════════════════ PENJUALAN (admin, kasir, sales) */
+function SalesBoard({ roles }){
+  const { res, loading, err, at, reload } = useBoard([
+    '/dashboard/kpi','/dashboard/sales-trend','/dashboard/top-products',
+    '/dashboard/top-customers','/dashboard/profit-margin','/dashboard/notifications',
+  ]);
+  const [kpi,trend,topP,topC,profit,notif] = res || [];
+  const can = (k)=> canAccess(roles, PAGE_ACCESS[k]);
+  const canFinance = low(roles).some(r=>FIN_ROLES.includes(r));
+  const k = kpi || {};
+  const trendData = (trend||[]).map(x=>({...x, date:d10(x.date)}));
+  const profitData = (profit||[]).map(x=>({...x, date:d10(x.date)}));
+  const growth = k.growth_pct;
+  const counts = notif?.counts || {};
+  const maxCust = Math.max(1, ...(topC||[]).map(c=>Number(c.total||0)));
+  const piutang = k.piutang_jatuh_tempo || {};
+  const now=new Date();
+  const months=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 
   return (
-    <div className="space-y-3">
-      <PosPageHeader icon={FileText} title="Dashboard" subtitle={sub} actions={<>
-        <span className="text-xs px-3 py-1.5 rounded-full bg-white border border-[#E2E8F0]">Periode: {monthYear}</span>
-        <button onClick={load} className={posBtnSecondary+' h-9 px-4 text-xs'}><RefreshCw size={13} className={loading?'animate-spin':''}/> Muat Ulang</button>
-      </>}/>
+    <div className="space-y-4">
+      <Head icon={TrendingUp} title="Dashboard" subtitle="Ringkasan operasional & penjualan" at={at} loading={loading} onRefresh={reload}>
+        <span className="text-xs px-3 py-1.5 rounded-full bg-white border border-[#e7ecf7]">Periode: {months[now.getMonth()]} {now.getFullYear()}</span>
+      </Head>
 
-      <div className="grid grid-cols-12 gap-4">
-        <div className={'col-span-12 '+(canFinance?'lg:col-span-3':'lg:col-span-6')}>
-          <PosCard className="p-5 h-full">
-            <div className="flex flex-wrap justify-between gap-3 items-start">
-              <div className="text-xs font-bold tracking-widest text-[#94A3B8]">PENJUALAN HARI INI</div>
-              <div className="w-8 h-8 rounded-xl bg-blue-50 grid place-items-center text-[#1E40AF]"><TrendingUp size={16}/></div>
-            </div>
-            <div className="text-[20px] font-black tracking-tight text-[#0F172A] mt-2 tabular-nums">{rupiah(kpi.penjualan_hari_ini)}</div>
-            {growth===null ? (
-              <div className="text-xs text-[#94A3B8] mt-1">Belum ada pembanding kemarin</div>
-            ) : (
-              <div className={'text-xs mt-1 flex items-center gap-1 '+(growth>=0?'text-emerald-600':'text-red-600')}>
-                {growth>=0? <ArrowUpRight size={12}/> : <ArrowDownRight size={12}/>}{growth>=0?'+':''}{growth}% vs kemarin
-              </div>
-            )}
-            <div className="text-xs text-[#64748B] mt-1 tabular-nums">Kemarin: {rupiah(kpi.penjualan_kemarin)}</div>
-          </PosCard>
+      {loading && !kpi ? <PosCard><PosSkeleton rows={10} cols={4}/></PosCard>
+      : err ? <PosCard><PosError message={err} onRetry={reload}/></PosCard>
+      : (
+      <>
+        <div className="grid grid-cols-12 gap-4">
+          <div className="col-span-12 md:col-span-6 xl:col-span-3">
+            <PosStat label="Penjualan hari ini" value={rupiah(k.penjualan_hari_ini)} icon={TrendingUp} tone="bg-[#e5eeff] text-[#0051d5]"
+              sub={<div className={'text-xs mt-1 flex items-center gap-1 '+(growth>=0?'text-emerald-600':'text-red-600')}>
+                {growth===null||growth===undefined
+                  ? <span className="text-[#76777d]">Belum ada pembanding kemarin</span>
+                  : <>{growth>=0?<ArrowUpRight size={12}/>:<ArrowDownRight size={12}/>}{growth>=0?'+':''}{growth}% vs kemarin</>}
+              </div>}/>
+          </div>
+          <div className="col-span-12 md:col-span-6 xl:col-span-3">
+            <PosStat label="Stok kritis" value={nf(k.stok_kritis)} icon={AlertTriangle} tone="bg-warning-soft text-warning"
+              sub={<Link to="/inventory/stocks" className="text-xs mt-1 inline-block text-[#0051d5] hover:underline">SKU di bawah reorder point →</Link>}/>
+          </div>
+          <div className="col-span-12 md:col-span-6 xl:col-span-3">
+            <PosStat label="Piutang jatuh tempo" value={rupiah(piutang.amount)} icon={Wallet} tone="bg-danger-soft text-[#93000a]"
+              sub={<span className="text-xs mt-1 block text-[#76777d]">{nf(piutang.count)} invoice lewat jatuh tempo</span>}/>
+          </div>
+          <div className="col-span-12 md:col-span-6 xl:col-span-3">
+            <PosStat label="PO terlambat terima" value={nf(k.po_overdue)} icon={Clock} tone="bg-info-soft text-info"
+              sub={<span className="text-xs mt-1 block text-[#76777d]">Kas di bank {rupiah(k.cash_position)}</span>}/>
+          </div>
         </div>
 
-        <div className={'col-span-12 '+(canFinance?'lg:col-span-3':'lg:col-span-6')}>
-          <PosCard className="p-5 h-full">
-            <div className="flex justify-between">
-              <div className="text-xs font-bold tracking-widest text-[#94A3B8]">STOK KRITIS</div>
-              <div className="w-8 h-8 rounded-xl bg-amber-50 grid place-items-center text-amber-600"><AlertTriangle size={16}/></div>
-            </div>
-            <div className="text-[20px] font-black tracking-tight text-[#0F172A] mt-2 tabular-nums">{kpi.stok_kritis} <span className="text-sm font-medium text-[#64748B]">SKU</span></div>
-            <div className="text-xs text-amber-600 mt-1">Di bawah reorder point</div>
-            <Link to="/inventory/stocks" className="mt-2 inline-block text-xs font-semibold text-[#1E40AF] hover:underline">Lihat stok</Link>
-          </PosCard>
-        </div>
-
-        {canFinance && (
-          <div className="col-span-12 lg:col-span-3">
-            <PosCard className="p-5 h-full">
-              <div className="flex justify-between">
-                <div className="text-xs font-bold tracking-widest text-[#94A3B8]">PIUTANG JATUH TEMPO</div>
-                <div className="w-8 h-8 rounded-xl bg-red-50 grid place-items-center text-red-600"><Clock size={16}/></div>
+        <div className="grid grid-cols-12 gap-4">
+          <div className={'col-span-12 '+(canFinance?'xl:col-span-7':'xl:col-span-12')}>
+            <PosCard className="p-5">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <h3 className="font-display text-headline-sm font-bold text-ink">Tren Penjualan</h3>
+                  <p className="text-xs text-[#76777d] mt-0.5">14 hari terakhir</p>
+                </div>
+                <span className="num text-sm font-bold text-[#0b1c30]">{rupiah(trendData.reduce((a,x)=>a+Number(x.total||0),0))}</span>
               </div>
-              <div className="text-[20px] font-black tracking-tight text-[#0F172A] mt-2 tabular-nums">{rupiah(kpi.piutang_jatuh_tempo.amount)}</div>
-              <div className="text-xs text-red-600 mt-1">{kpi.piutang_jatuh_tempo.count} invoice lewat jatuh tempo</div>
-              <Link to="/finance/arap" className="mt-2 inline-block text-xs font-semibold text-[#1E40AF] hover:underline">Lihat AR</Link>
+              <div className="h-[220px] mt-4">
+                {trendData.length===0 ? <div className="h-full grid place-items-center text-sm text-[#76777d]">Belum ada data penjualan</div> : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={trendData}>
+                      <defs><linearGradient id="salesFill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#0051d5" stopOpacity={0.22}/><stop offset="100%" stopColor="#0051d5" stopOpacity={0}/>
+                      </linearGradient></defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5eeff" vertical={false}/>
+                      <XAxis dataKey="date" tick={{fontSize:11, fill:'#76777d'}} tickFormatter={tickD} axisLine={false} tickLine={false}/>
+                      <YAxis tick={{fontSize:11, fill:'#76777d'}} tickFormatter={v=>(v/1e6).toFixed(0)+'jt'} axisLine={false} tickLine={false} width={46}/>
+                      <Tooltip contentStyle={{borderRadius:12, border:'1px solid #e7ecf7', boxShadow:'0 8px 24px rgba(11,28,48,.12)', fontSize:12}} formatter={v=>[rupiah(v),'Penjualan']} labelFormatter={v=>'Tanggal '+v}/>
+                      <Area type="monotone" dataKey="total" stroke="#0051d5" strokeWidth={2} fill="url(#salesFill)"/>
+                    </AreaChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
             </PosCard>
           </div>
-        )}
 
-        {canFinance && (
-          <div className="col-span-12 lg:col-span-3">
-            <div className="bg-[#0F172A] rounded-[20px] border border-[#0F172A] shadow-sm p-5 text-white h-full">
-              <div className="text-xs font-bold tracking-widest text-white/60">CASH POSITION</div>
-              <div className="text-[22px] font-black mt-2 text-white tabular-nums">{rupiah(kpi.cash_position)}</div>
-              <div className="text-xs text-white/60 mt-1 flex items-center gap-2"><Wallet size={12}/>{(kpi.bank_names||[]).join(' + ')||'Belum ada rekening'}</div>
-              <div className="mt-3 flex gap-2 text-xs"><span className="px-2 py-1 rounded-full bg-white/10">PO overdue: {kpi.po_overdue}</span></div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-12 lg:col-span-8">
-          <PosCard className="p-5">
-            <h3 className="font-bold">Tren Penjualan (14 hari)</h3>
-            <div className="h-[240px] mt-4">
-              {trend.length===0 ? <div className="h-full grid place-items-center text-sm text-[#94A3B8]">Belum ada data penjualan</div> : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={trend}>
-                    <XAxis dataKey="date" tick={{fontSize:11}} tickFormatter={tickD}/>
-                    <YAxis tick={{fontSize:11}} tickFormatter={v=>(v/1e6).toFixed(0)+'jt'}/>
-                    <Tooltip formatter={v=>[rupiah(v),'Total']} labelFormatter={v=>'Tanggal '+v}/>
-                    <Area type="monotone" dataKey="total" stroke="#1E40AF" fill="#DBEAFE" strokeWidth={2.5}/>
-                  </AreaChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-          </PosCard>
-        </div>
-        <div className="col-span-12 lg:col-span-4">
-          <PosCard className="p-5">
-            <div className="flex justify-between items-center">
-              <h3 className="font-bold">Margin Laba (7 hari)</h3>
-              {marginPct!==null && <span className="text-xs px-2 py-1 rounded-full bg-[#F1F5F9] border text-[#475569] font-bold tabular-nums">margin {marginPct}%</span>}
-            </div>
-            <div className="h-[240px] mt-4">
-              {profit.length===0 ? <div className="h-full grid place-items-center text-sm text-[#94A3B8]">Belum ada data</div> : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={profit}>
-                    <XAxis dataKey="date" tick={{fontSize:10}} tickFormatter={tickD}/>
-                    <YAxis tick={{fontSize:10}} tickFormatter={v=>(v/1e6).toFixed(0)+'jt'}/>
-                    <Tooltip formatter={(v,n)=>[rupiah(v), n==='revenue'?'Revenue':'Profit']} labelFormatter={v=>'Tanggal '+v}/>
-                    <Bar dataKey="revenue" fill="#1E40AF" radius={[6,6,0,0]}/>
-                    <Bar dataKey="profit" fill="#F59E0B" radius={[6,6,0,0]}/>
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-            <div className="flex gap-3 text-xs justify-center items-center">
-              <span className="flex items-center gap-1"><span className="w-3 h-3 bg-[#1E40AF] rounded"/>Revenue</span>
-              <span className="flex items-center gap-1"><span className="w-3 h-3 bg-[#F59E0B] rounded"/>Profit</span>
-            </div>
-            <div className="text-[11px] text-[#94A3B8] text-center mt-1">Profit = estimasi pakai avg cost stok saat ini</div>
-          </PosCard>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-12 lg:col-span-4">
-          <PosCard className="p-5">
-            <h3 className="font-bold">Top Produk (revenue)</h3>
-            <div className="mt-3 space-y-3">
-              {topP.length===0 && <div className="text-sm text-[#94A3B8] py-4 text-center">Belum ada penjualan</div>}
-              {topP.map((p,i)=>(
-                <div key={i} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-[#F1F5F9] grid place-items-center font-bold text-xs">{i+1}</div>
-                  <div className="flex-1 min-w-0"><div className="text-sm font-semibold truncate">{p.name}</div><div className="text-xs text-[#64748B] tabular-nums">{nf(p.qty)} unit terjual</div></div>
-                  <div className="text-sm font-bold tabular-nums">{rupiah(p.revenue)}</div>
+          {canFinance && (
+            <div className="col-span-12 xl:col-span-5">
+              <PosCard className="p-5">
+                <h3 className="font-display text-headline-sm font-bold text-ink">Revenue vs Profit</h3>
+                <p className="text-xs text-[#76777d] mt-0.5">Profit = estimasi pakai avg cost stok saat ini</p>
+                <div className="h-[175px] mt-4">
+                  {profitData.length===0 ? <div className="h-full grid place-items-center text-sm text-[#76777d]">Belum ada data</div> : (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={profitData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5eeff" vertical={false}/>
+                        <XAxis dataKey="date" tick={{fontSize:11, fill:'#76777d'}} tickFormatter={tickD} axisLine={false} tickLine={false}/>
+                        <YAxis tick={{fontSize:11, fill:'#76777d'}} tickFormatter={v=>(v/1e6).toFixed(0)+'jt'} axisLine={false} tickLine={false} width={44}/>
+                        <Tooltip contentStyle={{borderRadius:12, border:'1px solid #e7ecf7', boxShadow:'0 8px 24px rgba(11,28,48,.12)', fontSize:12}} formatter={(v,n)=>[rupiah(v), n==='revenue'?'Revenue':'Profit']} labelFormatter={v=>'Tanggal '+v}/>
+                        <Bar dataKey="revenue" fill="#0051d5" radius={[6,6,0,0]}/>
+                        <Bar dataKey="profit" fill="#b45309" radius={[6,6,0,0]}/>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
-              ))}
+                <div className="flex gap-3 text-xs justify-center items-center mt-2">
+                  <span className="flex items-center gap-1"><span className="w-3 h-3 bg-[#0051d5] rounded"/>Revenue</span>
+                  <span className="flex items-center gap-1"><span className="w-3 h-3 bg-[#b45309] rounded"/>Profit</span>
+                </div>
+              </PosCard>
             </div>
-          </PosCard>
+          )}
         </div>
-        <div className="col-span-12 lg:col-span-4">
-          <PosCard className="p-5">
-            <h3 className="font-bold">Top Customer</h3>
-            <div className="mt-3 space-y-3">
-              {topC.length===0 && <div className="text-sm text-[#94A3B8] py-4 text-center">Belum ada data</div>}
-              {topC.map((c,i)=>(
-                <div key={i} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#1E40AF]/10 grid place-items-center text-[#1E40AF] font-bold text-xs">{String(c.name||'?')[0]}</div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold truncate">{c.name}</div>
-                    <div className="w-full h-1.5 bg-gray-100 rounded-full mt-1"><div className="h-full bg-[#1E40AF] rounded-full" style={{width: Math.round((Number(c.total||0)/maxCust)*100)+'%'}}/></div>
+
+        <div className="grid grid-cols-12 gap-4">
+          <div className="col-span-12 lg:col-span-4">
+            <PosCard className="p-5">
+              <h3 className="font-display text-headline-sm font-bold text-ink">Top Produk</h3>
+              <div className="mt-3 space-y-3">
+                {(topP||[]).length===0 && <div className="text-sm text-[#76777d] py-4 text-center">Belum ada penjualan</div>}
+                {(topP||[]).map((p,i)=>(
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-[#e5eeff] grid place-items-center font-bold text-xs">{i+1}</div>
+                    <div className="flex-1 min-w-0"><div className="text-sm font-semibold truncate">{p.name}</div><div className="text-xs text-[#45464d] tabular-nums">{nf(p.qty)} unit terjual</div></div>
+                    <div className="text-sm font-bold tabular-nums">{rupiah(p.revenue)}</div>
                   </div>
-                  <div className="text-sm font-bold tabular-nums">{rupiah(c.total)}</div>
-                </div>
-              ))}
-            </div>
-          </PosCard>
+                ))}
+              </div>
+            </PosCard>
+          </div>
+          <div className="col-span-12 lg:col-span-4">
+            <PosCard className="p-5">
+              <h3 className="font-display text-headline-sm font-bold text-ink">Top Customer</h3>
+              <div className="mt-3 space-y-3">
+                {(topC||[]).length===0 && <div className="text-sm text-[#76777d] py-4 text-center">Belum ada data</div>}
+                {(topC||[]).map((c,i)=>(
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-[#0051d5]/10 grid place-items-center text-[#0051d5] font-bold text-xs">{String(c.name||'?')[0]}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold truncate">{c.name}</div>
+                      <div className="w-full h-1.5 bg-gray-100 rounded-full mt-1"><div className="h-full bg-[#0051d5] rounded-full" style={{width: Math.round((Number(c.total||0)/maxCust)*100)+'%'}}/></div>
+                    </div>
+                    <div className="text-sm font-bold tabular-nums">{rupiah(c.total)}</div>
+                  </div>
+                ))}
+              </div>
+            </PosCard>
+          </div>
+          <div className="col-span-12 lg:col-span-4">
+            <PosCard className="p-5">
+              <h3 className="font-display text-headline-sm font-bold text-ink">Notifikasi & Aksi Cepat</h3>
+              <div className="mt-3 space-y-2 text-sm">
+                {can('inventory') && <Link to="/inventory/stocks" className="block p-3 rounded-xl bg-amber-50 border border-amber-200 hover:border-amber-300 transition"><b>Stok kritis:</b> {counts.lowStock??0} SKU di bawah reorder point</Link>}
+                {can('invoices') && <Link to="/sales/invoices" className="block p-3 rounded-xl bg-red-50 border border-red-200 hover:border-red-300 transition"><b>Invoice overdue:</b> {counts.overdueInvoices??0} invoice lewat jatuh tempo</Link>}
+                {can('purchase') && <Link to="/purchase/orders" className="block p-3 rounded-xl bg-sky-50 border border-sky-200 hover:border-sky-300 transition"><b>PO overdue:</b> {counts.poOverdue??0} PO terlambat terima</Link>}
+              </div>
+              <div className="grid grid-cols-2 gap-2 mt-4">
+                {can('pos') && <Link to="/sales/pos" className="text-center py-2 rounded-xl bg-[#0051d5] text-white text-xs font-bold hover:bg-[#0041ab] transition">Buka POS</Link>}
+                {can('salesOrders') && <Link to="/sales/orders/new" className="text-center py-2 rounded-xl bg-white border text-xs font-bold hover:bg-[#eff4ff] transition">Buat SO</Link>}
+                {can('purchase') && <Link to="/purchase/orders" className="text-center py-2 rounded-xl bg-white border text-xs font-bold hover:bg-[#eff4ff] transition">Buat PO</Link>}
+                {can('inventory') && <Link to="/inventory/stock-in" className="text-center py-2 rounded-xl bg-[#b45309] text-white text-xs font-bold hover:bg-amber-600 transition">Input Stok</Link>}
+              </div>
+            </PosCard>
+          </div>
         </div>
-        <div className="col-span-12 lg:col-span-4">
-          <PosCard className="p-5">
-            <h3 className="font-bold">Notifikasi & Aksi Cepat</h3>
-            <div className="mt-3 space-y-2 text-sm">
-              <Link to="/inventory/stocks" className="block p-3 rounded-xl bg-amber-50 border border-amber-200 hover:border-amber-300 transition"><b>Stok kritis:</b> {counts.lowStock??0} SKU di bawah reorder point</Link>
-              <Link to="/sales/invoices" className="block p-3 rounded-xl bg-red-50 border border-red-200 hover:border-red-300 transition"><b>Invoice overdue:</b> {counts.overdueInvoices??0} invoice lewat jatuh tempo</Link>
-              <Link to="/purchase/orders" className="block p-3 rounded-xl bg-sky-50 border border-sky-200 hover:border-sky-300 transition"><b>PO overdue:</b> {counts.poOverdue??0} PO terlambat terima</Link>
-            </div>
-            <div className="grid grid-cols-3 gap-2 mt-4">
-              <Link to="/sales/orders/new" className="text-center py-2 rounded-xl bg-[#1E40AF] text-white text-xs font-bold hover:bg-[#1E3A8A] transition">Buat SO</Link>
-              <Link to="/purchase/orders" className="text-center py-2 rounded-xl bg-white border text-xs font-bold hover:bg-[#F8FAFC] transition">Buat PO</Link>
-              <Link to="/inventory/stock-in" className="text-center py-2 rounded-xl bg-[#F59E0B] text-white text-xs font-bold hover:bg-amber-600 transition">Input Stok</Link>
-            </div>
-          </PosCard>
-        </div>
-      </div>
+      </>
+      )}
     </div>
   );
+}
+
+/* ══════════════════════════════════════ KEUANGAN / AUDITOR */
+function FinanceBoard(){
+  const { res, loading, err, at, reload } = useBoard(['/finance/ar','/finance/ap','/dashboard/notifications']);
+  const [ar, ap, notif] = res || [];
+  const arRows = Array.isArray(ar)? ar : (ar?.data||[]);
+  const apRows = Array.isArray(ap)? ap : (ap?.data||[]);
+  const arTotal = arRows.reduce((a,x)=>a+Number(x.outstanding||0),0);
+  const apTotal = apRows.reduce((a,x)=>a+Number(x.outstanding||0),0);
+  const overdue = arRows.filter(x=>Number(x.overdue_days||0)>0);
+  const counts = notif?.counts||{};
+
+  return (
+    <div className="space-y-4">
+      <Head icon={Wallet} title="Dashboard Keuangan" subtitle="Piutang, utang, dan kewajiban jatuh tempo" at={at} loading={loading} onRefresh={reload}/>
+      {loading ? <PosCard><PosSkeleton rows={8} cols={4}/></PosCard> : err ? <PosCard><PosError message={err} onRetry={reload}/></PosCard> : (
+      <>
+        <div className="grid grid-cols-12 gap-4">
+          <div className="col-span-12 md:col-span-6 xl:col-span-3"><PosStat label="Piutang (AR)" value={rupiah(arTotal)} icon={Receipt} tone="bg-[#e5eeff] text-[#0051d5]" sub={<span className="text-xs mt-1 block text-[#76777d]">{arRows.length} invoice terbuka</span>}/></div>
+          <div className="col-span-12 md:col-span-6 xl:col-span-3"><PosStat label="Utang (AP)" value={rupiah(apTotal)} icon={Wallet} tone="bg-warning-soft text-warning" sub={<span className="text-xs mt-1 block text-[#76777d]">{apRows.length} tagihan terbuka</span>}/></div>
+          <div className="col-span-12 md:col-span-6 xl:col-span-3"><PosStat label="Lewat jatuh tempo" value={nf(overdue.length)} icon={AlertTriangle} tone="bg-danger-soft text-[#93000a]" sub={<span className="text-xs mt-1 block text-[#76777d]">Invoice perlu penagihan</span>}/></div>
+          <div className="col-span-12 md:col-span-6 xl:col-span-3"><PosStat label="Stok kritis" value={nf(counts.lowStock)} icon={Boxes} tone="bg-surface-2 text-ink-2" sub={<span className="text-xs mt-1 block text-[#76777d]">Dampak nilai persediaan</span>}/></div>
+        </div>
+        <div className="grid grid-cols-12 gap-4">
+          <div className="col-span-12 lg:col-span-8">
+            <PosCard className="p-5">
+              <div className="flex items-center justify-between">
+                <h3 className="font-display text-headline-sm font-bold text-ink">Piutang Perlu Perhatian</h3>
+                <Link to="/finance/arap" className="text-xs font-semibold text-[#0051d5] hover:underline">Buka AR/AP →</Link>
+              </div>
+              <div className="mt-2 divide-y divide-line">
+                {arRows.length===0 && <div className="py-6 text-center text-sm text-[#76777d]">Tidak ada piutang terbuka</div>}
+                {[...arRows].sort((a,b)=>Number(b.outstanding||0)-Number(a.outstanding||0)).slice(0,6).map((r,i)=>(
+                  <Row key={i} title={r.customer_name||r.invoice_number} sub={(r.invoice_number||'')+' · jatuh tempo '+tgl(r.due_date)}
+                    right={<>{Number(r.overdue_days||0)>0 && <PosBadge tone="red">{r.overdue_days} hari</PosBadge>}
+                      <div className="text-sm font-bold tabular-nums">{rupiah(r.outstanding)}</div></>}/>
+                ))}
+              </div>
+            </PosCard>
+          </div>
+          <div className="col-span-12 lg:col-span-4">
+            <Quick items={[['/finance/arap','AR / AP & penagihan',true],['/finance/journals','Jurnal umum'],['/finance/coa','Chart of Accounts'],['/budgets','Budget tahunan']]}/>
+          </div>
+        </div>
+      </>
+      )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════ GUDANG */
+function WarehouseBoard(){
+  const { res, loading, err, at, reload } = useBoard(['/inventory/stocks?limit=60','/dashboard/notifications','/purchase/orders?limit=5&status=APPROVED']);
+  const [stocks, notif, po] = res || [];
+  const rows = stocks?.data || [];
+  const kritis = rows.filter(r=>Number(r.qty_available) <= Number(r.reorder_point||0));
+  const counts = notif?.counts||{};
+  const poRows = po?.data || [];
+
+  return (
+    <div className="space-y-4">
+      <Head icon={Boxes} title="Dashboard Gudang" subtitle="Stok, penerimaan, dan pergerakan barang" at={at} loading={loading} onRefresh={reload}/>
+      {loading ? <PosCard><PosSkeleton rows={8} cols={4}/></PosCard> : err ? <PosCard><PosError message={err} onRetry={reload}/></PosCard> : (
+      <>
+        <div className="grid grid-cols-12 gap-4">
+          <div className="col-span-12 md:col-span-6 xl:col-span-3"><PosStat label="SKU stok kritis" value={nf(counts.lowStock ?? kritis.length)} icon={AlertTriangle} tone="bg-warning-soft text-warning" sub={<span className="text-xs mt-1 block text-[#76777d]">Di bawah reorder point</span>}/></div>
+          <div className="col-span-12 md:col-span-6 xl:col-span-3"><PosStat label="PO siap diterima" value={nf(poRows.length)} icon={Truck} tone="bg-info-soft text-info" sub={<Link to="/purchase/receipts" className="text-xs mt-1 inline-block text-[#0051d5] hover:underline">Buat goods receipt →</Link>}/></div>
+          <div className="col-span-12 md:col-span-6 xl:col-span-3"><PosStat label="PO terlambat terima" value={nf(counts.poOverdue)} icon={Clock} tone="bg-danger-soft text-[#93000a]" sub={<span className="text-xs mt-1 block text-[#76777d]">Lewat tanggal perkiraan</span>}/></div>
+          <div className="col-span-12 md:col-span-6 xl:col-span-3"><PosStat label="SKU dipantau" value={nf(stocks?.total ?? rows.length)} icon={PackageSearch} tone="bg-[#e5eeff] text-[#0051d5]" sub={<Link to="/inventory/stocks" className="text-xs mt-1 inline-block text-[#0051d5] hover:underline">Lihat semua stok →</Link>}/></div>
+        </div>
+        <div className="grid grid-cols-12 gap-4">
+          <div className="col-span-12 lg:col-span-8">
+            <PosCard className="p-5">
+              <div className="flex items-center justify-between">
+                <h3 className="font-display text-headline-sm font-bold text-ink">Stok Terendah</h3>
+                <span className="text-xs text-[#76777d]">urut qty tersedia</span>
+              </div>
+              <div className="mt-2 divide-y divide-line">
+                {rows.length===0 && <div className="py-6 text-center text-sm text-[#76777d]">Belum ada data stok</div>}
+                {rows.slice(0,8).map((r,i)=>{
+                  const isLow = Number(r.qty_available) <= Number(r.reorder_point||0);
+                  return (
+                    <Row key={i} title={r.product_name} sub={(r.sku||'')+' · '+r.warehouse_name+' · min '+nf(r.reorder_point)}
+                      right={<>
+                        {isLow && <PosBadge tone="amber">kritis</PosBadge>}
+                        <div className={'text-sm font-bold tabular-nums '+(isLow?'text-[#b45309]':'text-[#0b1c30]')}>{nf(r.qty_available)}</div>
+                      </>}/>
+                  );
+                })}
+              </div>
+            </PosCard>
+          </div>
+          <div className="col-span-12 lg:col-span-4">
+            <Quick items={[['/inventory/stock-in','Penambahan stok',true],['/inventory/transfers','Transfer gudang'],['/inventory/movements','Kartu stok'],['/logistics','Surat jalan & logistik']]}/>
+          </div>
+        </div>
+      </>
+      )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════ PEMBELIAN */
+function PurchasingBoard(){
+  const { res, loading, err, at, reload } = useBoard(['/purchase/orders?limit=8','/dashboard/notifications']);
+  const [po, notif] = res || [];
+  const rows = po?.data || [];
+  const counts = notif?.counts||{};
+  const by = (s)=> rows.filter(r=>String(r.status||'').toUpperCase()===s).length;
+  const tone = (s)=> ({PENDING:'amber',APPROVED:'sky',RECEIVED:'emerald',PARTIAL:'purple',CANCELLED:'red'}[String(s||'').toUpperCase()]||'slate');
+
+  return (
+    <div className="space-y-4">
+      <Head icon={ShoppingCart} title="Dashboard Pembelian" subtitle="Purchase order, RFQ, dan pemasok" at={at} loading={loading} onRefresh={reload}/>
+      {loading ? <PosCard><PosSkeleton rows={8} cols={4}/></PosCard> : err ? <PosCard><PosError message={err} onRetry={reload}/></PosCard> : (
+      <>
+        <div className="grid grid-cols-12 gap-4">
+          <div className="col-span-12 md:col-span-6 xl:col-span-3"><PosStat label="PO menunggu" value={nf(by('PENDING'))} icon={Clock} tone="bg-warning-soft text-warning" sub={<span className="text-xs mt-1 block text-[#76777d]">Perlu approval / proses</span>}/></div>
+          <div className="col-span-12 md:col-span-6 xl:col-span-3"><PosStat label="PO disetujui" value={nf(by('APPROVED'))} icon={CalendarCheck} tone="bg-info-soft text-info" sub={<span className="text-xs mt-1 block text-[#76777d]">Siap diterima gudang</span>}/></div>
+          <div className="col-span-12 md:col-span-6 xl:col-span-3"><PosStat label="PO terlambat" value={nf(counts.poOverdue)} icon={AlertTriangle} tone="bg-danger-soft text-[#93000a]" sub={<span className="text-xs mt-1 block text-[#76777d]">Lewat tanggal terima</span>}/></div>
+          <div className="col-span-12 md:col-span-6 xl:col-span-3"><PosStat label="Stok kritis" value={nf(counts.lowStock)} icon={Boxes} tone="bg-surface-2 text-ink-2" sub={<Link to="/inventory/stocks" className="text-xs mt-1 inline-block text-[#0051d5] hover:underline">Dasar pengadaan →</Link>}/></div>
+        </div>
+        <div className="grid grid-cols-12 gap-4">
+          <div className="col-span-12 lg:col-span-8">
+            <PosCard className="p-5">
+              <div className="flex items-center justify-between">
+                <h3 className="font-display text-headline-sm font-bold text-ink">Purchase Order Terbaru</h3>
+                <Link to="/purchase/orders" className="text-xs font-semibold text-[#0051d5] hover:underline">Semua PO →</Link>
+              </div>
+              <div className="mt-2 divide-y divide-line">
+                {rows.length===0 && <div className="py-6 text-center text-sm text-[#76777d]">Belum ada PO</div>}
+                {rows.slice(0,8).map((r,i)=>(
+                  <Row key={i} title={r.po_number||r.supplier_name} sub={(r.supplier_name||'')+' · '+(r.po_date?tgl(r.po_date):'-')+' · '+(r.expected_date?('terima '+tgl(r.expected_date)):'tanpa tanggal')}
+                    right={<>
+                      <PosBadge tone={tone(r.status)}>{String(r.status||'—').toUpperCase()}</PosBadge>
+                      <div className="text-sm font-bold tabular-nums">{rupiah(r.total)}</div>
+                    </>}/>
+                ))}
+              </div>
+            </PosCard>
+          </div>
+          <div className="col-span-12 lg:col-span-4">
+            <Quick items={[['/purchase/orders','Buat PO',true],['/purchase/requests','Permintaan pembelian (PR)'],['/purchase/rfqs','RFQ ke pemasok'],['/purchase/receipts','Penerimaan barang'],['/master/suppliers','Master pemasok']]}/>
+          </div>
+        </div>
+      </>
+      )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════ HRD */
+function HrBoard(){
+  const today=new Date().toISOString().slice(0,10);
+  const { res, loading, err, at, reload } = useBoard(['/hr/employees/summary','/hr/attendance/summary?date='+today,'/hr/leaves?status=PENDING&limit=6']);
+  const [sum, att, leaves] = res || [];
+  const rows = leaves?.data || [];
+  const tone = (s)=> ({PENDING:'amber',APPROVED:'emerald',REJECTED:'red'}[String(s||'').toUpperCase()]||'slate');
+
+  return (
+    <div className="space-y-4">
+      <Head icon={Users} title="Dashboard HR" subtitle="Karyawan, kehadiran, dan approval" at={at} loading={loading} onRefresh={reload}/>
+      {loading ? <PosCard><PosSkeleton rows={8} cols={4}/></PosCard> : err ? <PosCard><PosError message={err} onRetry={reload}/></PosCard> : (
+      <>
+        <div className="grid grid-cols-12 gap-4">
+          <div className="col-span-12 md:col-span-6 xl:col-span-3"><PosStat label="Karyawan aktif" value={nf(sum?.aktif)} icon={Users} tone="bg-[#e5eeff] text-[#0051d5]" sub={<span className="text-xs mt-1 block text-[#76777d]">dari {nf(sum?.total)} total</span>}/></div>
+          <div className="col-span-12 md:col-span-6 xl:col-span-3"><PosStat label="Hadir hari ini" value={nf(att?.hadir)} icon={CalendarCheck} tone="bg-success-soft text-success" sub={<span className="text-xs mt-1 block text-[#76777d]">{nf(att?.terlambat)} terlambat</span>}/></div>
+          <div className="col-span-12 md:col-span-6 xl:col-span-3"><PosStat label="Belum check-in" value={nf(att?.belum_checkin)} icon={Clock} tone="bg-warning-soft text-warning" sub={<span className="text-xs mt-1 block text-[#76777d]">dari {nf(att?.total_aktif)} karyawan aktif</span>}/></div>
+          <div className="col-span-12 md:col-span-6 xl:col-span-3"><PosStat label="Pengajuan menunggu" value={nf(leaves?.total ?? rows.length)} icon={Plane} tone="bg-[#f3efff] text-[#5b3fd6]" sub={<Link to="/approvals" className="text-xs mt-1 inline-block text-[#0051d5] hover:underline">Buka approval →</Link>}/></div>
+        </div>
+        <div className="grid grid-cols-12 gap-4">
+          <div className="col-span-12 lg:col-span-8">
+            <PosCard className="p-5">
+              <div className="flex items-center justify-between">
+                <h3 className="font-display text-headline-sm font-bold text-ink">Menunggu Persetujuan</h3>
+                <Link to="/approvals" className="text-xs font-semibold text-[#0051d5] hover:underline">Semua pengajuan →</Link>
+              </div>
+              <div className="mt-2 divide-y divide-line">
+                {rows.length===0 && <div className="py-6 text-center text-sm text-[#76777d]">Tidak ada pengajuan menunggu</div>}
+                {rows.map((r,i)=>(
+                  <Row key={i} title={r.employee_name||r.name} sub={String(r.type||'').toUpperCase()+' · '+tgl(r.start_date)+' – '+tgl(r.end_date)}
+                    right={<PosBadge tone={tone(r.status)}>{String(r.status||'—').toUpperCase()}</PosBadge>}/>
+                ))}
+              </div>
+            </PosCard>
+          </div>
+          <div className="col-span-12 lg:col-span-4">
+            <Quick items={[['/hr','Karyawan & HR',true],['/approvals','Approval cuti & izin'],['/pengumuman','Tulis pengumuman'],['/absen','Rekap absensi']]}/>
+          </div>
+        </div>
+      </>
+      )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════ DRIVER */
+function DriverBoard(){
+  const { res, loading, err, at, reload } = useBoard(['/fleet/trips?mine=1','/fleet/my-deliveries','/fleet/claimable','/hr/attendance/mine','/hr/leaves/quota']);
+  const [trips, dels, claim, att, quota] = res || [];
+  const tripsArr = Array.isArray(trips)? trips : (trips?.data||[]);
+  const delsArr = Array.isArray(dels)? dels : (dels?.data||[]);
+  const claimCount = parseInt(claim?.counts?.total||0);
+  const aktif = tripsArr.filter(t=>String(t.status).toUpperCase()==='IN_PROGRESS');
+  const rencana = tripsArr.filter(t=>String(t.status).toUpperCase()==='PLANNED');
+  const selesai = tripsArr.filter(t=>String(t.status).toUpperCase()==='COMPLETED').length;
+  const todayRow = att?.today_row || null;
+  const tone = (s)=> ({PLANNED:'sky',IN_PROGRESS:'amber',COMPLETED:'emerald',CANCELLED:'red'}[String(s||'').toUpperCase()]||'slate');
+
+  return (
+    <div className="space-y-4">
+      <Head icon={Truck} title="Dashboard Driver" subtitle="Trip dan surat jalan Anda" at={at} loading={loading} onRefresh={reload}/>
+      {loading ? <PosCard><PosSkeleton rows={8} cols={4}/></PosCard> : err ? <PosCard><PosError message={err} onRetry={reload}/></PosCard> : (
+      <>
+        <div className="grid grid-cols-12 gap-4">
+          <div className="col-span-12 md:col-span-6 xl:col-span-3"><PosStat label="Trip berjalan" value={nf(aktif.length)} icon={Truck} tone="bg-warning-soft text-warning" sub={<Link to="/driver" className="text-xs mt-1 inline-block text-[#0051d5] hover:underline">Kelola trip →</Link>}/></div>
+          <div className="col-span-12 md:col-span-6 xl:col-span-3"><PosStat label="Siap diklaim" value={nf(claimCount)} icon={PackageSearch} tone="bg-[#f3efff] text-[#5b3fd6]" sub={<Link to="/driver" className="text-xs mt-1 inline-block text-[#0051d5] hover:underline">DO / SO / POS menunggu sopir →</Link>}/></div>
+          <div className="col-span-12 md:col-span-6 xl:col-span-3"><PosStat label="Trip selesai" value={nf(selesai)} icon={CalendarCheck} tone="bg-success-soft text-success" sub={<span className="text-xs mt-1 block text-[#76777d]">{nf(rencana.length)} trip direncanakan</span>}/></div>
+          <div className="col-span-12 md:col-span-6 xl:col-span-3"><PosStat label="Absen hari ini" value={todayRow?.check_in? 'Sudah':'Belum'} icon={Clock} tone="bg-[#e5eeff] text-[#0051d5]"
+            sub={<Link to="/absen" className="text-xs mt-1 inline-block text-[#0051d5] hover:underline">{todayRow?.check_in? ('masuk '+String(todayRow.check_in).slice(11,16)) : 'Check-in sekarang →'}</Link>}/></div>
+        </div>
+        <div className="grid grid-cols-12 gap-4">
+          <div className="col-span-12 lg:col-span-8">
+            <PosCard className="p-5">
+              <div className="flex items-center justify-between">
+                <h3 className="font-display text-headline-sm font-bold text-ink">Trip Saya</h3>
+                <Link to="/driver" className="text-xs font-semibold text-[#0051d5] hover:underline">Semua trip →</Link>
+              </div>
+              <div className="mt-2 divide-y divide-line">
+                {tripsArr.length===0 && <div className="py-6 text-center text-sm text-[#76777d]">Belum ada trip untuk Anda</div>}
+                {tripsArr.slice(0,6).map((t,i)=>(
+                  <Row key={i} title={(t.trip_number||'TRIP')+' · '+(t.plat_no||'-')} sub={(t.route||'rute belum diisi')+(t.do_number? ' · DO '+t.do_number : ' · tanpa DO')}
+                    right={<PosBadge tone={tone(t.status)}>{String(t.status||'—').replace('_',' ')}</PosBadge>}/>
+                ))}
+              </div>
+            </PosCard>
+          </div>
+          <div className="col-span-12 lg:col-span-4">
+            <PosCard className="p-5">
+              <h3 className="font-display text-headline-sm font-bold text-ink">Self-service</h3>
+              <div className="mt-3 space-y-2">
+                <div className="p-3 rounded-xl bg-[#eff4ff] border border-[#e7ecf7]">
+                  <div className="text-[11px] uppercase tracking-wider text-[#76777d] font-semibold">Sisa cuti {quota?.tahun||''}</div>
+                  <div className="text-xl font-bold num mt-0.5">{nf(quota?.sisa)} <span className="text-xs font-normal text-[#76777d]">dari {nf(quota?.jatah)} hari</span></div>
+                </div>
+                <div className="p-3 rounded-xl bg-[#eff4ff] border border-[#e7ecf7]">
+                  <div className="text-[11px] uppercase tracking-wider text-[#76777d] font-semibold">Surat jalan aktif</div>
+                  <div className="text-xl font-bold num mt-0.5">{nf(delsArr.length)} <span className="text-xs font-normal text-[#76777d]">dokumen</span></div>
+                </div>
+                {[['/absen','Absen masuk / pulang'],['/cuti','Ajukan cuti'],['/izin','Ajukan izin / sakit'],['/pengumuman','Pengumuman']].map(([to,label])=>(
+                  <Link key={to} to={to} className="block p-3 rounded-xl bg-white border border-[#e7ecf7] hover:border-[#0051d5]/40 transition text-sm font-semibold">{label}</Link>
+                ))}
+              </div>
+            </PosCard>
+          </div>
+        </div>
+      </>
+      )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════ SELF-SERVICE (karyawan tanpa menu ops) */
+function SelfBoard({ user }){
+  const { res, loading, err, at, reload } = useBoard(['/hr/me','/hr/leaves/quota','/hr/attendance/mine','/dashboard/my-notifications']);
+  const [me, quota, att, notif] = res || [];
+  const todayRow = att?.today_row || null;
+  const items = Array.isArray(notif)? notif : (notif?.items||[]);
+
+  return (
+    <div className="space-y-4">
+      <Head icon={FileText} title="Beranda Saya" subtitle="Kehadiran, cuti, dan informasi untuk Anda" at={at} loading={loading} onRefresh={reload}/>
+      {loading ? <PosCard><PosSkeleton rows={8} cols={4}/></PosCard> : err ? <PosCard><PosError message={err} onRetry={reload}/></PosCard> : (
+      <>
+        <PosCard className="p-5">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-[#0051d5]/10 text-[#0051d5] grid place-items-center font-bold">{(me?.name||user?.username||'?').slice(0,2).toUpperCase()}</div>
+            <div className="min-w-0">
+              <div className="font-display text-headline-sm font-bold text-ink truncate">{me?.name || user?.username}</div>
+              <div className="text-xs text-[#76777d] truncate">{me?.position||'—'}{me?.employee_code? ' · '+me.employee_code:''}{me?.department? ' · '+me.department:''}</div>
+            </div>
+          </div>
+        </PosCard>
+        <div className="grid grid-cols-12 gap-4">
+          <div className="col-span-12 md:col-span-4"><PosStat label="Absen hari ini" value={todayRow?.check_in? 'Sudah masuk':'Belum'} icon={Clock} tone="bg-[#e5eeff] text-[#0051d5]"
+            sub={<Link to="/absen" className="text-xs mt-1 inline-block text-[#0051d5] hover:underline">{todayRow?.check_in? ('pulang: '+(todayRow.check_out? String(todayRow.check_out).slice(11,16):'belum')) : 'Check-in →'}</Link>}/></div>
+          <div className="col-span-12 md:col-span-4"><PosStat label={'Sisa cuti '+(quota?.tahun||'')} value={nf(quota?.sisa)} icon={Plane} tone="bg-success-soft text-success" sub={<span className="text-xs mt-1 block text-[#76777d]">jatah {nf(quota?.jatah)} · pending {nf(quota?.menunggu)}</span>}/></div>
+          <div className="col-span-12 md:col-span-4"><PosStat label="Hadir bulan ini" value={nf(att?.summary?.hadir)} icon={CalendarCheck} tone="bg-surface-2 text-ink-2" sub={<span className="text-xs mt-1 block text-[#76777d]">{nf(att?.summary?.terlambat)} terlambat · {nf(att?.summary?.jam)} jam kerja</span>}/></div>
+        </div>
+        <div className="grid grid-cols-12 gap-4">
+          <div className="col-span-12 lg:col-span-8">
+            <PosCard className="p-5">
+              <h3 className="font-display text-headline-sm font-bold text-ink">Perlu Perhatian</h3>
+              <div className="mt-3 space-y-2 text-sm">
+                {items.length===0 && <div className="py-6 text-center text-sm text-[#76777d]">Tidak ada notifikasi</div>}
+                {items.slice(0,6).map((n,i)=>(
+                  <Link key={i} to={n.to||'/profil'} className="block p-3 rounded-xl bg-[#eff4ff] border border-[#e7ecf7] hover:border-[#0051d5]/40 transition">
+                    {n.label} {n.count? <b className="num">({n.count})</b> : null}
+                  </Link>
+                ))}
+              </div>
+            </PosCard>
+          </div>
+          <div className="col-span-12 lg:col-span-4">
+            <Quick items={[['/absen','Absen masuk / pulang',true],['/cuti','Ajukan cuti'],['/izin','Izin & sakit'],['/pengumuman','Pengumuman'],['/profil','Profil & password']]}/>
+          </div>
+        </div>
+      </>
+      )}
+    </div>
+  );
+}
+
+/** Penjualan hanya untuk admin, kasir, sales. Role lain dapat board-nya sendiri. */
+function boardFor(roles){
+  const r = low(roles);
+  if(r.length===0) return 'self';
+  if(r.some(x=>SALES_ROLES.includes(x))) return 'sales';
+  if(r.some(x=>['finance','auditor'].includes(x))) return 'finance';
+  if(r.includes('warehouse')) return 'warehouse';
+  if(r.some(x=>['purchasing','buyer_admin'].includes(x))) return 'purchasing';
+  if(r.includes('hrd')) return 'hr';
+  if(r.includes('driver')) return 'driver';
+  return 'self';
+}
+
+export default function Dashboard(){
+  const { user } = useAuth();
+  const roles = user?.roles || [];
+  const board = boardFor(roles);
+  if(board==='sales') return <SalesBoard roles={roles}/>;
+  if(board==='finance') return <FinanceBoard/>;
+  if(board==='warehouse') return <WarehouseBoard/>;
+  if(board==='purchasing') return <PurchasingBoard/>;
+  if(board==='hr') return <HrBoard/>;
+  if(board==='driver') return <DriverBoard/>;
+  return <SelfBoard user={user}/>;
 }

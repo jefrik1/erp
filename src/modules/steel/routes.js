@@ -13,7 +13,7 @@ router.get('/products', async (req, res) => {
     
     if (search) {
       params.push('%' + search + '%');
-      where += ` AND (p.sku ILIKE $${params.length} OR p.name_id ILIKE $${params.length})`;
+      where += ` AND (p.sku ILIKE $${params.length} OR p.name ILIKE $${params.length})`;
     }
     if (type) {
       params.push(type);
@@ -21,7 +21,7 @@ router.get('/products', async (req, res) => {
     }
     
     const data = await pool.query(`
-      SELECT p.id, p.sku, p.name_id, ss.steel_type, ss.diameter_mm, ss.grade, ss.sni_mark, 
+      SELECT p.id, p.sku, p.name, ss.steel_type, ss.diameter_mm, ss.grade, ss.sni_mark, 
              ss.theoretical_weight_per_bar, ss.weight_per_meter_kg,
              (SELECT price_per_kg FROM steel_price_history 
               WHERE product_id = p.id AND price_type='SELL' 
@@ -63,14 +63,14 @@ router.get('/products/:id', async (req, res) => {
 // POST: Buat master besi baru
 router.post('/products', async (req, res) => {
   try {
-    const { sku, name_id, category_id, steel_type, diameter_mm, dimension_2_mm, grade, sni_mark, weight_per_meter_kg, mill_origin } = req.body;
+    const { sku, name_id, name, category_id, steel_type, diameter_mm, dimension_2_mm, grade, sni_mark, weight_per_meter_kg, mill_origin } = req.body;
     
     // Insert product
     const prod = await pool.query(`
-      INSERT INTO products (category_id, sku, name_id, base_unit_id, is_active)
+      INSERT INTO products (category_id, sku, name, base_unit_id, is_active)
       SELECT $1, $2, $3, (SELECT id FROM units WHERE code='BTG'), true
       RETURNING id
-    `, [category_id, sku, name_id]);
+    `, [category_id, sku, (name || name_id)]);
     
     const product_id = prod.rows[0].id;
     
@@ -150,7 +150,7 @@ router.get('/remnants', async (req, res) => {
   try {
     const status = req.query.status || 'AVAILABLE';
     const data = await pool.query(`
-      SELECT r.*, p.sku, p.name_id, w.name as warehouse_name, w.code as warehouse_code
+      SELECT r.*, p.sku, p.name, w.name as warehouse_name, w.code as warehouse_code
       FROM remnants r
       JOIN products p ON p.id = r.parent_product_id
       LEFT JOIN warehouses w ON w.id = r.warehouse_id
@@ -282,7 +282,7 @@ router.get('/cutting-orders', async (req, res) => {
   try {
     const status = req.query.status || 'PENDING';
     const data = await pool.query(`
-      SELECT co.*, p.sku, p.name_id
+      SELECT co.*, p.sku, p.name
       FROM cutting_orders co
       JOIN products p ON p.id = co.product_id
       WHERE co.status = $1

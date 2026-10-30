@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#0051d5"/>
+  <title>Tidak ada koneksi — ERP Sumber Material Jaya</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#eff4ff;color:#0b1c30;
+         font-family:Inter,system-ui,-apple-system,'Segoe UI',sans-serif;padding:24px}
+    .card{max-width:420px;background:#fff;border:1px solid #e7ecf7;border-radius:20px;padding:28px;
+          box-shadow:0 12px 40px rgba(11,28,48,.08);text-align:center}
+    .ic{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;margin:0 auto 14px;
+        background:linear-gradient(135deg,#0051d5,#0b1c30);color:#fff;font-size:24px}
+    h1{font-size:18px;margin:0 0 8px}
+    p{font-size:13px;line-height:1.6;color:#45464d;margin:0 0 18px}
+    button{height:40px;padding:0 18px;border:0;border-radius:10px;background:#131b2e;color:#fff;
+           font-weight:700;font-size:13px;cursor:pointer}
+    ul{text-align:left;font-size:12px;color:#45464d;padding-left:18px;margin:0 0 18px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="ic">⚡</div>
+    <h1>Koneksi terputus</h1>
+    <p>Aplikasi ERP membutuhkan koneksi ke server. Halaman yang sudah dibuka sebelumnya masih bisa dilihat, tetapi transaksi baru tidak dapat disimpan.</p>
+    <ul>
+      <li>Periksa Wi-Fi / kabel jaringan</li>
+      <li>Pastikan server ERP menyala</li>
+      <li>Data yang belum dikirim akan hilang — jangan tutup tab POS sebelum tersimpan</li>
+    </ul>
+    <button onclick="location.reload()">Coba Lagi</button>
+  </div>
+</body>
+</html>

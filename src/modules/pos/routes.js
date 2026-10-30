@@ -7,17 +7,9 @@ import managerRoutes from './manager-routes.js';
 
 const router = express.Router();
 
-// Redis client (optional)
-let redis = null;
-(async () => {
-  try {
-    const { createClient } = await import('redis');
-    redis = createClient({ url: process.env.REDIS_URL || 'redis://localhost:6379' });
-    redis.connect().catch(e => console.warn('Redis unavailable:', e.message));
-  } catch (e) {
-    console.warn('Redis not available, using DB cache only');
-  }
-})();
+// Cache opsional (Redis via ioredis). Semua helper aman: kalau Redis mati,
+// hasilnya cache-miss, bukan error 500.
+import { cacheGet, cacheSet } from '../../lib/redis.js';
 
 const CACHE_TTL = 300; // 5 minutes
 
@@ -63,13 +55,11 @@ router.get('/product-lookup', async (req, res) => {
     if (q.length < 2) return res.json([]);
 
     // Try cache first
-    if (redis) {
-      const cached = await redis.get(`pos:product:${q}`);
-      if (cached) return res.json(JSON.parse(cached));
-    }
+    const cached = await cacheGet(`pos:product:${q}`);
+    if (cached) return res.json(cached);
 
     const data = await pool.query(`
-      SELECT p.id, p.sku, p.name_id, 
+      SELECT p.id, p.sku, p.name, 
              (SELECT price_per_kg FROM steel_price_history 
               WHERE product_id=p.id AND price_type='SELL'
               AND effective_from <= CURRENT_DATE 
@@ -83,15 +73,13 @@ router.get('/product-lookup', async (req, res) => {
              COALESCE(SUM(s.qty_on_hand), 0) as stock_qty
       FROM products p
       LEFT JOIN stocks s ON s.product_id = p.id
-      WHERE p.sku ILIKE $1 OR p.name_id ILIKE $1
-      GROUP BY p.id, p.sku, p.name_id
+      WHERE p.sku ILIKE $1 OR p.name ILIKE $1
+      GROUP BY p.id, p.sku, p.name
       LIMIT 10
     `, ['%' + q + '%']);
 
     // Cache result
-    if (redis && data.rows.length > 0) {
-      await redis.setEx(`pos:product:${q}`, CACHE_TTL, JSON.stringify(data.rows));
-    }
+    if (data.rows.length > 0) await cacheSet(`pos:product:${q}`, data.rows, CACHE_TTL);
 
     res.json(data.rows);
   } catch (e) {
@@ -125,7 +113,7 @@ router.post('/products-batch', async (req, res) => {
     }
 
     const query = `
-      SELECT p.id, p.sku, p.name_id, 
+      SELECT p.id, p.sku, p.name, 
              (SELECT price_per_kg FROM steel_price_history 
               WHERE product_id=p.id AND price_type='SELL'
               AND effective_from <= CURRENT_DATE 
@@ -140,7 +128,7 @@ router.post('/products-batch', async (req, res) => {
       FROM products p
       LEFT JOIN stocks s ON s.product_id = p.id
       WHERE ${where}
-      GROUP BY p.id, p.sku, p.name_id
+      GROUP BY p.id, p.sku, p.name
     `;
 
     const data = await pool.query(query, params);

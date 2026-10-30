@@ -1,0 +1,24 @@
+{
+  "name": "ERP Sumber Material Jaya",
+  "short_name": "ERP SMJ",
+  "description": "ERP penjualan, pembelian, gudang, keuangan, HR dan POS PT Sumber Material Jaya",
+  "lang": "id",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#eff4ff",
+  "theme_color": "#0051d5",
+  "categories": ["business", "productivity"],
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "POS Kasir", "short_name": "POS", "url": "/pos" },
+    { "name": "Stok Gudang", "short_name": "Stok", "url": "/inventory/stocks" },
+    { "name": "Absen", "short_name": "Absen", "url": "/absen" },
+    { "name": "Panduan", "short_name": "Panduan", "url": "/panduan" }
+  ]
+}

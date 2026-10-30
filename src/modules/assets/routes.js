@@ -1,6 +1,7 @@
 import express from 'express';
 import { pool } from '../../config/db.js';
 import { sendReport } from '../../lib/exporters.js';
+import { postJournal, ensureCoa, withTx } from '../../lib/journal.js';
 const router = express.Router();
 
 const num = (v)=> parseFloat(v ?? 0) || 0;
@@ -470,6 +471,84 @@ router.get('/export', async (req, res)=>{
     console.error('assets export error', e);
     res.status(500).json({ error: 'Gagal membuat laporan: ' + e.message });
   }
+});
+
+// ───────────────────────────── PENYUSUTAN OTOMATIS → JURNAL ─────────────────────────────
+// Jalankan sekali per bulan: hitung penyusutan garis lurus tiap aset aktif,
+// simpan ke asset_depreciations, update buku aset, dan posting jurnal
+// Dr Beban Penyusutan / Cr Akumulasi Penyusutan (gabungan semua aset).
+let depEnsured = false;
+async function ensureDepTables(){
+  if(depEnsured) return;
+  await pool.query(`CREATE TABLE IF NOT EXISTS asset_depreciations (
+    id SERIAL PRIMARY KEY,
+    asset_id INT REFERENCES fixed_assets(id) ON DELETE CASCADE,
+    period VARCHAR(7) NOT NULL,
+    amount NUMERIC(18,2) DEFAULT 0,
+    journal_id INT,
+    created_by INT REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE(asset_id, period)
+  )`).catch(()=>{});
+  await ensureCoa([
+    { code:'1-3000', name:'Akumulasi Penyusutan', type:'ASSET' },
+    { code:'6-2000', name:'Beban Penyusutan', type:'EXPENSE' },
+  ]);
+  depEnsured = true;
+}
+
+router.get('/depreciations', async (req,res)=>{
+  await ensureDepTables();
+  const period = /^\d{4}-\d{2}$/.test(String(req.query.period||'')) ? req.query.period : new Date(Date.now()+7*3600*1000).toISOString().slice(0,7);
+  try{
+    const r = await pool.query(`SELECT d.*, fa.asset_code, fa.name, fa.category
+      FROM asset_depreciations d JOIN fixed_assets fa ON fa.id=d.asset_id
+      WHERE d.period=$1 ORDER BY fa.asset_code`,[period]);
+    res.json({ period, data:r.rows, total: r.rows.reduce((s,x)=>s+Number(x.amount||0),0) });
+  }catch(e){ res.status(500).json({error:e.message}); }
+});
+
+router.post('/depreciation/run', async (req,res)=>{
+  await ensureDepTables();
+  const period = /^\d{4}-\d{2}$/.test(String(req.body?.period||'')) ? req.body.period : new Date(Date.now()+7*3600*1000).toISOString().slice(0,7);
+  try{
+    const assets = await pool.query(`SELECT * FROM fixed_assets
+      WHERE UPPER(COALESCE(status,'ACTIVE'))='ACTIVE' AND COALESCE(acquisition_cost,0) > 0 AND COALESCE(useful_life_years,0) > 0`);
+    if(!assets.rows.length) return res.json({ ok:true, period, assets:0, total:0, journal_id:null, message:'Tidak ada aset aktif untuk disusutkan.' });
+    let total = 0; const detail = [];
+    const journalId = await withTx(async (c)=>{
+      for(const a of assets.rows){
+        const exist = await c.query('SELECT 1 FROM asset_depreciations WHERE asset_id=$1 AND period=$2',[a.id, period]);
+        if(exist.rows[0]) continue;
+        const cost = num(a.acquisition_cost), residual = num(a.residual_value);
+        const life = Math.max(1, int(a.useful_life_years));
+        const monthly = (cost - residual) / (life*12);
+        const accumulated = num(a.accumulated_depreciation);
+        const remaining = Math.max(0, (cost - residual) - accumulated);
+        const amount = Math.round(Math.min(monthly, remaining) * 100) / 100;
+        if(amount <= 0.5) continue;
+        total += amount;
+        detail.push({ asset_id:a.id, asset_code:a.asset_code, name:a.name, amount });
+        await c.query(`INSERT INTO asset_depreciations (asset_id, period, amount, created_by) VALUES ($1,$2,$3,$4)
+          ON CONFLICT (asset_id, period) DO NOTHING`, [a.id, period, amount, req.user.id]);
+        await c.query(`UPDATE fixed_assets SET accumulated_depreciation = COALESCE(accumulated_depreciation,0)+$1,
+            book_value = COALESCE(acquisition_cost,0) - (COALESCE(accumulated_depreciation,0)+$1)
+          WHERE id=$2`, [amount, a.id]);
+      }
+      if(total <= 0.5) return null;
+      return await postJournal({
+        date: `${period}-01`,
+        refType:'DEPRECIATION', refId:null, description:`Penyusutan aset periode ${period}`,
+        lines:[
+          { code:'6-2000', debit:total, description:'Beban penyusutan' },
+          { code:'1-3000', credit:total, description:'Akumulasi penyusutan' },
+        ], createdBy:req.user.id, client:c,
+      });
+    });
+    if(journalId) await pool.query('UPDATE asset_depreciations SET journal_id=$1 WHERE period=$2 AND journal_id IS NULL',[journalId, period]);
+    res.json({ ok:true, period, assets: detail.length, total, journal_id: journalId, detail,
+      message: journalId ? `Penyusutan ${period} diposting: ${detail.length} aset, total Rp ${new Intl.NumberFormat('id-ID').format(Math.round(total))}.` : 'Semua aset sudah disusutkan untuk periode ini.' });
+  }catch(e){ console.error('[depreciation]',e); res.status(500).json({error:e.message}); }
 });
 
 export default router;

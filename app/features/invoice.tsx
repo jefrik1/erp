@@ -87,7 +87,7 @@ export function InvoiceFeature(){
          const tone = inv.status==="Paid"?"emerald": inv.status==="Overdue"?"red":"amber"
          return (
           <tr key={inv.id} className="group hover:bg-[#F8FAFC] even:bg-[#F8FAFC]/40 transition-colors">
-           <td className="px-4 py-4"><div className="font-mono text-xs font-bold tabular-nums tracking-wide">{inv.invNumber}</div><div className="text-xs text-[#64748B] tabular-nums mt-1">Jt {inv.dueDate}</div></td>
+           <td className="px-4 py-4"><a className="font-mono text-xs font-bold tabular-nums tracking-wide cursor-pointer underline" onClick={()=>router.push(`/invoice/${inv.id}`)}>{inv.invNumber}</a><div className="text-xs text-[#64748B] tabular-nums mt-1">Jt {inv.dueDate}</div></td>
            <td className="px-3 py-4"><div className="text-sm font-semibold text-[#0F172A] leading-none truncate max-w-[130px]">{cust?.name}</div><div className="text-xs text-[#64748B] mt-1 truncate max-w-[130px]">{cust?.code}</div></td>
            <td className="px-3 py-4 text-right whitespace-nowrap font-mono text-sm tabular-nums text-[#475569]">{rupiah(inv.dpp)}</td>
            <td className="px-3 py-4 text-right whitespace-nowrap font-mono text-sm tabular-nums text-[#475569]">{rupiah(inv.dppLain)}</td>

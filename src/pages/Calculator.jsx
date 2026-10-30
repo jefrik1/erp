@@ -118,68 +118,68 @@ export default function Calculator(){
       <PosPageHeader icon={CalculatorIcon} title="Kalkulator Material - Bikin Customer Balik Lagi" subtitle="Input luas • hitung semua bahan • tabel per bahan • pilih merek/tipe dari stok gudang • kirim ke POS tinggal bayar"/>
 
       {/* Section 1: Masukkan Parameter */}
-      <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-5 sm:p-6 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+      <div className="bg-white rounded-xl border border-[#e7ecf7] p-5 sm:p-6 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
         <div className="flex items-center gap-2.5 mb-5">
-          <span className="w-7 h-7 rounded-full bg-[#1E40AF] text-white grid place-items-center text-[13px] font-bold shrink-0">1</span>
-          <h2 className="text-[15px] font-bold text-[#0F172A] tracking-tight">Masukkan Parameter</h2>
+          <span className="w-7 h-7 rounded-full bg-[#0051d5] text-white grid place-items-center text-[13px] font-bold shrink-0">1</span>
+          <h2 className="text-[15px] font-bold text-[#0b1c30] tracking-tight">Masukkan Parameter</h2>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Pilih Tipe Kebutuhan */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-[#475569] tracking-wide">Pilih Tipe Kebutuhan <span className="text-[#EF4444]">*</span></label>
+            <label className="text-[11px] font-semibold text-[#45464d] tracking-wide">Pilih Tipe Kebutuhan <span className="text-[#ba1a1a]">*</span></label>
             <div className="relative">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#EFF6FF] border border-[#DBEAFE] grid place-items-center text-[#1E40AF]">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#e5eeff] border border-[#dbe1ff] grid place-items-center text-[#0051d5]">
                 <Layers size={14} strokeWidth={2} />
               </span>
-              <select value={type} onChange={e=>setType(e.target.value)} className="w-full h-[44px] border border-[#E2E8F0] rounded-[10px] pl-11 pr-8 text-[13px] font-medium bg-white text-[#0F172A] outline-none focus:border-[#1E40AF] focus:ring-2 focus:ring-[#1E40AF]/10 appearance-none">
+              <select value={type} onChange={e=>setType(e.target.value)} className="w-full h-[44px] border border-[#e7ecf7] rounded-[10px] pl-11 pr-8 text-[13px] font-medium bg-white text-[#0b1c30] outline-none focus:border-[#0051d5] focus:ring-2 focus:ring-[#0051d5]/10 appearance-none">
                 {tipeOptions.map(o=> <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#64748B]">⌄</span>
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#45464d]">⌄</span>
             </div>
           </div>
 
           {/* Panjang */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-[#475569]">Panjang (m) <span className="text-[#EF4444]">*</span></label>
-            <input type="number" value={form.length} onChange={e=>setForm({...form,length:e.target.value})} placeholder="6" className="w-full h-[44px] border border-[#E2E8F0] rounded-[10px] px-3 text-[13px] font-medium text-[#0F172A] outline-none focus:border-[#1E40AF] focus:ring-2 focus:ring-[#1E40AF]/10 bg-white" />
+            <label className="text-[11px] font-semibold text-[#45464d]">Panjang (m) <span className="text-[#ba1a1a]">*</span></label>
+            <input type="number" value={form.length} onChange={e=>setForm({...form,length:e.target.value})} placeholder="6" className="w-full h-[44px] border border-[#e7ecf7] rounded-[10px] px-3 text-[13px] font-medium text-[#0b1c30] outline-none focus:border-[#0051d5] focus:ring-2 focus:ring-[#0051d5]/10 bg-white" />
           </div>
 
           {/* Lebar */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-[#475569]">Lebar (m) <span className="text-[#EF4444]">*</span></label>
-            <input type="number" value={form.width} onChange={e=>setForm({...form,width:e.target.value})} placeholder="8" className="w-full h-[44px] border border-[#E2E8F0] rounded-[10px] px-3 text-[13px] font-medium text-[#0F172A] outline-none focus:border-[#1E40AF] focus:ring-2 focus:ring-[#1E40AF]/10 bg-white" />
+            <label className="text-[11px] font-semibold text-[#45464d]">Lebar (m) <span className="text-[#ba1a1a]">*</span></label>
+            <input type="number" value={form.width} onChange={e=>setForm({...form,width:e.target.value})} placeholder="8" className="w-full h-[44px] border border-[#e7ecf7] rounded-[10px] px-3 text-[13px] font-medium text-[#0b1c30] outline-none focus:border-[#0051d5] focus:ring-2 focus:ring-[#0051d5]/10 bg-white" />
           </div>
 
           {/* Tinggi */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-[#475569]">Tinggi (m) <span className="text-[#EF4444]">*</span></label>
-            <input type="number" value={form.height} onChange={e=>setForm({...form,height:e.target.value})} placeholder="10" className="w-full h-[44px] border border-[#E2E8F0] rounded-[10px] px-3 text-[13px] font-medium text-[#0F172A] outline-none focus:border-[#1E40AF] focus:ring-2 focus:ring-[#1E40AF]/10 bg-white" />
+            <label className="text-[11px] font-semibold text-[#45464d]">Tinggi (m) <span className="text-[#ba1a1a]">*</span></label>
+            <input type="number" value={form.height} onChange={e=>setForm({...form,height:e.target.value})} placeholder="10" className="w-full h-[44px] border border-[#e7ecf7] rounded-[10px] px-3 text-[13px] font-medium text-[#0b1c30] outline-none focus:border-[#0051d5] focus:ring-2 focus:ring-[#0051d5]/10 bg-white" />
           </div>
 
           {/* Ukuran */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-[#475569]">Ukuran (cm) <span className="text-[#EF4444]">*</span></label>
+            <label className="text-[11px] font-semibold text-[#45464d]">Ukuran (cm) <span className="text-[#ba1a1a]">*</span></label>
             <div className="relative">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#EFF6FF] border border-[#DBEAFE] grid place-items-center text-[#1E40AF]">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#e5eeff] border border-[#dbe1ff] grid place-items-center text-[#0051d5]">
                 <Maximize2 size={14} strokeWidth={2} />
               </span>
-              <select value={String(form.tile_size)} onChange={e=>setForm({...form,tile_size: parseFloat(e.target.value)})} className="w-full h-[44px] border border-[#E2E8F0] rounded-[10px] pl-11 pr-8 text-[13px] font-medium bg-white text-[#0F172A] outline-none focus:border-[#1E40AF] focus:ring-2 focus:ring-[#1E40AF]/10 appearance-none">
+              <select value={String(form.tile_size)} onChange={e=>setForm({...form,tile_size: parseFloat(e.target.value)})} className="w-full h-[44px] border border-[#e7ecf7] rounded-[10px] pl-11 pr-8 text-[13px] font-medium bg-white text-[#0b1c30] outline-none focus:border-[#0051d5] focus:ring-2 focus:ring-[#0051d5]/10 appearance-none">
                 {ukuranOptions.map(o=> <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#64748B]">⌄</span>
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#45464d]">⌄</span>
             </div>
           </div>
         </div>
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-6">
-          <label className="flex items-center gap-2.5 text-[13px] font-medium text-[#334155] cursor-pointer select-none">
+          <label className="flex items-center gap-2.5 text-[13px] font-medium text-[#2b3445] cursor-pointer select-none">
             <span className="relative inline-flex">
-              <input type="checkbox" checked={withQuotation} onChange={e=>setWithQuotation(e.target.checked)} className="peer w-[18px] h-[18px] rounded-[4px] border border-[#CBD5E1] text-[#1E40AF] accent-[#1E40AF] checked:bg-[#1E40AF] checked:border-[#1E40AF]" />
+              <input type="checkbox" checked={withQuotation} onChange={e=>setWithQuotation(e.target.checked)} className="peer w-[18px] h-[18px] rounded-[4px] border border-[#cbdbf5] text-[#0051d5] accent-[#0051d5] checked:bg-[#0051d5] checked:border-[#0051d5]" />
             </span>
             Auto buat quotation (valid 14 hari)
           </label>
-          <button onClick={calc} disabled={loading} className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-[44px] px-6 bg-[#1E40AF] hover:bg-[#1E40AF] active:bg-[#1E3A8A] text-white rounded-xl font-bold text-[13px] shadow-[0_4px_14px_rgba(29,78,216,0.25)] disabled:opacity-50 transition">
+          <button onClick={calc} disabled={loading} className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-[44px] px-6 bg-[#0051d5] hover:bg-[#0051d5] active:bg-[#0041ab] text-white rounded-xl font-bold text-[13px] shadow-[0_4px_14px_rgba(29,78,216,0.25)] disabled:opacity-50 transition">
             <CalculatorIcon size={16} strokeWidth={2} />
             {loading?'Menghitung...':'Hitung Kebutuhan'}
             <ArrowRight size={16} strokeWidth={2.5} />
@@ -190,10 +190,10 @@ export default function Calculator(){
       </div>
 
       {/* Section 2: Hasil Estimasi */}
-      <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-5 sm:p-6 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+      <div className="bg-white rounded-xl border border-[#e7ecf7] p-5 sm:p-6 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
         <div className="flex items-center gap-2.5 mb-5">
-          <span className="w-7 h-7 rounded-full bg-[#1E40AF] text-white grid place-items-center text-[13px] font-bold shrink-0">2</span>
-          <h2 className="text-[15px] font-bold text-[#0F172A] tracking-tight">Hasil Estimasi</h2>
+          <span className="w-7 h-7 rounded-full bg-[#0051d5] text-white grid place-items-center text-[13px] font-bold shrink-0">2</span>
+          <h2 className="text-[15px] font-bold text-[#0b1c30] tracking-tight">Hasil Estimasi</h2>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
@@ -201,18 +201,18 @@ export default function Calculator(){
           <div className="lg:col-span-8 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Total Kebutuhan Material */}
-              <div className="rounded-[20px] border border-[#DBEAFE] bg-[#F0F7FF] p-4 sm:p-5">
+              <div className="rounded-xl border border-[#dbe1ff] bg-[#F0F7FF] p-4 sm:p-5">
                 <div className="flex gap-3">
-                  <span className="w-9 h-9 rounded-full bg-[#DBEAFE] text-[#1E40AF] grid place-items-center shrink-0">
+                  <span className="w-9 h-9 rounded-full bg-[#dbe1ff] text-[#0051d5] grid place-items-center shrink-0">
                     <Layers size={18} strokeWidth={2} />
                   </span>
                   <div>
-                    <div className="text-[12px] font-medium text-[#475569]">Total Kebutuhan Material</div>
-                    <div className="text-[32px] font-extrabold tracking-tight text-[#1E40AF] leading-none mt-1">
+                    <div className="text-[12px] font-medium text-[#45464d]">Total Kebutuhan Material</div>
+                    <div className="text-[32px] font-extrabold tracking-tight text-[#0051d5] leading-none mt-1">
                       {hasResult ? `${displayArea}` : '-'} <span className="text-[28px]">m²</span>
                     </div>
-                    <span className={`mt-2 inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${hasResult?'bg-[#DCFCE7] text-[#166534] border-[#BBF7D0]':'bg-white text-[#64748B] border-[#E2E8F0]'}`}>
-                      <CheckCircle2 size={12} strokeWidth={2.5} className={hasResult?'text-[#16A34A]':'text-[#94A3B8]'} />
+                    <span className={`mt-2 inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${hasResult?'bg-[#e8fbf2] text-[#166534] border-[#a8ebc4]':'bg-white text-[#45464d] border-[#e7ecf7]'}`}>
+                      <CheckCircle2 size={12} strokeWidth={2.5} className={hasResult?'text-[#16A34A]':'text-[#76777d]'} />
                       {hasResult ? 'Perhitungan berhasil' : 'Belum dihitung'}
                     </span>
                   </div>
@@ -220,29 +220,29 @@ export default function Calculator(){
               </div>
 
               {/* Estimasi Kebutuhan per Tipe */}
-              <div className="rounded-[20px] border border-[#E2E8F0] bg-white p-4 sm:p-5">
+              <div className="rounded-xl border border-[#e7ecf7] bg-white p-4 sm:p-5">
                 <div className="flex items-center gap-2.5 mb-3">
-                  <span className="w-8 h-8 rounded-[10px] bg-white border border-[#E2E8F0] grid place-items-center text-[#1E40AF] shadow-sm">
+                  <span className="w-8 h-8 rounded-[10px] bg-white border border-[#e7ecf7] grid place-items-center text-[#0051d5] shadow-card">
                     <ListOrdered size={16} strokeWidth={2} />
                   </span>
-                  <div className="text-[13px] font-bold text-[#0F172A]">Estimasi Kebutuhan per Tipe</div>
+                  <div className="text-[13px] font-bold text-[#0b1c30]">Estimasi Kebutuhan per Tipe</div>
                 </div>
 
-                <div className="flex items-center justify-between py-2.5 border-b border-[#F1F5F9]">
-                  <span className="flex items-center gap-2.5 text-[13px] font-semibold text-[#0F172A]">
-                    <span className="w-7 h-7 rounded-full bg-[#FEE2E2] border border-[#FECACA] grid place-items-center text-[#DC2626] text-[12px]">⬢</span>
+                <div className="flex items-center justify-between py-2.5 border-b border-[#e5eeff]">
+                  <span className="flex items-center gap-2.5 text-[13px] font-semibold text-[#0b1c30]">
+                    <span className="w-7 h-7 rounded-full bg-[#ffdad6] border border-[#ffb4ab] grid place-items-center text-[#ba1a1a] text-[12px]">⬢</span>
                     {tipeLabel}
                   </span>
-                  <span className="text-[13px] font-bold text-[#0F172A]">{hasResult ? `${displayArea} m²` : '-'}</span>
+                  <span className="text-[13px] font-bold text-[#0b1c30]">{hasResult ? `${displayArea} m²` : '-'}</span>
                 </div>
 
                 <div className="space-y-2 mt-3 text-[12px]">
-                  <div className="flex justify-between"><span className="text-[#64748B]">Tipe</span><span className="font-medium text-[#0F172A]">{tipeLabel}</span></div>
-                  <div className="flex justify-between"><span className="text-[#64748B]">Ukuran</span><span className="font-medium text-[#0F172A]">{ukuranLabel}</span></div>
-                  <div className="flex justify-between"><span className="text-[#64748B]">Estimasi Jumlah</span><span className="font-medium text-[#0F172A]">{hasResult ? `${displayArea} m²` : '-'}</span></div>
+                  <div className="flex justify-between"><span className="text-[#45464d]">Tipe</span><span className="font-medium text-[#0b1c30]">{tipeLabel}</span></div>
+                  <div className="flex justify-between"><span className="text-[#45464d]">Ukuran</span><span className="font-medium text-[#0b1c30]">{ukuranLabel}</span></div>
+                  <div className="flex justify-between"><span className="text-[#45464d]">Estimasi Jumlah</span><span className="font-medium text-[#0b1c30]">{hasResult ? `${displayArea} m²` : '-'}</span></div>
                 </div>
 
-                <button onClick={()=>{ const el=document.getElementById('detail-bahan'); if(el) el.scrollIntoView({behavior:'smooth', block:'start'}); }} className="mt-4 inline-flex items-center gap-1 text-[12px] font-bold text-[#1E40AF] hover:text-[#1E40AF]">
+                <button onClick={()=>{ const el=document.getElementById('detail-bahan'); if(el) el.scrollIntoView({behavior:'smooth', block:'start'}); }} className="mt-4 inline-flex items-center gap-1 text-[12px] font-bold text-[#0051d5] hover:text-[#0051d5]">
                   Lihat detail per bahan <ArrowRight size={12} strokeWidth={2.5} />
                 </button>
               </div>
@@ -250,74 +250,74 @@ export default function Calculator(){
 
             {/* Area cards */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="rounded-xl border border-[#E2E8F0] bg-white p-4 flex gap-3">
-                <span className="w-9 h-9 rounded-[10px] bg-[#EFF6FF] border border-[#DBEAFE] grid place-items-center text-[#1E40AF] shrink-0">
+              <div className="rounded-xl border border-[#e7ecf7] bg-white p-4 flex gap-3">
+                <span className="w-9 h-9 rounded-[10px] bg-[#e5eeff] border border-[#dbe1ff] grid place-items-center text-[#0051d5] shrink-0">
                   <Scan size={16} strokeWidth={2} />
                 </span>
                 <div className="min-w-0">
-                  <div className="text-[11px] font-semibold text-[#1E40AF] tracking-wide">Area</div>
-                  <div className="text-[16px] font-extrabold text-[#0F172A] tracking-tight">{hasResult? `${displayArea} m²` : '-'}</div>
-                  <div className="text-[11px] text-[#64748B]">Panjang × Lebar ({form.length || 0} × {form.width || 0})</div>
+                  <div className="text-[11px] font-semibold text-[#0051d5] tracking-wide">Area</div>
+                  <div className="text-[16px] font-extrabold text-[#0b1c30] tracking-tight">{hasResult? `${displayArea} m²` : '-'}</div>
+                  <div className="text-[11px] text-[#45464d]">Panjang × Lebar ({form.length || 0} × {form.width || 0})</div>
                 </div>
               </div>
-              <div className="rounded-xl border border-[#E2E8F0] bg-white p-4 flex gap-3">
-                <span className="w-9 h-9 rounded-[10px] bg-[#F0F9FF] border border-[#DBEAFE] grid place-items-center text-[#1E40AF] shrink-0">
+              <div className="rounded-xl border border-[#e7ecf7] bg-white p-4 flex gap-3">
+                <span className="w-9 h-9 rounded-[10px] bg-[#F0F9FF] border border-[#dbe1ff] grid place-items-center text-[#0051d5] shrink-0">
                   <Layers size={16} strokeWidth={2} />
                 </span>
                 <div className="min-w-0">
-                  <div className="text-[11px] font-semibold text-[#1E40AF] tracking-wide">Area M2</div>
-                  <div className="text-[16px] font-extrabold text-[#0F172A] tracking-tight">{hasResult? `${displayArea} m²` : '-'}</div>
-                  <div className="text-[11px] text-[#64748B]">Total luas yang dihitung</div>
+                  <div className="text-[11px] font-semibold text-[#0051d5] tracking-wide">Area M2</div>
+                  <div className="text-[16px] font-extrabold text-[#0b1c30] tracking-tight">{hasResult? `${displayArea} m²` : '-'}</div>
+                  <div className="text-[11px] text-[#45464d]">Total luas yang dihitung</div>
                 </div>
               </div>
             </div>
 
             {/* Disclaimer */}
-            <div className="rounded-[10px] bg-[#F1F5F9] border border-[#E2E8F0] px-3.5 py-3 flex gap-2.5 items-start">
-              <span className="w-5 h-5 rounded-full bg-[#1E40AF] text-white grid place-items-center shrink-0 mt-0.5 text-[10px] font-bold">i</span>
-              <p className="text-[11px] leading-relaxed text-[#64748B]">Perhitungan ini bersifat estimasi. Jumlah akhir dapat berbeda sesuai kondisi lapangan dan merek yang dipilih.</p>
+            <div className="rounded-[10px] bg-[#e5eeff] border border-[#e7ecf7] px-3.5 py-3 flex gap-2.5 items-start">
+              <span className="w-5 h-5 rounded-full bg-[#0051d5] text-white grid place-items-center shrink-0 mt-0.5 text-[11px] font-bold">i</span>
+              <p className="text-[11px] leading-relaxed text-[#45464d]">Perhitungan ini bersifat estimasi. Jumlah akhir dapat berbeda sesuai kondisi lapangan dan merek yang dipilih.</p>
             </div>
           </div>
 
           {/* Right: Quotation */}
           <div className="lg:col-span-4">
-            <div className="rounded-[20px] border border-[#A7F3D0] bg-[#ECFDF5] p-5 h-full flex flex-col">
+            <div className="rounded-xl border border-[#a8ebc4] bg-[#e8fbf2] p-5 h-full flex flex-col">
               <div className="flex gap-3">
-                <span className="w-8 h-8 rounded-full bg-[#059669] text-white grid place-items-center shrink-0">
+                <span className="w-8 h-8 rounded-full bg-[#007a55] text-white grid place-items-center shrink-0">
                   <Check size={16} strokeWidth={3} />
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="text-[13px] font-bold text-[#047857]">Quotation</div>
-                  <div className="text-[18px] font-extrabold tracking-tight text-[#0F172A] mt-1 truncate">
+                  <div className="text-[18px] font-extrabold tracking-tight text-[#0b1c30] mt-1 truncate">
                     {result?.quotation?.quotation_number || 'QUO-927839'}
                   </div>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#047857] bg-white/60 px-2 py-1 rounded-full">
                       <Calendar size={12} strokeWidth={2} /> Valid 14 hari
                     </span>
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#065F46] bg-[#D1FAE5] border border-[#A7F3D0] px-2.5 py-1 rounded-full">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#065F46] bg-[#c9f5df] border border-[#a8ebc4] px-2.5 py-1 rounded-full">
                       <Check size={10} strokeWidth={3} /> Auto dari kalkulator material
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div className="h-px bg-[#A7F3D0]/60 my-4" />
+              <div className="h-px bg-[#a8ebc4]/60 my-4" />
 
-              <button type="button" onClick={toPOS} disabled={!canPOS} className={`w-full h-[44px] rounded-xl font-bold text-[13px] inline-flex items-center justify-center gap-2 transition ${canPOS?'bg-[#1E40AF] hover:bg-[#1E40AF] text-white shadow-[0_4px_14px_rgba(29,78,216,0.25)] cursor-pointer':'bg-[#1E40AF]/60 text-white/70 cursor-not-allowed'}`}>
+              <button type="button" onClick={toPOS} disabled={!canPOS} className={`w-full h-[44px] rounded-xl font-bold text-[13px] inline-flex items-center justify-center gap-2 transition ${canPOS?'bg-[#0051d5] hover:bg-[#0051d5] text-white shadow-[0_4px_14px_rgba(29,78,216,0.25)] cursor-pointer':'bg-[#0051d5]/60 text-white/70 cursor-not-allowed'}`}>
                 <Send size={16} strokeWidth={2} />
                 Lanjut ke POS - tinggal bayar
                 <ArrowRight size={16} strokeWidth={2.5} />
               </button>
 
-              <div className="mt-3 flex items-center justify-center gap-3 text-[11px] text-[#64748B] font-medium">
+              <div className="mt-3 flex items-center justify-center gap-3 text-[11px] text-[#45464d] font-medium">
                 <span className="inline-flex items-center gap-1"><CalculatorIcon size={12} strokeWidth={2} /> {canPOS ? `${items.filter(x=>x.checked).length} bahan siap` : 'Hitung dulu'}</span>
-                <span className="w-px h-3 bg-[#CBD5E1]" />
-                <span className="inline-flex items-center gap-1"><span className="text-[#94A3B8]">⚡</span> untuk aktif</span>
+                <span className="w-px h-3 bg-[#cbdbf5]" />
+                <span className="inline-flex items-center gap-1"><span className="text-[#76777d]">⚡</span> untuk aktif</span>
               </div>
 
               {!hasResult && (
-                <p className="mt-3 text-[11px] text-center text-[#059669]/70 leading-relaxed">Klik “Hitung Kebutuhan” untuk membuat quotation otomatis.</p>
+                <p className="mt-3 text-[11px] text-center text-[#007a55]/70 leading-relaxed">Klik “Hitung Kebutuhan” untuk membuat quotation otomatis.</p>
               )}
               {hasResult && !canPOS && (
                 <p className="mt-3 text-[11px] text-center text-amber-700 bg-amber-50 border border-amber-200 rounded-[8px] px-2 py-2">Centang minimal 1 bahan di detail bawah lalu lanjut ke POS.</p>
@@ -329,24 +329,24 @@ export default function Calculator(){
 
       {/* Items detail table */}
       {hasItems && (
-        <div id="detail-bahan" className="bg-white rounded-[20px] border border-[#E2E8F0] overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-          <div className="px-5 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-3 border-b border-[#E2E8F0] bg-[#F8FAFC]">
+        <div id="detail-bahan" className="bg-white rounded-xl border border-[#e7ecf7] overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+          <div className="px-5 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-3 border-b border-[#e7ecf7] bg-[#eff4ff]">
             <div>
-              <div className="text-[13px] font-bold text-[#0F172A]">Rincian bahan - tabel per bahan</div>
-              <div className="text-[11px] text-[#64748B] mt-0.5">1 baris = 1 bahan • dropdown merek/tipe per baris • stok gudang live • centang ikut ke POS</div>
+              <div className="text-[13px] font-bold text-[#0b1c30]">Rincian bahan - tabel per bahan</div>
+              <div className="text-[11px] text-[#45464d] mt-0.5">1 baris = 1 bahan • dropdown merek/tipe per baris • stok gudang live • centang ikut ke POS</div>
             </div>
             <div className="flex gap-2">
-              <button type="button" onClick={()=>setItems(items.map(x=>({...x, checked:true})))} className="h-8 px-3 bg-white border border-[#E2E8F0] rounded-full text-xs font-bold text-[#0F172A] hover:bg-[#F1F5F9]">Pilih semua</button>
-              <button type="button" onClick={()=>setItems(items.map(x=>({...x, checked:false})))} className="h-8 px-3 bg-white border border-[#E2E8F0] rounded-full text-xs font-medium text-[#64748B] hover:bg-[#F1F5F9]">Hapus semua</button>
+              <button type="button" onClick={()=>setItems(items.map(x=>({...x, checked:true})))} className="h-8 px-3 bg-white border border-[#e7ecf7] rounded-full text-xs font-bold text-[#0b1c30] hover:bg-[#e5eeff]">Pilih semua</button>
+              <button type="button" onClick={()=>setItems(items.map(x=>({...x, checked:false})))} className="h-8 px-3 bg-white border border-[#e7ecf7] rounded-full text-xs font-medium text-[#45464d] hover:bg-[#e5eeff]">Hapus semua</button>
             </div>
           </div>
 
           {/* Desktop table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-[#F1F5F9] border-y border-[#E2E8F0] text-[11px] font-bold tracking-widest text-[#64748B]">
-                <tr className="bg-[#F8FAFC] text-[11px] tracking-[.08em] font-bold text-[#64748B] border-b border-[#E2E8F0]">
-                  <th className="w-10 px-3 py-3 text-center"><input type="checkbox" checked={items.every(x=>x.checked)} onChange={e=>setItems(items.map(x=>({...x, checked:e.target.checked})))} className="w-4 h-4 accent-[#1E40AF] rounded" /></th>
+              <thead className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
+                <tr className="bg-[#eff4ff] text-[11px] tracking-[.08em] font-bold text-[#45464d] border-b border-[#e7ecf7]">
+                  <th className="w-10 px-3 py-3 text-center"><input type="checkbox" checked={items.every(x=>x.checked)} onChange={e=>setItems(items.map(x=>({...x, checked:e.target.checked})))} className="w-4 h-4 accent-[#0051d5] rounded" /></th>
                   <th className="text-left px-3 py-3">Bahan</th>
                   <th className="text-left px-3 py-3">Merek / Tipe</th>
                   <th className="text-center px-3 py-3">Stok Gudang</th>
@@ -355,18 +355,18 @@ export default function Calculator(){
                   <th className="text-right px-3 py-3">Subtotal</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#F1F5F9]">
+              <tbody className="divide-y divide-[#e5eeff]">
                 {items.map((it,idx)=>(
-                  <tr key={idx} className={it.checked?'bg-white hover:bg-[#F8FAFC]':'bg-[#F8FAFC] opacity-60'}>
-                    <td className="px-3 py-3 text-center"><input type="checkbox" checked={it.checked} onChange={e=>setItems(a=>a.map((x,i)=>i===idx?{...x, checked:e.target.checked}:x))} className="w-4 h-4 accent-[#1E40AF]" /></td>
+                  <tr key={idx} className={it.checked?'bg-white hover:bg-[#eff4ff]':'bg-[#eff4ff] opacity-60'}>
+                    <td className="px-3 py-3 text-center"><input type="checkbox" checked={it.checked} onChange={e=>setItems(a=>a.map((x,i)=>i===idx?{...x, checked:e.target.checked}:x))} className="w-4 h-4 accent-[#0051d5]" /></td>
                     <td className="px-3 py-3 min-w-[160px]">
-                      <div className="text-[10px] tracking-[.12em] font-bold text-[#64748B]">{labelForSku(it.sku)} • {it.unit}</div>
-                      <div className="font-bold leading-tight text-[#0F172A] text-[13px]">{it.name}</div>
-                      <div className="text-[11px] font-mono text-[#64748B]">{it.sku}{it.product_id?` • #${it.product_id}`:''}</div>
+                      <div className="text-[11px] tracking-[.12em] font-bold text-[#45464d]">{labelForSku(it.sku)} • {it.unit}</div>
+                      <div className="font-bold leading-tight text-[#0b1c30] text-[13px]">{it.name}</div>
+                      <div className="text-[11px] font-mono text-[#45464d]">{it.sku}{it.product_id?` • #${it.product_id}`:''}</div>
                       {it.qty > it.stock_available && it.checked && <div className="mt-1 text-[11px] px-2 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 inline-block">Qty melebihi stok</div>}
                     </td>
                     <td className="px-3 py-3 min-w-[280px]">
-                      <select value={it.sku} onChange={e=>changeVariant(idx, e.target.value)} className="w-full h-9 border border-[#E2E8F0] rounded-[10px] px-2 text-[13px] bg-white outline-none focus:border-[#1E40AF]">
+                      <select value={it.sku} onChange={e=>changeVariant(idx, e.target.value)} className="w-full h-9 border border-[#e7ecf7] rounded-[10px] px-2 text-[13px] bg-white outline-none focus:border-[#0051d5]">
                         {(it.options||[]).length ? it.options.map(o=>(
                           <option key={o.sku} value={o.sku}>{o.name} - {o.sku} • {rupiah(o.selling_price)} • stok {o.stock_available}</option>
                         )) : <option value={it.sku}>{it.name} - {it.sku}</option>}
@@ -374,17 +374,17 @@ export default function Calculator(){
                     </td>
                     <td className="px-3 py-3 text-center whitespace-nowrap">
                       <span className={`text-[11px] px-2.5 py-1 rounded-full border font-bold ${it.stock_available>0?'bg-emerald-50 text-emerald-700 border-emerald-200':'bg-red-50 text-red-700 border-red-200'}`}>{it.stock_available}</span>
-                      <div className="text-[11px] text-[#64748B] mt-1">on hand {it.stock_onhand}</div>
+                      <div className="text-[11px] text-[#45464d] mt-1">on hand {it.stock_onhand}</div>
                     </td>
                     <td className="px-3 py-3 text-center">
-                      <input type="number" value={it.qty} min={0} step={it.unit==='M3'?0.01:1} onChange={e=>setItems(a=>a.map((x,i)=>i===idx?{...x, qty: parseFloat(e.target.value)||0 }:x))} className="w-20 h-9 border border-[#E2E8F0] rounded-[10px] text-center text-[13px] outline-none focus:border-[#1E40AF]" />
-                      <div className="text-[11px] text-[#64748B] mt-1">{it.unit}</div>
+                      <input type="number" value={it.qty} min={0} step={it.unit==='M3'?0.01:1} onChange={e=>setItems(a=>a.map((x,i)=>i===idx?{...x, qty: parseFloat(e.target.value)||0 }:x))} className="w-20 h-9 border border-[#e7ecf7] rounded-[10px] text-center text-[13px] outline-none focus:border-[#0051d5]" />
+                      <div className="text-[11px] text-[#45464d] mt-1">{it.unit}</div>
                     </td>
                     <td className="px-3 py-3 text-right">
-                      <input type="number" value={it.unit_price} onChange={e=>setItems(a=>a.map((x,i)=>i===idx?{...x, unit_price: parseFloat(e.target.value)||0 }:x))} className="w-28 h-9 border border-[#E2E8F0] rounded-[10px] text-right px-2 text-[13px] ml-auto outline-none focus:border-[#1E40AF]" />
-                      <div className="text-[11px] text-[#64748B] mt-1">/ {it.unit}</div>
+                      <input type="number" value={it.unit_price} onChange={e=>setItems(a=>a.map((x,i)=>i===idx?{...x, unit_price: parseFloat(e.target.value)||0 }:x))} className="w-28 h-9 border border-[#e7ecf7] rounded-[10px] text-right px-2 text-[13px] ml-auto outline-none focus:border-[#0051d5]" />
+                      <div className="text-[11px] text-[#45464d] mt-1">/ {it.unit}</div>
                     </td>
-                    <td className="px-3 py-3 text-right whitespace-nowrap font-extrabold text-[#0F172A]">{rupiah(it.qty*it.unit_price)}</td>
+                    <td className="px-3 py-3 text-right whitespace-nowrap font-extrabold text-[#0b1c30]">{rupiah(it.qty*it.unit_price)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -392,46 +392,46 @@ export default function Calculator(){
           </div>
 
           {/* Mobile cards */}
-          <div className="md:hidden grid grid-cols-1 gap-3 p-4 bg-[#F8FAFC]">
+          <div className="md:hidden grid grid-cols-1 gap-3 p-4 bg-[#eff4ff]">
             {items.map((it,idx)=>(
-              <div key={idx} className={"border rounded-[20px] p-4 flex flex-col gap-3 bg-white shadow-sm "+(it.checked?"":"opacity-60 bg-[#F8FAFC]")}>
+              <div key={idx} className={"border rounded-xl p-4 flex flex-col gap-3 bg-white shadow-card "+(it.checked?"":"opacity-60 bg-[#eff4ff]")}>
                 <div className="flex justify-between gap-2">
-                  <span className="text-[11px] tracking-[.12em] font-bold text-[#64748B]">{labelForSku(it.sku)} • {it.unit}</span>
-                  <label className="flex items-center gap-1.5"><input type="checkbox" checked={it.checked} onChange={e=>setItems(a=>a.map((x,i)=>i===idx?{...x, checked:e.target.checked}:x))} className="w-4 h-4 accent-[#1E40AF]"/><span className="text-xs font-bold">{it.checked?'Dipilih':'Lewati'}</span></label>
+                  <span className="text-[11px] tracking-[.12em] font-bold text-[#45464d]">{labelForSku(it.sku)} • {it.unit}</span>
+                  <label className="flex items-center gap-1.5"><input type="checkbox" checked={it.checked} onChange={e=>setItems(a=>a.map((x,i)=>i===idx?{...x, checked:e.target.checked}:x))} className="w-4 h-4 accent-[#0051d5]"/><span className="text-xs font-bold">{it.checked?'Dipilih':'Lewati'}</span></label>
                 </div>
-                <div className="font-bold text-sm text-[#0F172A]">{it.name}</div>
-                <div className="text-[11px] font-mono text-[#64748B]">{it.sku}</div>
-                <select value={it.sku} onChange={e=>changeVariant(idx, e.target.value)} className="w-full h-9 border border-[#E2E8F0] rounded-[10px] px-2 text-sm bg-white">
+                <div className="font-bold text-sm text-[#0b1c30]">{it.name}</div>
+                <div className="text-[11px] font-mono text-[#45464d]">{it.sku}</div>
+                <select value={it.sku} onChange={e=>changeVariant(idx, e.target.value)} className="w-full h-9 border border-[#e7ecf7] rounded-[10px] px-2 text-sm bg-white">
                   {(it.options||[]).length ? it.options.map(o=>(<option key={o.sku} value={o.sku}>{o.name} - {o.sku} • {rupiah(o.selling_price)} • stok {o.stock_available}</option>)) : <option value={it.sku}>{it.name}</option>}
                 </select>
-                <div className="flex gap-1.5"><span className={`text-[11px] px-2.5 py-1 rounded-full border font-bold ${it.stock_available>0?'bg-emerald-50 text-emerald-700 border-emerald-200':'bg-red-50 text-red-700 border-red-200'}`}>Stok {it.stock_available}</span><span className="text-[11px] px-2.5 py-1 rounded-full bg-gray-100 border border-[#E2E8F0]">On hand {it.stock_onhand}</span></div>
+                <div className="flex gap-1.5"><span className={`text-[11px] px-2.5 py-1 rounded-full border font-bold ${it.stock_available>0?'bg-emerald-50 text-emerald-700 border-emerald-200':'bg-red-50 text-red-700 border-red-200'}`}>Stok {it.stock_available}</span><span className="text-[11px] px-2.5 py-1 rounded-full bg-gray-100 border border-[#e7ecf7]">On hand {it.stock_onhand}</span></div>
                 <div className="grid grid-cols-2 gap-2">
-                  <label className="space-y-1"><span className="text-[11px] font-bold text-gray-600">Qty ({it.unit})</span><input type="number" value={it.qty} min={0} step={it.unit==='M3'?0.01:1} onChange={e=>setItems(a=>a.map((x,i)=>i===idx?{...x, qty: parseFloat(e.target.value)||0 }:x))} className="w-full h-9 border border-[#E2E8F0] rounded-[10px] text-center text-sm" /></label>
-                  <label className="space-y-1"><span className="text-[11px] font-bold text-gray-600">Harga</span><input type="number" value={it.unit_price} onChange={e=>setItems(a=>a.map((x,i)=>i===idx?{...x, unit_price: parseFloat(e.target.value)||0 }:x))} className="w-full h-9 border border-[#E2E8F0] rounded-[10px] text-right px-2 text-sm" /></label>
+                  <label className="space-y-1"><span className="text-[11px] font-bold text-gray-600">Qty ({it.unit})</span><input type="number" value={it.qty} min={0} step={it.unit==='M3'?0.01:1} onChange={e=>setItems(a=>a.map((x,i)=>i===idx?{...x, qty: parseFloat(e.target.value)||0 }:x))} className="w-full h-9 border border-[#e7ecf7] rounded-[10px] text-center text-sm" /></label>
+                  <label className="space-y-1"><span className="text-[11px] font-bold text-gray-600">Harga</span><input type="number" value={it.unit_price} onChange={e=>setItems(a=>a.map((x,i)=>i===idx?{...x, unit_price: parseFloat(e.target.value)||0 }:x))} className="w-full h-9 border border-[#e7ecf7] rounded-[10px] text-right px-2 text-sm" /></label>
                 </div>
-                <div className="flex justify-between border-t border-[#F1F5F9] pt-2"><span className="text-xs text-[#64748B]">Subtotal</span><span className="font-extrabold text-[#0F172A]">{rupiah(it.qty*it.unit_price)}</span></div>
+                <div className="flex justify-between border-t border-[#e5eeff] pt-2"><span className="text-xs text-[#45464d]">Subtotal</span><span className="font-extrabold text-[#0b1c30]">{rupiah(it.qty*it.unit_price)}</span></div>
               </div>
             ))}
           </div>
 
           {/* Totals */}
-          <div className="bg-[#F8FAFC] border-t border-[#E2E8F0] p-4">
+          <div className="bg-[#eff4ff] border-t border-[#e7ecf7] p-4">
             <div className="max-w-sm ml-auto space-y-1 text-sm">
-              <div className="flex justify-between"><span className="text-[#64748B]">Subtotal dipilih</span><span className="font-bold text-[#0F172A]">{rupiah(grand)}</span></div>
-              <div className="flex justify-between"><span className="text-[#64748B]">PPN 11%</span><span className="font-medium text-[#0F172A]">{rupiah(ppn)}</span></div>
-              <div className="flex justify-between text-base font-extrabold border-t border-[#E2E8F0] pt-2"><span>Total</span><span>{rupiah(total)}</span></div>
-              <div className="text-xs text-[#64748B]">{items.filter(x=>x.checked).length} bahan dipilih</div>
+              <div className="flex justify-between"><span className="text-[#45464d]">Subtotal dipilih</span><span className="font-bold text-[#0b1c30]">{rupiah(grand)}</span></div>
+              <div className="flex justify-between"><span className="text-[#45464d]">PPN 11%</span><span className="font-medium text-[#0b1c30]">{rupiah(ppn)}</span></div>
+              <div className="flex justify-between text-base font-extrabold border-t border-[#e7ecf7] pt-2"><span>Total</span><span>{rupiah(total)}</span></div>
+              <div className="text-xs text-[#45464d]">{items.filter(x=>x.checked).length} bahan dipilih</div>
             </div>
-            <button type="button" onClick={toPOS} disabled={!canPOS} className={`w-full mt-3 h-11 rounded-xl font-bold transition text-[13px] inline-flex items-center justify-center gap-2 ${canPOS?'bg-[#F59E0B] hover:bg-amber-500 text-white shadow':'bg-gray-200 text-[#64748B] cursor-not-allowed'}`}>Lanjut ke POS - tinggal bayar <ArrowRight size={16} /></button>
+            <button type="button" onClick={toPOS} disabled={!canPOS} className={`w-full mt-3 h-11 rounded-xl font-bold transition text-[13px] inline-flex items-center justify-center gap-2 ${canPOS?'bg-[#b45309] hover:bg-amber-500 text-white shadow':'bg-gray-200 text-[#45464d] cursor-not-allowed'}`}>Lanjut ke POS - tinggal bayar <ArrowRight size={16} /></button>
           </div>
 
           {/* Estimasi detail grid like old compact */}
           {hasResult && (
             <div className="px-5 sm:px-6 pb-5">
               <div className="grid grid-cols-2 gap-2 text-sm mt-4">
-                {Object.entries(result).filter(([k])=> k!=='quotation' && k!=='items').map(([k,v])=> <div key={k} className="flex justify-between bg-[#F8FAFC] border border-[#E2E8F0] rounded-[10px] px-3 py-2.5"><span className="text-[#64748B] capitalize text-xs">{k.replace(/_/g,' ')}</span><span className="font-bold text-[#0F172A] text-xs">{String(v)}</span></div>)}
+                {Object.entries(result).filter(([k])=> k!=='quotation' && k!=='items').map(([k,v])=> <div key={k} className="flex justify-between bg-[#eff4ff] border border-[#e7ecf7] rounded-[10px] px-3 py-2.5"><span className="text-[#45464d] capitalize text-xs">{k.replace(/_/g,' ')}</span><span className="font-bold text-[#0b1c30] text-xs">{String(v)}</span></div>)}
               </div>
-              {result.catatan && <div className="mt-3 text-xs text-[#64748B] bg-[#F8FAFC] border border-[#E2E8F0] rounded-[10px] px-3 py-2">{result.catatan}</div>}
+              {result.catatan && <div className="mt-3 text-xs text-[#45464d] bg-[#eff4ff] border border-[#e7ecf7] rounded-[10px] px-3 py-2">{result.catatan}</div>}
             </div>
           )}
         </div>
@@ -439,10 +439,10 @@ export default function Calculator(){
 
       {/* Empty state hint when no items yet but has result with no items */}
       {hasResult && !hasItems && (
-        <div className="bg-white rounded-[20px] border border-dashed border-[#CBD5E1] p-8 text-center">
-          <div className="w-10 h-10 rounded-full bg-[#F1F5F9] text-[#64748B] grid place-items-center mx-auto"><Package size={18} /></div>
-          <div className="text-sm font-bold text-[#0F172A] mt-3">Tidak ada bahan untuk tipe ini</div>
-          <p className="text-xs text-[#64748B] mt-1">Coba ganti tipe kebutuhan lalu hitung lagi.</p>
+        <div className="bg-white rounded-xl border border-dashed border-[#cbdbf5] p-8 text-center">
+          <div className="w-10 h-10 rounded-full bg-[#e5eeff] text-[#45464d] grid place-items-center mx-auto"><Package size={18} /></div>
+          <div className="text-sm font-bold text-[#0b1c30] mt-3">Tidak ada bahan untuk tipe ini</div>
+          <p className="text-xs text-[#45464d] mt-1">Coba ganti tipe kebutuhan lalu hitung lagi.</p>
         </div>
       )}
     </div>

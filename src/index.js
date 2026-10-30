@@ -1,10 +1,12 @@
 import express from 'express';
+import path from 'node:path';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { pool } from './config/db.js';
 import { auth, rbac } from './middleware/auth.js';
+import { createRateLimiter, corsOrigins, originAllowed } from './middleware/security.js';
 import { MODULE_ROLES } from './config/access.js';
 import authRoutes from './modules/auth/routes.js';
 import dashboardRoutes from './modules/dashboard/routes.js';
@@ -36,14 +38,57 @@ import searchRoutes from './modules/search/routes.js';
 import posRoutes from './modules/pos/routes.js';
 import posShiftRoutes from './modules/pos/shift-routes.js';
 import announcementsRoutes from './modules/announcements/routes.js';
+import opnameRoutes from './modules/inventory/opname-routes.js';
+import taxRoutes from './modules/tax/routes.js';
+import notifyRoutes from './modules/notify/routes.js';
+import publicRoutes from './modules/public/routes.js';
+import projectTermRoutes from './modules/projects/terms-routes.js';
+import periodRoutes from './modules/finance/period-routes.js';
+import reconRoutes from './modules/finance/recon-routes.js';
+import reorderRoutes from './modules/inventory/reorder-routes.js';
+import approvalRuleRoutes from './modules/approvals/rules-routes.js';
+import errorsRoutes from './modules/errors/routes.js';
+import { errorCapture } from './middleware/error-capture.js';
+import { startOutboxWorker } from './lib/outbox-worker.js';
+import { logError, recentErrors, errorStats } from './lib/error-log.js';
 
 dotenv.config();
 const app = express();
+// Di belakang nginx/load balancer: IP asli ada di X-Forwarded-For (rate limit & audit).
+if(process.env.TRUST_PROXY !== '0') app.set('trust proxy', 1);
+
+// Cegah boot produksi dengan secret default (kalau tidak, token bisa dipalsukan siapa pun).
+if(process.env.NODE_ENV === 'production'){
+  const weak = [];
+  if(!process.env.JWT_SECRET || process.env.JWT_SECRET === 'erp_jwt_super_secret_2024') weak.push('JWT_SECRET');
+  if(!process.env.JWT_REFRESH_SECRET || process.env.JWT_REFRESH_SECRET === 'erp_refresh_secret_2024') weak.push('JWT_REFRESH_SECRET');
+  if(weak.length){
+    console.error('[FATAL] Secret default terdeteksi: '+weak.join(', ')+'. Set nilai acak (>=32 char) di environment sebelum produksi.');
+    process.exit(1);
+  }
+}
+
 app.use(helmet({crossOriginResourcePolicy:false}));
-app.use(cors({origin:'*'}));
+app.use(cors({
+  origin(origin, cb){
+    if(originAllowed(origin, corsOrigins())) return cb(null, true);
+    console.warn('[cors] origin ditolak:', origin);
+    return cb(null, false);
+  },
+  credentials: true,
+}));
+// Rate limit: global per IP, plus batas ketat untuk login.
+app.use('/api', errorCapture);
+app.use('/api', createRateLimiter({ name:'api', windowMs:60_000, max: parseInt(process.env.RATE_LIMIT_PER_MIN||'600',10) }));
+app.use('/api/auth/login', createRateLimiter({ name:'login', windowMs:15*60_000, max: parseInt(process.env.LOGIN_RATE_MAX||'20',10) }));
 app.use(express.json({limit:'12mb'}));
 app.use(express.urlencoded({extended:true, limit:'12mb'}));
-app.use(morgan('dev'));
+app.use(morgan(process.env.NODE_ENV==='production' ? 'combined' : 'dev'));
+
+// Foto katalog produk: dipublikasikan lewat /api/media/products supaya bisa dipakai <img src>
+// dan tetap melewati proxy /api (nginx & vite). Lampiran surat dokter TIDAK di sini —
+// itu hanya bisa dibaca lewat endpoint ber-auth /api/hr/leaves/:id/attachment.
+app.use('/api/media/products', express.static(path.resolve('uploads','products'), { maxAge:'7d', immutable:true, fallthrough:true }));
 
 
 // ---------- AUDIT TRAIL: catat semua aksi tulis yang sukses ke audit_logs ----------
@@ -71,13 +116,66 @@ app.use((req,res,next)=>{
   next();
 });
 
-app.get('/api/health', (req,res)=>res.json({status:'ok', time:new Date().toISOString()}));
+// ── Metrics ringan untuk monitoring (tanpa dependency) ──────────────────────
+const METRICS = { started: Date.now(), requests: 0, errors: 0, byStatus: {}, latency: [] };
+app.use((req,res,next)=>{
+  if(!req.path.startsWith('/api')) return next();
+  const t0 = process.hrtime.bigint();
+  METRICS.requests += 1;
+  res.on('finish', ()=>{
+    const ms = Number(process.hrtime.bigint()-t0)/1e6;
+    METRICS.byStatus[res.statusCode] = (METRICS.byStatus[res.statusCode]||0) + 1;
+    if(res.statusCode >= 500) METRICS.errors += 1;
+    METRICS.latency.push(ms);
+    if(METRICS.latency.length > 500) METRICS.latency.shift();
+  });
+  next();
+});
+app.get('/api/metrics', auth, rbac('direktur','super_admin','auditor'), (req,res)=>{
+  const l = [...METRICS.latency].sort((a,b)=>a-b);
+  const pct = (p)=> l.length? Math.round(l[Math.min(l.length-1, Math.floor(l.length*p/100))]*10)/10 : 0;
+  res.json({
+    uptime_s: Math.round(process.uptime()),
+    started_at: new Date(METRICS.started).toISOString(),
+    requests: METRICS.requests,
+    errors_5xx: METRICS.errors,
+    by_status: METRICS.byStatus,
+    latency_ms: { p50: pct(50), p95: pct(95), p99: pct(99), samples: l.length },
+    memory_mb: Math.round(process.memoryUsage().rss/1048576),
+  });
+});
+
+app.get('/api/metrics/errors', auth, rbac('direktur','super_admin','auditor'), (req,res)=>{
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit||'30',10)||30));
+  res.json({ stats: errorStats(), recent: recentErrors(limit),
+    log_dir: 'logs/', webhook: !!process.env.ERROR_WEBHOOK_URL });
+});
+
+// Health check untuk monitoring/uptime probe: benar-benar mengecek DB.
+// 200 = siap dipakai, 503 = DB tidak bisa dihubungi (jangan kirim traffic).
+app.get('/api/health', async (req,res)=>{
+  const started = Date.now();
+  try{
+    await pool.query('SELECT 1');
+    res.json({
+      status:'ok', time:new Date().toISOString(),
+      uptime_s: Math.round(process.uptime()), db_ms: Date.now()-started,
+      version: process.env.APP_VERSION || '1.0.0', env: process.env.NODE_ENV || 'development',
+    });
+  }catch(e){
+    res.status(503).json({ status:'degraded', time:new Date().toISOString(), error:'database unreachable' });
+  }
+});
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', auth, dashboardRoutes);
 app.use('/api/master', auth, masterRoutes);
 app.use('/api/sales', auth, rbac(...MODULE_ROLES.sales), salesRoutes);
 app.use('/api/purchase', auth, rbac(...MODULE_ROLES.purchase), purchaseRoutes);
+app.use('/api/inventory/opname', auth, rbac(...MODULE_ROLES.inventory), opnameRoutes);
+app.use('/api/inventory/reorder', auth, rbac(...MODULE_ROLES.inventory), reorderRoutes);
 app.use('/api/inventory', auth, rbac(...MODULE_ROLES.inventory), inventoryRoutes);
+app.use('/api/finance/periods', auth, rbac(...MODULE_ROLES.finance), periodRoutes);
+app.use('/api/finance/recon', auth, rbac(...MODULE_ROLES.finance), reconRoutes);
 app.use('/api/finance', auth, rbac(...MODULE_ROLES.finance), financeRoutes);
 app.use('/api/logistics', auth, rbac(...MODULE_ROLES.logistics), logisticsRoutes);
 app.use('/api/hr', auth, hrRoutes);
@@ -105,20 +203,28 @@ app.use('/api/announcements', auth, announcementsRoutes);
 app.use('/api/pos/shift', auth, posShiftRoutes);
 app.use('/api/pos', auth, posRoutes);
 app.use('/api/search', auth, searchRoutes);
+// Modul baru: pajak, pusat notifikasi, termin proyek, dan portal publik (tanpa auth).
+app.use('/api/tax', auth, rbac(...MODULE_ROLES.tax), taxRoutes);
+app.use('/api/notify', auth, rbac(...MODULE_ROLES.notify), notifyRoutes);
+app.use('/api/project-terms', auth, rbac(...MODULE_ROLES.projects), projectTermRoutes);
+app.use('/api/public', publicRoutes);
+app.use('/api/approval-rules', auth, rbac('direktur','super_admin','finance','purchasing'), approvalRuleRoutes);
+app.use('/api/errors', auth, rbac('direktur','super_admin','auditor'), errorsRoutes);
 
-// seed password fix on boot
+// seed password fix on boot — HANYA untuk hash yang belum valid (instalasi baru).
+// Password yang sudah diubah user TIDAK boleh direset setiap restart.
 import bcrypt from 'bcryptjs';
 async function ensureUsers(){
+  // JANGAN pernah menyemai password demo di produksi.
+  if(process.env.NODE_ENV === 'production' && process.env.SEED_DEMO_USERS !== '1') return;
   try{
-    const hash = await bcrypt.hash('admin123',10);
-    const hash2 = await bcrypt.hash('finance123',10);
-    const hash3 = await bcrypt.hash('sales123',10);
-    const hash4 = await bcrypt.hash('gudang123',10);
-    await pool.query("UPDATE users SET password_hash=$1 WHERE username='admin'",[hash]);
-    await pool.query("UPDATE users SET password_hash=$1 WHERE username='finance'",[hash2]);
-    await pool.query("UPDATE users SET password_hash=$1 WHERE username='sales'",[hash3]);
-    await pool.query("UPDATE users SET password_hash=$1 WHERE username='gudang'",[hash4]);
-    console.log('Passwords seeded');
+    const seeds = [['admin','admin123'],['finance','finance123'],['sales','sales123'],['gudang','gudang123']];
+    for(const [username, plain] of seeds){
+      const cur = await pool.query("SELECT password_hash FROM users WHERE username=$1",[username]);
+      const hash = cur.rows[0]?.password_hash || '';
+      if(/^\$2[aby]\$/.test(hash)) continue;      // sudah punya hash bcrypt: jangan disentuh
+      await pool.query("UPDATE users SET password_hash=$1 WHERE username=$2",[await bcrypt.hash(plain,10), username]);
+    }
   }catch(e){ console.error('seed pw err',e.message); }
 }
 async function runMigrations(){
@@ -185,16 +291,53 @@ function harden(target){
   }
 }
 harden(app._router);
-process.on('unhandledRejection', (e)=> console.error('[unhandledRejection]', (e && e.message) || e));
+process.on('unhandledRejection', (e)=>{
+  logError(e, { source:'unhandledRejection', status:500 });
+});
+process.on('uncaughtException', (e)=>{
+  logError(e, { source:'uncaughtException', status:500 });
+  // Setelah exception tak tertangkap, state proses tidak bisa dipercaya.
+  // Docker akan me-restart container (restart: unless-stopped).
+  setTimeout(()=>process.exit(1), 200);
+});
 
-app.use((err,req,res,next)=>{ console.error(err); res.status(500).json({error:err.message}); });
+// Graceful shutdown: Docker mengirim SIGTERM saat restart/deploy.
+// Tutup listener dulu (berhenti terima request baru), lalu pool DB.
+let httpServer = null;
+function shutdown(signal){
+  console.log(`[shutdown] ${signal} diterima — menutup koneksi...`);
+  let closed = false;
+  const finish = async (code=0)=>{
+    if(closed) return; closed = true;
+    try{ await pool.end(); }catch{}
+    console.log('[shutdown] selesai');
+    process.exit(code);
+  };
+  if(httpServer){
+    httpServer.close(()=> finish(0));
+    setTimeout(()=>{ console.warn('[shutdown] timeout, keluar paksa'); finish(0); }, 10_000).unref();
+  } else finish(0);
+}
+process.on('SIGTERM', ()=>shutdown('SIGTERM'));
+process.on('SIGINT', ()=>shutdown('SIGINT'));
+
+app.use((err,req,res,next)=>{
+  // Body parser error (JSON rusak / payload terlalu besar) → 400, bukan 500.
+  const status = err.status || err.statusCode || (err.type === 'entity.too.large' ? 413 : 500);
+  req._errorLogged = true;
+  logError(err, { req, status });
+  if(res.headersSent) return next(err);
+  res.status(status).json({ error: status >= 500 ? 'Terjadi kesalahan pada server' : (err.message || 'Permintaan tidak valid') });
+});
 const BASE_PORT = parseInt(process.env.PORT || '4000',10);
 function start(port, retries=4){
   const server = app.listen(port, async ()=>{
+    httpServer = server;
     console.log('ERP Backend running on '+port);
     if(port!==BASE_PORT) console.log(`PORT ${BASE_PORT} busy -> using ${port} (update vite proxy if needed)`);
     await runMigrations();
     await ensureUsers();
+    startOutboxWorker(60_000);
     try{ const r=await pool.query('SELECT COUNT(*) FROM products'); console.log('DB products count',r.rows[0].count);}catch(e){ console.error('DB error',e.message);}
   });
   server.on('error', err=>{

@@ -339,6 +339,7 @@ const crudDefs = [
 crudDefs.forEach(([tbl, search])=> crud(api, tbl, { search }));
 
 app.use('/api', api);
+app.use('/api/sales', api);
 
 // SPA fallback
 app.get('*', (req,res)=>{

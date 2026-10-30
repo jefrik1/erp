@@ -89,7 +89,7 @@ export default function FinanceJournals(){
       <PosPageHeader icon={FileText} title="Jurnal Umum" subtitle="Auto dari SO/PO/Invoice • Closing lock • Audit trail - manual harus seimbang debit=kredit" badge={total+' jurnal'} actions={<><PosExportButtons onExport={download} busyKey={expBusy} prefix="Jurnal"/><button onClick={()=>{ setFormErr(''); setShow(true); }} className={posBtnPrimary+' h-9 px-4 text-xs'}><Plus size={14}/> Jurnal Manual</button></>} />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <PosStat icon={FileText} tone="bg-[#1E40AF]/10 text-[#1E40AF]" label="TOTAL JURNAL" value={stats.count} sub="halaman ini" />
+        <PosStat icon={FileText} tone="bg-[#0051d5]/10 text-[#0051d5]" label="TOTAL JURNAL" value={stats.count} sub="halaman ini" />
         <PosStat icon={Scale} tone="bg-emerald-50 text-emerald-700" label="TOTAL DEBIT" value={rupiah(stats.debit)} sub="seimbang dengan kredit" />
         <PosStat icon={Scale} tone="bg-sky-50 text-sky-700" label="TOTAL KREDIT" value={rupiah(stats.credit)} sub={Math.abs(stats.debit-stats.credit)<0.5? 'seimbang' : 'selisih '+(nf(Math.abs(stats.debit-stats.credit)))} />
         <PosStat icon={Calendar} tone="bg-amber-50 text-amber-700" label="POSTED" value={data.filter(j=>j.posted).length} sub={data.filter(j=>!j.posted).length+' draft'} />
@@ -99,7 +99,7 @@ export default function FinanceJournals(){
         <PosCardBody className="space-y-3">
           <PosToolbar actions={<button onClick={load} className={posBtnSecondary+' h-9 px-4 text-xs'}><RefreshCw size={13} className={loading?'animate-spin':''}/> Muat Ulang</button>}>
             <div className={posSearchWrap}>
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]"/>
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#76777d]"/>
               <input value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Enter'&&setAppliedQ(q)} placeholder="Cari no. jurnal / deskripsi lalu Enter..." className={posInput+' pl-9'} />
             </div>
           </PosToolbar>
@@ -111,17 +111,17 @@ export default function FinanceJournals(){
         {loading ? <PosSkeleton rows={5} cols={4}/> : err ? <PosError message={err} onRetry={load}/> : !filtered.length ? <PosEmpty text="Belum ada jurnal pada filter ini"/> : (
           <div className="space-y-3 p-3">
             {filtered.map(j=>(
-              <div key={j.id} className="bg-white rounded-[20px] border border-[#E2E8F0] overflow-hidden">
-                <div className="flex flex-wrap justify-between gap-3 items-start p-3 bg-[#F8FAFC] border-b">
-                  <div><div className="font-mono text-xs font-bold text-[#0F172A]">{j.entry_number} • {String(j.entry_date||'').slice(0,10)}</div><div className="text-sm mt-0.5">{j.description}</div><div className="text-[11px] text-[#64748B] mt-0.5">oleh {j.username||'-'}</div></div>
+              <div key={j.id} className="bg-white rounded-xl border border-[#e7ecf7] overflow-hidden">
+                <div className="flex flex-wrap justify-between gap-3 items-start p-3 bg-[#eff4ff] border-b">
+                  <div><div className="font-mono text-xs font-bold text-[#0b1c30]">{j.entry_number} • {String(j.entry_date||'').slice(0,10)}</div><div className="text-sm mt-0.5">{j.description}</div><div className="text-[11px] text-[#45464d] mt-0.5">oleh {j.username||'-'}</div></div>
                   <PosBadge tone={j.posted?'emerald':'amber'}>{j.posted?'POSTED':'DRAFT'}</PosBadge>
                 </div>
                 <div className="overflow-auto">
-                  <table className="w-full text-xs"><thead><tr className="bg-[#F1F5F9] text-[11px] font-bold tracking-widest text-[#64748B]"><th className="p-2 text-left">AKUN</th><th className="px-4 py-2 text-right">DEBIT</th><th className="px-4 py-2 text-right">KREDIT</th></tr></thead>
-                    <tbody>{(j.details||[]).map((d,i)=> <tr key={i} className="border-t border-[#F1F5F9]"><td className="px-3 py-2">{d.code} • {d.name}</td><td className="px-4 py-2 text-right tabular-nums">{d.debit>0? nf(d.debit):''}</td><td className="px-4 py-2 text-right tabular-nums">{d.credit>0? nf(d.credit):''}</td></tr>)}</tbody>
+                  <table className="w-full text-xs"><thead><tr className="bg-[#e5eeff] text-[11px] font-bold tracking-wider text-[#45464d]"><th className="p-2 text-left">AKUN</th><th className="px-4 py-2 text-right">DEBIT</th><th className="px-4 py-2 text-right">KREDIT</th></tr></thead>
+                    <tbody>{(j.details||[]).map((d,i)=> <tr key={i} className="border-t border-[#e5eeff]"><td className="px-3 py-2">{d.code} • {d.name}</td><td className="px-4 py-2 text-right tabular-nums">{d.debit>0? nf(d.debit):''}</td><td className="px-4 py-2 text-right tabular-nums">{d.credit>0? nf(d.credit):''}</td></tr>)}</tbody>
                   </table>
                 </div>
-                <div className="flex justify-end gap-4 text-xs font-bold px-3 py-2 bg-[#FCFDFE] border-t"><span>Debit {nf(j.total_debit||0)}</span><span>Kredit {nf(j.total_credit||0)}</span></div>
+                <div className="flex justify-end gap-4 text-xs font-bold px-3 py-2 bg-[#ffffff] border-t"><span>Debit {nf(j.total_debit||0)}</span><span>Kredit {nf(j.total_credit||0)}</span></div>
               </div>
             ))}
             <PosPager page={page} setPage={setPage} total={total} size={PAGE_SIZE} unit="jurnal"/>
@@ -131,19 +131,19 @@ export default function FinanceJournals(){
 
       {show && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50">
-          <form onSubmit={submit} className="bg-white rounded-[20px] p-5 w-full max-w-2xl max-h-[92vh] overflow-auto space-y-3 border shadow-xl animate-pop">
+          <form onSubmit={submit} className="bg-white rounded-xl p-5 w-full max-w-2xl max-h-[92vh] overflow-auto space-y-3 border shadow-raised animate-pop">
             <div className="flex items-start justify-between gap-3">
-              <div><h3 className="font-black text-[16px] text-[#0F172A]">Jurnal Manual</h3><div className="text-xs text-[#64748B] mt-0.5">Debit harus = Kredit - minimal 2 baris</div></div>
+              <div><h3 className="font-bold text-[16px] text-[#0b1c30]">Jurnal Manual</h3><div className="text-xs text-[#45464d] mt-0.5">Debit harus = Kredit - minimal 2 baris</div></div>
               <button type="button" onClick={()=>setShow(false)} className="w-9 h-9 rounded-xl border grid place-items-center"><X size={16}/></button>
             </div>
             {formErr && <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{formErr}</div>}
-            <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">DESKRIPSI *</span><input value={form.description} onChange={e=>setForm({...form,description:e.target.value})} placeholder="Contoh: Koreksi persediaan" className={posInput} /></label>
-            <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">TANGGAL (opsional)</span><input type="date" value={form.entry_date} onChange={e=>setForm({...form,entry_date:e.target.value})} className={posInput} /></label>
+            <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">DESKRIPSI *</span><input value={form.description} onChange={e=>setForm({...form,description:e.target.value})} placeholder="Contoh: Koreksi persediaan" className={posInput} /></label>
+            <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">TANGGAL (opsional)</span><input type="date" value={form.entry_date} onChange={e=>setForm({...form,entry_date:e.target.value})} className={posInput} /></label>
             <div className="space-y-2">
-              <div className="text-[11px] font-bold tracking-widest text-[#64748B]">RINCIAN AKUN</div>
+              <div className="text-[11px] font-bold tracking-wider text-[#45464d]">RINCIAN AKUN</div>
               {form.details.map((d,i)=>(
                 <div key={i} className="grid grid-cols-12 gap-1.5 items-center">
-                  <select value={d.account_id} onChange={e=>{ const c=[...form.details]; c[i].account_id=e.target.value; setForm({...form,details:c}); }} className="col-span-5 h-9 border rounded-xl px-2 text-xs bg-[#F8FAFC]">
+                  <select value={d.account_id} onChange={e=>{ const c=[...form.details]; c[i].account_id=e.target.value; setForm({...form,details:c}); }} className="col-span-5 h-9 border rounded-xl px-2 text-xs bg-[#eff4ff]">
                     <option value="">Pilih akun</option>{coa.map(a=> <option key={a.id} value={a.id}>{a.code} - {a.name}</option>)}
                   </select>
                   <input type="number" placeholder="Debit" value={d.debit} onChange={e=>{ const c=[...form.details]; c[i].debit=e.target.value; setForm({...form,details:c}); }} className="col-span-3 h-9 border rounded-xl px-2 text-right text-xs" />
@@ -151,8 +151,8 @@ export default function FinanceJournals(){
                   <button type="button" onClick={()=>rmRow(i)} className="col-span-1 w-8 h-8 rounded-full border grid place-items-center text-red-600 hover:bg-red-50"><Trash2 size={13}/></button>
                 </div>
               ))}
-              <button type="button" onClick={addRow} className="text-xs px-3 py-1 border rounded-full bg-white hover:bg-[#F8FAFC] font-bold">+ Baris</button>
-              <div className="text-xs text-[#64748B] tabular-nums">Total debit {nf(form.details.reduce((a,d)=>a+(parseFloat(d.debit)||0),0))} • kredit {nf(form.details.reduce((a,d)=>a+(parseFloat(d.credit)||0),0))}</div>
+              <button type="button" onClick={addRow} className="text-xs px-3 py-1 border rounded-full bg-white hover:bg-[#eff4ff] font-bold">+ Baris</button>
+              <div className="text-xs text-[#45464d] tabular-nums">Total debit {nf(form.details.reduce((a,d)=>a+(parseFloat(d.debit)||0),0))} • kredit {nf(form.details.reduce((a,d)=>a+(parseFloat(d.credit)||0),0))}</div>
             </div>
             <div className="flex justify-end gap-2 pt-2"><button type="button" onClick={()=>setShow(false)} className={posBtnSecondary+' h-9 px-5 text-xs'}>Batal</button><button disabled={saving} className={posBtnPrimary+' h-9 px-6 text-xs'}>{saving?'Memposting...':'Posting Jurnal'}</button></div>
           </form>

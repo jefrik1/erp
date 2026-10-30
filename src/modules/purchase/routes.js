@@ -1,6 +1,7 @@
 import express from 'express';
 import { pool } from '../../config/db.js';
 import { paginate } from '../../utils/helpers.js';
+import { getRule, createApproval } from '../approvals/rules-routes.js';
 const router = express.Router();
 let prRfqEnsured=false;
 async function ensurePrRfq(){
@@ -75,9 +76,16 @@ router.post('/orders', async (req,res)=>{
   const po_number='PO-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+String(Math.floor(Math.random()*9000+1000));
   let subtotal=0; for(const it of items) subtotal+= parseFloat(it.qty)*parseFloat(it.unit_cost);
   const tax=subtotal*0.11; const total=subtotal+tax;
-  const status = total>50000000 ? 'PENDING' : 'APPROVED';
+  // Ambang nilai PO mengikuti approval matrix (default Rp 50 juta).
+  const poRule = await getRule('PURCHASE_ORDER','VALUE').catch(()=>null);
+  const poLimit = poRule ? Number(poRule.threshold) : 50000000;
+  const status = total > poLimit ? 'PENDING' : 'APPROVED';
   const ins=await pool.query('INSERT INTO purchase_orders (po_number, supplier_id, branch_id, po_date, expected_date, status, subtotal, tax, total, created_by) VALUES ($1,$2,$3,CURRENT_DATE,$4,$5,$6,$7,$8,$9) RETURNING id',[po_number, supplier_id, branch_id||1, expected_date, status, subtotal, tax, total, req.user.id]);
   const poId=ins.rows[0].id;
+  if(status==='PENDING'){
+    try{ await createApproval({ entityType:'PURCHASE_ORDER', entityId:poId, requesterId:req.user.id, roles: poRule?.approver_roles || 'direktur' }); }
+    catch(e){ console.error('[approval PO]', e.message); }
+  }
   for(const it of items) await pool.query('INSERT INTO po_details (po_id, product_id, unit_id, qty, unit_cost, total) VALUES ($1,$2,1,$3,$4,$5)',[poId, it.product_id, it.qty, it.unit_cost, parseFloat(it.qty)*parseFloat(it.unit_cost)]);
   res.json({id:poId, po_number, status});
 });

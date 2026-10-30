@@ -1,13 +1,19 @@
 import express from 'express';
 import { pool } from '../../config/db.js';
+import { rbac } from '../../middleware/auth.js';
 const router = express.Router();
+
+// Widget PENJUALAN (KPI, tren, top produk/customer, margin) hanya untuk admin,
+// kasir, dan sales. Role lain mendapat 403 dan memakai dashboard operasionalnya
+// sendiri di frontend (gudang/purchasing/HRD/finance/driver/karyawan).
+const SALES_VIEWERS = ['direktur','super_admin','sales','sales_trading','pos_cashier','pos_supervisor','pos_manager'];
 
 // Zona bisnis = WIB (UTC+7). JANGAN pakai toISOString() mentah untuk "hari ini":
 // sebelum 07:00 WIB, tanggal UTC masih kemarin sehingga KPI harian salah.
 const WIB_MS = 7 * 3600 * 1000;
 const wibDate = (shiftDays = 0) => new Date(Date.now() + WIB_MS + shiftDays * 86400000).toISOString().slice(0, 10);
 
-router.get('/kpi', async (req,res)=>{
+router.get('/kpi', rbac(...SALES_VIEWERS), async (req,res)=>{
   const today = wibDate(0);
   const yesterday = wibDate(-1);
   const [todayQ, yestQ, stokKritis, piutangJt, cash, banks, poOverdue] = await Promise.all([
@@ -34,7 +40,7 @@ router.get('/kpi', async (req,res)=>{
   });
 });
 
-router.get('/sales-trend', async (req,res)=>{
+router.get('/sales-trend', rbac(...SALES_VIEWERS), async (req,res)=>{
   // 14 hari kalender terakhir (WIB); hari tanpa transaksi tetap tampil sebagai 0
   const start = wibDate(-13), end = wibDate(0);
   const r = await pool.query(`
@@ -45,7 +51,7 @@ router.get('/sales-trend', async (req,res)=>{
   res.json(r.rows.map(x=>({ date: x.date, total: parseFloat(x.total) })));
 });
 
-router.get('/top-products', async (req,res)=>{
+router.get('/top-products', rbac(...SALES_VIEWERS), async (req,res)=>{
   const r = await pool.query(`
     SELECT p.name, SUM(d.qty) as qty, SUM(d.total) as revenue
     FROM so_details d
@@ -56,7 +62,7 @@ router.get('/top-products', async (req,res)=>{
   res.json(r.rows.map(x=>({ name:x.name, qty:parseFloat(x.qty), revenue:parseFloat(x.revenue) })));
 });
 
-router.get('/top-customers', async (req,res)=>{
+router.get('/top-customers', rbac(...SALES_VIEWERS), async (req,res)=>{
   const r = await pool.query(`
     SELECT c.name, SUM(so.total) as total
     FROM sales_orders so JOIN customers c ON c.id = so.customer_id
@@ -65,7 +71,7 @@ router.get('/top-customers', async (req,res)=>{
   res.json(r.rows.map(x=>({ name:x.name, total:parseFloat(x.total) })));
 });
 
-router.get('/profit-margin', async (req,res)=>{
+router.get('/profit-margin', rbac(...SALES_VIEWERS), async (req,res)=>{
   // ESTIMASI: HPP = qty x avg_cost stok saat ini (weighted semua gudang).
   // Cost per transaksi tidak disimpan di so_details; ini pendekatan terbaik tanpa ubah skema.
   const start = wibDate(-6), end = wibDate(0);
@@ -105,32 +111,65 @@ router.get('/notifications', async (req,res)=>{
 
 
 // Notifikasi relevan per role (dipakai dropdown lonceng di Layout).
+// Bentuk item: { kind, count, title, desc, to, label } - title/desc dipakai UI baru,
+// label dipertahankan untuk pemakai lama.
 router.get('/my-notifications', async (req,res)=>{
   const roles = (req.user?.roles||[]).map(r=>String(r).toLowerCase());
   const has = (...rs)=> roles.length===0 || roles.includes('direktur') || roles.includes('super_admin') || rs.some(r=>roles.includes(r));
   const out = [];
+  const push = (kind, count, title, desc, to)=>{
+    const n = parseInt(count||0);
+    if(n>0) out.push({ kind, count:n, title, desc, to, label:`${title} - ${desc}` });
+  };
   try{
     if(has('warehouse','purchasing')){
       const c=await pool.query("SELECT COUNT(*)::int n FROM stocks s JOIN products p ON p.id=s.product_id WHERE s.qty_available <= p.reorder_point");
-      if(c.rows[0].n>0) out.push({ kind:'stock', count:c.rows[0].n, label:c.rows[0].n+' SKU stok kritis (di bawah reorder point)', to:'/inventory/stocks' });
+      push('stock', c.rows[0].n, 'Stok kritis', `${c.rows[0].n} SKU di bawah reorder point`, '/inventory/stocks');
     }
     if(has('finance','sales')){
       const c=await pool.query("SELECT COUNT(*)::int n FROM invoices WHERE status='OVERDUE'");
-      if(c.rows[0].n>0) out.push({ kind:'invoice', count:c.rows[0].n, label:c.rows[0].n+' invoice lewat jatuh tempo', to:'/sales/invoices' });
+      push('invoice', c.rows[0].n, 'Invoice jatuh tempo', `${c.rows[0].n} invoice lewat jatuh tempo`, '/sales/invoices');
     }
     if(has('purchasing','warehouse','finance')){
       const c=await pool.query("SELECT COUNT(*)::int n FROM purchase_orders WHERE expected_date < $1 AND status IN ('APPROVED','PENDING')",[wibDate(0)]);
-      if(c.rows[0].n>0) out.push({ kind:'po', count:c.rows[0].n, label:c.rows[0].n+' PO terlambat diterima', to:'/purchase/orders' });
+      push('po', c.rows[0].n, 'PO terlambat diterima', `${c.rows[0].n} purchase order lewat tanggal terima`, '/purchase/orders');
+    }
+    if(has('driver','warehouse')){
+      // DO belum ada sopir + SO/POS yang belum dibuatkan DO = semua yang bisa diklaim driver
+      const c=await pool.query(`SELECT (
+          (SELECT COUNT(*) FROM delivery_orders d
+            WHERE d.status='IN_TRANSIT' AND d.driver_id IS NULL
+              AND NOT EXISTS (SELECT 1 FROM trips t WHERE t.do_id=d.id AND t.status='IN_PROGRESS'))
+        + (SELECT COUNT(*) FROM sales_orders so
+            WHERE ( (so.so_number NOT LIKE 'SO-POS-%' AND so.status IN ('APPROVED','PICKING'))
+                 OR (so.so_number LIKE 'SO-POS-%' AND so.status IN ('COMPLETED','PARTIAL')
+                     AND so.delivery_address IS NOT NULL AND BTRIM(so.delivery_address)<>''
+                     AND so.so_date >= CURRENT_DATE - INTERVAL '60 days') )
+              AND EXISTS (SELECT 1 FROM so_details sd WHERE sd.so_id=so.id)
+              AND NOT EXISTS (SELECT 1 FROM delivery_orders d WHERE d.so_id=so.id AND d.status<>'CANCELLED'))
+      )::int AS n`);
+      push('delivery', c.rows[0].n, 'Pengiriman siap diklaim', `${c.rows[0].n} DO / SO / POS menunggu sopir`, '/driver');
+    }
+    if(has('sales','finance')){
+      const c=await pool.query("SELECT COUNT(*)::int n FROM delivery_orders d WHERE d.status='DELIVERED' AND NOT EXISTS (SELECT 1 FROM invoices i WHERE i.do_id=d.id OR i.so_id=d.so_id)");
+      push('do_invoice', c.rows[0].n, 'DO siap di-invoice', `${c.rows[0].n} DO sudah diterima, invoice belum dibuat`, '/sales/invoices');
+    }
+    if(has('sales','warehouse')){
+      const c=await pool.query("SELECT COUNT(*)::int n FROM sales_orders so WHERE so.status IN ('APPROVED','PICKING') AND so.so_number NOT LIKE 'SO-POS-%' AND NOT EXISTS (SELECT 1 FROM delivery_orders d WHERE d.so_id=so.id AND d.status<>'CANCELLED')");
+      push('so_ready', c.rows[0].n, 'Pesanan siap dikirim', `${c.rows[0].n} SO menunggu dibuatkan DO / diklaim driver`, '/sales/orders');
     }
     if(has('hrd')){
       const c=await pool.query("SELECT COUNT(*)::int n FROM leaves WHERE status='PENDING'");
-      if(c.rows[0].n>0) out.push({ kind:'leave', count:c.rows[0].n, label:c.rows[0].n+' pengajuan cuti menunggu persetujuan', to:'/hr' });
+      push('leave', c.rows[0].n, 'Cuti menunggu persetujuan', `${c.rows[0].n} pengajuan cuti perlu ditinjau`, '/hr');
+      // Catatan keterlambatan hari ini (batas masuk 08:00 WIB) untuk HR/admin.
+      const lt=await pool.query("SELECT COUNT(*)::int n FROM attendances WHERE date=$1 AND check_in IS NOT NULL AND check_in::time > TIME '08:00'",[wibDate(0)]);
+      push('attendance_late', lt.rows[0].n, 'Karyawan terlambat', `${lt.rows[0].n} check-in lewat 08:00 hari ini`, '/hr?tab=keterlambatan');
     }
     if(has('finance','sales','warehouse','purchasing','hrd','project_manager','sales_trading')){
       const c=await pool.query("SELECT COUNT(*)::int n FROM approval_requests WHERE status='PENDING'");
-      if(c.rows[0].n>0) out.push({ kind:'approval', count:c.rows[0].n, label:c.rows[0].n+' approval menunggu tindakan', to:'/approvals' });
+      push('approval', c.rows[0].n, 'Approval menunggu tindakan', `${c.rows[0].n} permintaan menunggu persetujuan`, '/approvals');
     }
-  }catch(e){}
+  }catch(e){ console.error('[my-notifications]', e.message); }
   res.json(out);
 });
 

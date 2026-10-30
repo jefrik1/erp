@@ -168,7 +168,7 @@ router.get('/product-sales', async (req, res) => {
       SELECT
         p.id,
         p.sku,
-        p.name_id,
+        p.name,
         SUM(pti.qty) as qty_sold,
         SUM(pti.qty * pti.price_per_unit) as total_sales,
         AVG(pti.price_per_unit) as avg_price,
@@ -177,7 +177,7 @@ router.get('/product-sales', async (req, res) => {
       JOIN pos_transactions pt ON pt.id = pti.transaction_id
       JOIN products p ON p.id = pti.product_id
       WHERE DATE(pt.created_at) BETWEEN $1 AND $2
-      GROUP BY p.id, p.sku, p.name_id
+      GROUP BY p.id, p.sku, p.name
       ORDER BY total_sales DESC
       LIMIT $3
     `, [fromDate, toDate, lim]);
@@ -195,7 +195,7 @@ router.get('/low-stock-alert', async (req, res) => {
       SELECT
         psl.product_id,
         p.sku,
-        p.name_id,
+        p.name,
         psl.qty_on_hand,
         psl.min_stock,
         (psl.min_stock - psl.qty_on_hand) as shortage,

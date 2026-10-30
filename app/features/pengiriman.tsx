@@ -70,7 +70,7 @@ export function PengirimanFeature(){
            <td className="px-3 py-4"><Badge tone={tone as any}>{d.status}</Badge></td>
            <td className="px-4 py-4 text-right">
             <div className="flex gap-1 justify-end">
-             <Button className="h-7 text-xs rounded-full px-2.5" onClick={()=>{ const next = d.status==="Scheduled"?"Loading": d.status==="Loading"?"In Transit":"Delivered"; s.setDoList(v=> v.map(x=> x.id===d.id? {...x, status: next as any}:x)); s.showToast(`DO ${d.doNumber} → ${next}`)}}>Next</Button>
+             <Button className="h-7 text-xs rounded-full px-2.5" onClick={()=>{ const next = d.status==="Scheduled"?"Loading": d.status==="Loading"?"In Transit":"Delivered"; s.setDoList(v=> v.map(x=> x.id===d.id? {...x, status: next as any, driver: "CurrentDriver", vehicle: "VehicleX" }:x)); s.showToast(`DO ${d.doNumber} → ${next}`)}}>Claim</Button>
              <button onClick={()=>{ dlTxt(`${d.doNumber}.txt`, `Surat Jalan ${d.doNumber}\nSO ${so?.soNumber}\nSupir ${d.driver} Kendaraan ${d.vehicle}\nNetto ${d.netto??"-"} kg\nStatus ${d.status}\n`); s.showToast("Surat jalan tercetak")}} className="size-7 rounded-full bg-white border border-[#E2E8F0] grid place-items-center hover:bg-[#0F172A] hover:text-white transition-colors shadow-sm"><Printer size={12} weight="bold"/></button>
             </div>
            </td>

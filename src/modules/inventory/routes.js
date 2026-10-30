@@ -273,20 +273,62 @@ router.get('/transfers', async (req,res)=>{
   res.json({data:r.rows, total:parseInt(cnt.rows[0].count)});
 });
 router.post('/transfers', async (req,res)=>{
-  const {from_warehouse_id, to_warehouse_id, items} = req.body;
+  const {from_warehouse_id, to_warehouse_id, items} = req.body || {};
+  const list = Array.isArray(items) ? items : [];
+  if(!from_warehouse_id || !to_warehouse_id) return res.status(400).json({error:'Gudang asal & tujuan wajib dipilih'});
+  if(String(from_warehouse_id)===String(to_warehouse_id)) return res.status(400).json({error:'Gudang asal dan tujuan tidak boleh sama'});
+  if(!list.length) return res.status(400).json({error:'Minimal satu produk untuk dipindahkan'});
   const tn='TRF-'+Date.now();
-  const ins=await pool.query("INSERT INTO stock_transfers (transfer_number, from_warehouse_id, to_warehouse_id, transfer_date, status) VALUES ($1,$2,$3,CURRENT_DATE,'IN_TRANSIT') RETURNING id",[tn, from_warehouse_id, to_warehouse_id]);
-  const tid=ins.rows[0].id;
-  for(const it of items){
-    await pool.query('INSERT INTO stock_transfer_details (transfer_id, product_id, qty) VALUES ($1,$2,$3)',[tid, it.product_id, it.qty]);
-    await pool.query('UPDATE stocks SET qty_on_hand = qty_on_hand - $1 WHERE product_id=$2 AND warehouse_id=$3',[it.qty, it.product_id, from_warehouse_id]);
-    // Gudang tujuan: update-atau-insert (batch NULL = satu baris, lihat catatan di atas)
-    const dst = await pool.query('SELECT id FROM stocks WHERE product_id=$1 AND warehouse_id=$2 AND batch_no IS NULL ORDER BY id LIMIT 1',[it.product_id, to_warehouse_id]);
-    if (dst.rows[0]) await pool.query('UPDATE stocks SET qty_on_hand = qty_on_hand + $1, last_updated=NOW() WHERE id=$2',[it.qty, dst.rows[0].id]);
-    else await pool.query('INSERT INTO stocks (product_id, warehouse_id, qty_on_hand, avg_cost) VALUES ($1,$2,$3,0)',[it.product_id, to_warehouse_id, it.qty]);
-    await pool.query("INSERT INTO stock_movements (product_id, warehouse_id, movement_type, reference_type, reference_id, qty_out, created_by) VALUES ($1,$2,'TRF','TRANSFER',$3,$4,$5)",[it.product_id, from_warehouse_id, tid, it.qty, req.user.id]);
-  }
-  res.json({id:tid, transfer_number: tn});
+  const client = await pool.connect();
+  try{
+    await client.query('BEGIN');
+    const ins=await client.query("INSERT INTO stock_transfers (transfer_number, from_warehouse_id, to_warehouse_id, transfer_date, status) VALUES ($1,$2,$3,CURRENT_DATE,'IN_TRANSIT') RETURNING id",[tn, from_warehouse_id, to_warehouse_id]);
+    const tid=ins.rows[0].id;
+    for(const it of list){
+      const qty = Number(it.qty)||0;
+      if(qty <= 0) throw Object.assign(new Error('Jumlah transfer harus lebih dari 0'), {status:400});
+      // Baris sumber: batch NULL (satu baris per produk+gudang). HPP ikut terbawa ke
+      // gudang tujuan - kalau tidak, gudang penerima punya stok ber-HPP 0 dan laporan
+      // margin tampak 100%.
+      const src = await client.query(`SELECT id, qty_on_hand, COALESCE(qty_reserved,0) AS qty_reserved, COALESCE(avg_cost,0) AS avg_cost
+        FROM stocks WHERE product_id=$1 AND warehouse_id=$2 AND batch_no IS NULL ORDER BY id LIMIT 1 FOR UPDATE`,
+        [it.product_id, from_warehouse_id]);
+      const s = src.rows[0];
+      const avail = s ? Number(s.qty_on_hand) - Number(s.qty_reserved) : 0;
+      if(!s || avail + 1e-9 < qty){
+        const nm = await client.query('SELECT name FROM products WHERE id=$1',[it.product_id]);
+        throw Object.assign(new Error(`Stok tidak cukup untuk ${nm.rows[0]?.name||('produk '+it.product_id)}: tersedia ${Math.max(0,avail)}, diminta ${qty}`), {status:400});
+      }
+      const unitCost = Number(s.avg_cost)||0;
+      const afterSrc = Number(s.qty_on_hand) - qty;
+      await client.query('UPDATE stocks SET qty_on_hand=$1, last_updated=NOW() WHERE id=$2',[afterSrc, s.id]);
+      await client.query('INSERT INTO stock_transfer_details (transfer_id, product_id, qty, unit_cost) VALUES ($1,$2,$3,$4)',[tid, it.product_id, qty, unitCost]);
+      await client.query("INSERT INTO stock_movements (product_id, warehouse_id, movement_type, reference_type, reference_id, qty_out, unit_cost, balance_qty, created_by) VALUES ($1,$2,'TRF','TRANSFER',$3,$4,$5,$6,$7)",
+        [it.product_id, from_warehouse_id, tid, qty, unitCost, afterSrc, req.user.id]);
+      // Gudang tujuan: update-atau-insert, HPP dirata-ratakan tertimbang.
+      const dst = await client.query('SELECT id, qty_on_hand, COALESCE(avg_cost,0) AS avg_cost FROM stocks WHERE product_id=$1 AND warehouse_id=$2 AND batch_no IS NULL ORDER BY id LIMIT 1 FOR UPDATE',[it.product_id, to_warehouse_id]);
+      let afterDst;
+      if (dst.rows[0]){
+        const d = dst.rows[0];
+        const qBefore = Number(d.qty_on_hand)||0;
+        afterDst = qBefore + qty;
+        const newAvg = afterDst > 0 ? ((qBefore*Number(d.avg_cost||0)) + (qty*unitCost)) / afterDst : unitCost;
+        await client.query('UPDATE stocks SET qty_on_hand=$1, avg_cost=$2, last_updated=NOW() WHERE id=$3',[afterDst, newAvg, d.id]);
+      } else {
+        afterDst = qty;
+        await client.query('INSERT INTO stocks (product_id, warehouse_id, qty_on_hand, avg_cost) VALUES ($1,$2,$3,$4)',[it.product_id, to_warehouse_id, qty, unitCost]);
+      }
+      await client.query("INSERT INTO stock_movements (product_id, warehouse_id, movement_type, reference_type, reference_id, qty_in, unit_cost, balance_qty, created_by) VALUES ($1,$2,'TRF','TRANSFER',$3,$4,$5,$6,$7)",
+        [it.product_id, to_warehouse_id, tid, qty, unitCost, afterDst, req.user.id]);
+    }
+    await client.query('COMMIT');
+    res.json({id:tid, transfer_number: tn});
+  }catch(e){
+    await client.query('ROLLBACK').catch(()=>{});
+    if(e.status) return res.status(e.status).json({error:e.message});
+    console.error('[transfer]',e);
+    res.status(500).json({error:e.message});
+  }finally{ client.release(); }
 });
 router.post('/transfers/:id/receive', async (req,res)=>{
   await pool.query("UPDATE stock_transfers SET status='RECEIVED' WHERE id=$1",[req.params.id]);

@@ -318,6 +318,67 @@ const EXPORTS = {
   },
 };
 
+// ── Laporan persediaan & margin (dipakai halaman Laporan Persediaan) ─────────
+// Valuasi stok: qty × HPP rata-rata per produk/gudang.
+router.get('/stock-valuation', async (req, res)=>{
+  try{
+    const warehouseId = parseInt(req.query.warehouse_id)||null;
+    const p = []; let where='WHERE 1=1';
+    if(warehouseId){ p.push(warehouseId); where += ` AND s.warehouse_id=$${p.length}`; }
+    const r = await pool.query(`
+      SELECT p.id AS product_id, p.sku, p.name, w.id AS warehouse_id, w.name AS warehouse_name,
+             COALESCE(s.qty_on_hand,0)::numeric AS qty, COALESCE(s.avg_cost,0)::numeric AS avg_cost,
+             (COALESCE(s.qty_on_hand,0) * COALESCE(s.avg_cost,0))::numeric AS value
+        FROM stocks s
+        JOIN products p ON p.id=s.product_id
+        JOIN warehouses w ON w.id=s.warehouse_id
+        ${where}
+       ORDER BY value DESC, p.name`, p);
+    // Baris stok negatif (data lama) dipisahkan: kalau dijumlahkan, nilainya
+    // mengacaukan total persediaan. Total dihitung dari baris qty >= 0.
+    const negative = r.rows.filter(x=>Number(x.qty) < 0);
+    const positives = r.rows.filter(x=>Number(x.qty) >= 0);
+    const totalQty = positives.reduce((a,x)=>a+Number(x.qty||0),0);
+    const totalValue = positives.reduce((a,x)=>a+Number(x.value||0),0);
+    res.json({ data:r.rows, total_qty:totalQty, total_value:totalValue,
+      negative_count: negative.length,
+      negative_value: negative.reduce((a,x)=>a+Number(x.value||0),0),
+      warehouses: await pool.query('SELECT id,name FROM warehouses ORDER BY id').then(x=>x.rows) });
+  }catch(e){ console.error('[valuation]',e); res.status(500).json({error:e.message}); }
+});
+
+// Margin per produk: pendapatan (invoice_details) vs estimasi HPP (avg cost saat ini).
+router.get('/product-margin', async (req, res)=>{
+  try{
+    const start = req.query.start || new Date(Date.now()+7*3600*1000-30*86400000).toISOString().slice(0,10);
+    const end = req.query.end || new Date(Date.now()+7*3600*1000).toISOString().slice(0,10);
+    const r = await pool.query(`
+      WITH cost AS (
+        SELECT product_id,
+               COALESCE(NULLIF(SUM(ABS(qty_on_hand)*avg_cost)/NULLIF(SUM(ABS(qty_on_hand)),0),0), MAX(avg_cost), 0) AS avg_cost
+          FROM stocks GROUP BY product_id
+      )
+      SELECT p.id AS product_id, p.sku, p.name,
+             SUM(d.qty)::numeric AS qty_sold,
+             SUM(d.total)::numeric AS revenue,
+             SUM(d.qty * COALESCE(c.avg_cost,0))::numeric AS est_cost,
+             (SUM(d.total) - SUM(d.qty * COALESCE(c.avg_cost,0)))::numeric AS gross_margin,
+             CASE WHEN SUM(d.total)>0 THEN ROUND(((SUM(d.total) - SUM(d.qty*COALESCE(c.avg_cost,0))) / SUM(d.total) * 100)::numeric, 1) ELSE 0 END AS margin_pct
+        FROM invoice_details d
+        JOIN invoices inv ON inv.id=d.invoice_id
+        JOIN products p ON p.id=d.product_id
+        LEFT JOIN cost c ON c.product_id=p.id
+       WHERE inv.invoice_date BETWEEN $1 AND $2
+         AND UPPER(COALESCE(inv.status,'')) NOT IN ('CANCELLED','VOID')
+       GROUP BY p.id, p.sku, p.name
+       ORDER BY gross_margin DESC`, [start, end]);
+    res.json({ start, end, data:r.rows,
+      // Produk terjual tapi HPP-nya 0 → margin akan tampak 100%. Ditandai agar tidak menyesatkan.
+      cost_missing: r.rows.filter(x=>Number(x.revenue)>0 && Number(x.est_cost)===0).length,
+      totals: r.rows.reduce((a,x)=>({ revenue:a.revenue+Number(x.revenue||0), cost:a.cost+Number(x.est_cost||0), margin:a.margin+Number(x.gross_margin||0) }), {revenue:0,cost:0,margin:0}) });
+  }catch(e){ console.error('[margin]',e); res.status(500).json({error:e.message}); }
+});
+
 router.get('/export/types', (_req, res)=>{
   res.json(Object.entries(EXPORTS).map(([key, v])=>({ key, label: v.label })));
 });

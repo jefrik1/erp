@@ -21,12 +21,12 @@ const STATUS_LABEL={ ACTIVE:'Aktif', MAINTENANCE:'Maintenance', DISPOSED:'Dispos
 const METHOD_LABEL={ STRAIGHT:'Garis Lurus', DECLINING:'Saldo Menurun' };
 const MAINT_TYPES=['PREVENTIVE','CORRECTIVE','MAINTENANCE'];
 
-const CARD='bg-white rounded-[20px] border border-[#E2E8F0] shadow-sm overflow-hidden p-5';
-const INPUT='w-full h-[42px] px-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm outline-none focus:bg-white focus:border-[#1E40AF] focus:ring-2 focus:ring-[#1E40AF]/10 transition placeholder:text-[#94A3B8]';
-const BTN_PRIMARY='h-[42px] px-5 bg-[#1E40AF] text-white rounded-xl inline-flex items-center justify-center gap-1.5 text-sm font-bold shadow-sm hover:bg-[#1E3A8A] active:scale-[0.98] transition disabled:opacity-60 disabled:cursor-not-allowed';
-const BTN_SECONDARY='h-[42px] px-5 bg-white border border-[#E2E8F0] rounded-xl text-sm font-semibold text-[#334155] hover:bg-[#F8FAFC] active:scale-[0.98] transition';
+const CARD='bg-white rounded-xl border border-[#e7ecf7] shadow-card overflow-hidden p-5';
+const INPUT='w-full h-[42px] px-3 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl text-sm outline-none focus:bg-white focus:border-[#0051d5] focus:ring-2 focus:ring-[#0051d5]/10 transition placeholder:text-[#76777d]';
+const BTN_PRIMARY='h-[42px] px-5 bg-[#0051d5] text-white rounded-xl inline-flex items-center justify-center gap-1.5 text-sm font-bold shadow-card hover:bg-[#0041ab] active:scale-[0.98] transition disabled:opacity-60 disabled:cursor-not-allowed';
+const BTN_SECONDARY='h-[42px] px-5 bg-white border border-[#e7ecf7] rounded-xl text-sm font-semibold text-[#2b3445] hover:bg-[#eff4ff] active:scale-[0.98] transition';
 const BTN_SM='h-9 px-3 rounded-xl text-xs font-bold inline-flex items-center justify-center gap-1.5 transition active:scale-[0.98] disabled:opacity-60';
-const TH='px-4 py-3.5 text-[11px] font-bold tracking-widest text-[#64748B]';
+const TH='px-4 py-3.5 text-[11px] font-bold tracking-wider text-[#45464d]';
 const PAGE_SIZE=6;
 
 function emptyForm(){
@@ -35,12 +35,12 @@ function emptyForm(){
 
 function StatCard({ icon, label, value, tone }){
   return (
-    <div className="bg-white rounded-[20px] border border-[#E2E8F0] shadow-sm p-4">
+    <div className="bg-white rounded-xl border border-[#e7ecf7] shadow-card p-4">
       <div className="flex items-center gap-2">
         <div className={'w-8 h-8 rounded-xl grid place-items-center shrink-0 '+tone}>{icon}</div>
-        <div className="text-[11px] font-bold tracking-wider text-[#64748B] uppercase leading-tight">{label}</div>
+        <div className="text-[11px] font-bold tracking-wider text-[#45464d] uppercase leading-tight">{label}</div>
       </div>
-      <div className="mt-3 text-[17px] font-black text-[#0F172A] leading-none break-words">{value}</div>
+      <div className="mt-3 text-[17px] font-bold text-[#0b1c30] leading-none break-words">{value}</div>
     </div>
   );
 }
@@ -52,6 +52,26 @@ export default function Assets(){
   const [loading,setLoading]=useState(true);
   const [summary,setSummary]=useState(null);
   const [meta,setMeta]=useState(null);
+  // Penyusutan otomatis (garis lurus) → jurnal Dr Beban / Cr Akumulasi
+  const [depBusy,setDepBusy]=useState(false);
+  const [depInfo,setDepInfo]=useState(null);
+  const thisPeriod = new Date(Date.now()+7*3600*1000).toISOString().slice(0,7);
+  const loadDep = useCallback(()=>{
+    api.get('/assets/depreciations',{params:{period:thisPeriod}})
+      .then(r=>setDepInfo(r.data)).catch(()=>setDepInfo(null));
+  },[thisPeriod]);
+  useEffect(()=>{ loadDep(); },[loadDep]);
+  const runDepreciation = async ()=>{
+    const ok = await dialog.confirm(`Jalankan penyusutan aset periode ${thisPeriod}? Jurnal Dr Beban Penyusutan / Cr Akumulasi Penyusutan akan dibuat.`, { title:'Penyusutan bulan ini', confirmText:'Ya, jalankan' });
+    if(!ok) return;
+    setDepBusy(true);
+    try{
+      const r = await api.post('/assets/depreciation/run', { period: thisPeriod });
+      await dialog.alert(r.data.message || 'Selesai.', { title:'Penyusutan', tone:'success' });
+      loadDep(); load();
+    }catch(e){ await dialog.alert(e.response?.data?.error||e.message, { title:'Gagal menjalankan penyusutan' }); }
+    finally{ setDepBusy(false); }
+  };
 
   const [q,setQ]=useState('');
   const [dq,setDq]=useState('');
@@ -357,21 +377,33 @@ export default function Assets(){
   return (
     <div className="space-y-3">
       {/* header */}
-      <PosPageHeader icon={FileText} title="Aset Tetap & Maintenance" subtitle="Depresiasi PSAK straight/declining • Pemeliharaan • Disposal gain/loss" actions={<button onClick={openCreate} className={BTN_PRIMARY}><Plus size={16} strokeWidth={2.6}/> Tambah Aset</button>}/>
+      <PosPageHeader icon={FileText} title="Aset Tetap & Maintenance" subtitle="Depresiasi PSAK straight/declining • Pemeliharaan • Disposal gain/loss" actions={<><button onClick={runDepreciation} disabled={depBusy} className="h-9 px-3 rounded-xl border border-[#e7ecf7] bg-white text-xs font-bold text-[#45464d] hover:bg-[#eff4ff] inline-flex items-center gap-1.5 disabled:opacity-50"><TrendingDown size={14}/>{depBusy? 'Memproses...':'Penyusutan Bulan Ini'}</button><button onClick={openCreate} className={BTN_PRIMARY}><Plus size={16} strokeWidth={2.6}/> Tambah Aset</button></>}/>
 
       {/* summary */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard icon={<Wallet size={15} strokeWidth={2.4}/>} tone="bg-[#1E40AF]/10 text-[#1E40AF]" label="Total Perolehan" value={rupiah(summary && summary.total_acquisition)}/>
+        <StatCard icon={<Wallet size={15} strokeWidth={2.4}/>} tone="bg-[#0051d5]/10 text-[#0051d5]" label="Total Perolehan" value={rupiah(summary && summary.total_acquisition)}/>
         <StatCard icon={<Layers size={15} strokeWidth={2.4}/>} tone="bg-emerald-50 text-emerald-700" label="Total Nilai Buku" value={rupiah(summary && summary.total_book_value)}/>
         <StatCard icon={<TrendingDown size={15} strokeWidth={2.4}/>} tone="bg-amber-50 text-amber-700" label="Depresiasi Tahun Ini" value={rupiah(summary && summary.total_depreciation_this_year)}/>
         <StatCard icon={<Wrench size={15} strokeWidth={2.4}/>} tone="bg-red-50 text-red-700" label="Perlu Maintenance" value={String((summary && summary.needs_maintenance)||0)+' aset'}/>
       </div>
 
+      {depInfo && (
+        <div className="rounded-xl border border-[#e7ecf7] bg-white px-3 py-2 text-[11px] text-[#45464d] flex flex-wrap items-center gap-2">
+          <TrendingDown size={12} className="text-[#0051d5]"/>
+          <b>Penyusutan {depInfo.period}:</b>
+          <span>{depInfo.data?.length||0} aset • {rupiah(depInfo.total)}</span>
+          {depInfo.data?.length
+            ? <span className="text-emerald-700">sudah diposting ke jurnal</span>
+            : <span className="text-amber-700">belum dijalankan bulan ini</span>}
+          {depInfo.data?.length>0 && <span className="text-[#76777d] ml-auto">Jurnal Dr Beban Penyusutan / Cr Akumulasi Penyusutan</span>}
+        </div>
+      )}
+
       {/* toolbar */}
       <div className={CARD}>
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative flex-1 min-w-[200px]">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#76777d]" />
             <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Cari kode atau nama aset..." className={INPUT+' pl-9'}/>
           </div>
           <select value={category} onChange={e=>setCategory(e.target.value)} className={INPUT+' sm:w-[170px]'}>
@@ -398,7 +430,7 @@ export default function Assets(){
       </div>
 
       {armadaTanpaHarga>0 && (
-        <div className="rounded-[20px] border border-amber-200 bg-amber-50 px-4 py-3 flex items-start gap-3">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 flex items-start gap-3">
           <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-0.5"/>
           <div className="text-xs text-amber-800">
             <b>{armadaTanpaHarga} aset armada belum punya harga perolehan</b> - nilainya 0 sehingga depresiasi ikut 0.
@@ -411,24 +443,24 @@ export default function Assets(){
       {loading ? (
         <div className="grid md:grid-cols-3 gap-4">
           {[0,1,2,3,4,5].map(i=>(
-            <div key={i} className="bg-white rounded-[20px] border border-[#E2E8F0] shadow-sm p-5 animate-pulse">
-              <div className="h-5 w-24 bg-[#E2E8F0] rounded-full"/>
-              <div className="h-4 w-3/4 bg-[#E2E8F0] rounded mt-3"/>
-              <div className="h-3 w-1/2 bg-[#F1F5F9] rounded mt-2"/>
+            <div key={i} className="bg-white rounded-xl border border-[#e7ecf7] shadow-card p-5 animate-pulse">
+              <div className="h-5 w-24 bg-[#e7ecf7] rounded-full"/>
+              <div className="h-4 w-3/4 bg-[#e7ecf7] rounded mt-3"/>
+              <div className="h-3 w-1/2 bg-[#e5eeff] rounded mt-2"/>
               <div className="grid grid-cols-2 gap-2 mt-4">
-                <div className="h-16 bg-[#F1F5F9] rounded-xl"/>
-                <div className="h-16 bg-[#F1F5F9] rounded-xl"/>
+                <div className="h-16 bg-[#e5eeff] rounded-xl"/>
+                <div className="h-16 bg-[#e5eeff] rounded-xl"/>
               </div>
-              <div className="h-9 w-full bg-[#F1F5F9] rounded-xl mt-4"/>
+              <div className="h-9 w-full bg-[#e5eeff] rounded-xl mt-4"/>
             </div>
           ))}
         </div>
       ) : total===0 ? (
         <div className={CARD}>
           <div className="py-10 text-center">
-            <div className="w-12 h-12 rounded-xl bg-[#F1F5F9] text-[#64748B] grid place-items-center mx-auto"><PackageSearch size={22}/></div>
-            <div className="mt-3 text-sm font-bold text-[#0F172A]">Tidak ada aset ditemukan</div>
-            <p className="text-xs text-[#64748B] mt-1">{dq? ('Tidak ada hasil untuk "'+dq+'". Coba kata kunci lain.') : 'Belum ada aset terdaftar. Tambahkan aset tetap pertama Anda.'}</p>
+            <div className="w-12 h-12 rounded-xl bg-[#e5eeff] text-[#45464d] grid place-items-center mx-auto"><PackageSearch size={22}/></div>
+            <div className="mt-3 text-sm font-bold text-[#0b1c30]">Tidak ada aset ditemukan</div>
+            <p className="text-xs text-[#45464d] mt-1">{dq? ('Tidak ada hasil untuk "'+dq+'". Coba kata kunci lain.') : 'Belum ada aset terdaftar. Tambahkan aset tetap pertama Anda.'}</p>
             {!dq && <button onClick={openCreate} className={BTN_PRIMARY+' mt-4'}><Plus size={16}/> Tambah Aset</button>}
           </div>
         </div>
@@ -441,51 +473,51 @@ export default function Assets(){
             const accum=Number(a.accumulated_depreciation)||0;
             const pct= cost>0? Math.min(100,Math.round((accum/cost)*100)) : 0;
             return (
-              <div key={a.id} className="bg-white rounded-[20px] border border-[#E2E8F0] shadow-sm overflow-hidden flex flex-col">
-                {a.photo_url? <img src={a.photo_url} alt={a.name} className="h-32 w-full object-cover bg-[#F1F5F9]"/> : null}
+              <div key={a.id} className="bg-white rounded-xl border border-[#e7ecf7] shadow-card overflow-hidden flex flex-col">
+                {a.photo_url? <img src={a.photo_url} alt={a.name} className="h-32 w-full object-cover bg-[#e5eeff]"/> : null}
                 <div className="p-5 flex-1 flex flex-col">
                   <div className="flex items-start justify-between gap-2">
-                    <span className="font-mono text-[11px] font-bold bg-[#F1F5F9] border border-[#E2E8F0] text-[#334155] px-2 py-1 rounded-full break-all">{a.asset_code}</span>
-                    <span className={'shrink-0 text-[10px] font-black tracking-wider uppercase px-2 py-1 rounded-full border '+st}>{STATUS_LABEL[a.status]||a.status||'-'}</span>
+                    <span className="font-mono text-[11px] font-bold bg-[#e5eeff] border border-[#e7ecf7] text-[#2b3445] px-2 py-1 rounded-full break-all">{a.asset_code}</span>
+                    <span className={'shrink-0 text-[11px] font-bold tracking-wider uppercase px-2 py-1 rounded-full border '+st}>{STATUS_LABEL[a.status]||a.status||'-'}</span>
                   </div>
                   {a.vehicle_id ? (
                     <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                      <span className="inline-flex items-center gap-1 text-[10px] font-black tracking-wider uppercase px-2 py-1 rounded-full border bg-sky-50 text-sky-700 border-sky-200">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold tracking-wider uppercase px-2 py-1 rounded-full border bg-sky-50 text-sky-700 border-sky-200">
                         <Truck size={11}/> ARMADA
                       </span>
-                      {a.fleet_plat && <span className="font-mono text-[11px] font-bold bg-white border border-[#E2E8F0] text-[#334155] px-2 py-1 rounded-full">{a.fleet_plat}</span>}
-                      {!(cost>0) && <span className="text-[10px] font-bold px-2 py-1 rounded-full border bg-amber-50 text-amber-700 border-amber-200">Harga perolehan belum diisi</span>}
+                      {a.fleet_plat && <span className="font-mono text-[11px] font-bold bg-white border border-[#e7ecf7] text-[#2b3445] px-2 py-1 rounded-full">{a.fleet_plat}</span>}
+                      {!(cost>0) && <span className="text-[11px] font-bold px-2 py-1 rounded-full border bg-amber-50 text-amber-700 border-amber-200">Harga perolehan belum diisi</span>}
                     </div>
                   ) : null}
-                  <div className="font-bold text-[15px] text-[#0F172A] mt-2 leading-snug">{a.name}</div>
-                  <div className="text-xs text-[#64748B] mt-1">{a.category} • {a.vehicle_id ? ('Armada '+(a.fleet_plat||'')) : (a.location||'-')} • Perolehan {fmtDate(a.acquisition_date)}</div>
+                  <div className="font-bold text-[15px] text-[#0b1c30] mt-2 leading-snug">{a.name}</div>
+                  <div className="text-xs text-[#45464d] mt-1">{a.category} • {a.vehicle_id ? ('Armada '+(a.fleet_plat||'')) : (a.location||'-')} • Perolehan {fmtDate(a.acquisition_date)}</div>
 
                   <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                    <div className="bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl p-2">
-                      <div className="text-[#64748B]">Harga Perolehan</div>
-                      <div className="font-black text-[#0F172A] break-words">{rupiah(cost)}</div>
+                    <div className="bg-[#e5eeff] border border-[#e7ecf7] rounded-xl p-2">
+                      <div className="text-[#45464d]">Harga Perolehan</div>
+                      <div className="font-bold text-[#0b1c30] break-words">{rupiah(cost)}</div>
                     </div>
                     <div className="bg-blue-50 border border-blue-200 rounded-xl p-2">
                       <div className="text-blue-700">Nilai Buku</div>
-                      <div className="font-black text-blue-800 break-words">{rupiah(book)}</div>
+                      <div className="font-bold text-blue-800 break-words">{rupiah(book)}</div>
                     </div>
                   </div>
 
                   <div className="mt-3">
-                    <div className="h-1.5 w-full bg-[#F1F5F9] rounded-full overflow-hidden">
-                      <div className="h-full bg-[#1E40AF]" style={{ width:pct+'%' }}/>
+                    <div className="h-1.5 w-full bg-[#e5eeff] rounded-full overflow-hidden">
+                      <div className="h-full bg-[#0051d5]" style={{ width:pct+'%' }}/>
                     </div>
-                    <div className="text-[11px] text-[#64748B] mt-1">Akumulasi {rupiah(accum)} • {pct}% tersusut</div>
+                    <div className="text-[11px] text-[#45464d] mt-1">Akumulasi {rupiah(accum)} • {pct}% tersusut</div>
                   </div>
 
-                  <div className="text-[11px] text-[#64748B] mt-2">
+                  <div className="text-[11px] text-[#45464d] mt-2">
                     Umur {a.useful_life_years} th • {METHOD_LABEL[a.depreciation_method]||a.depreciation_method} • Residu {rupiah(a.residual_value)} • /bln {rupiah(a.monthly_depreciation)}
                   </div>
 
-                  <div className="mt-4 flex flex-wrap gap-2 pt-3 border-t border-[#F1F5F9]">
-                    <button onClick={()=>openDep(a)} className={BTN_SM+' bg-[#1E40AF] text-white hover:bg-[#1E3A8A]'}><TrendingDown size={14}/> Depresiasi</button>
-                    <button onClick={()=>openEdit(a)} className={BTN_SM+' bg-white border border-[#E2E8F0] text-[#334155] hover:bg-[#F8FAFC]'}><Pencil size={14}/> Edit</button>
-                    <button onClick={()=>openMaint(a)} className={BTN_SM+' bg-white border border-[#E2E8F0] text-[#334155] hover:bg-[#F8FAFC]'}><Wrench size={14}/> Maintenance</button>
+                  <div className="mt-4 flex flex-wrap gap-2 pt-3 border-t border-[#e5eeff]">
+                    <button onClick={()=>openDep(a)} className={BTN_SM+' bg-[#0051d5] text-white hover:bg-[#0041ab]'}><TrendingDown size={14}/> Depresiasi</button>
+                    <button onClick={()=>openEdit(a)} className={BTN_SM+' bg-white border border-[#e7ecf7] text-[#2b3445] hover:bg-[#eff4ff]'}><Pencil size={14}/> Edit</button>
+                    <button onClick={()=>openMaint(a)} className={BTN_SM+' bg-white border border-[#e7ecf7] text-[#2b3445] hover:bg-[#eff4ff]'}><Wrench size={14}/> Maintenance</button>
                     {a.status!=='DISPOSED' && (
                       <button onClick={()=>openDisp(a)} className={BTN_SM+' bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100'}><Banknote size={14}/> Jual / Disposal</button>
                     )}
@@ -502,10 +534,10 @@ export default function Assets(){
       {!loading && total>0 && (
         <div className={CARD}>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="text-xs text-[#64748B]">Menampilkan <b className="text-[#0F172A]">{fromIdx}-{toIdx}</b> dari <b className="text-[#0F172A]">{total}</b> aset</div>
+            <div className="text-xs text-[#45464d]">Menampilkan <b className="text-[#0b1c30]">{fromIdx}-{toIdx}</b> dari <b className="text-[#0b1c30]">{total}</b> aset</div>
             <div className="flex items-center gap-2">
               <button disabled={safePage<=1} onClick={()=>setPage(p=>Math.max(1,p-1))} className={BTN_SECONDARY+' disabled:opacity-50 disabled:cursor-not-allowed'}>Prev</button>
-              <div className="text-xs font-bold text-[#334155] px-2">Hal. {safePage} / {totalPages}</div>
+              <div className="text-xs font-bold text-[#2b3445] px-2">Hal. {safePage} / {totalPages}</div>
               <button disabled={safePage>=totalPages} onClick={()=>setPage(p=>Math.min(totalPages,p+1))} className={BTN_SECONDARY+' disabled:opacity-50 disabled:cursor-not-allowed'}>Next</button>
             </div>
           </div>
@@ -515,13 +547,13 @@ export default function Assets(){
       {/* ===== create / edit modal ===== */}
       {showForm && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50">
-          <form onSubmit={submitForm} className="bg-white rounded-[20px] p-6 w-full max-w-2xl max-h-[90vh] overflow-auto animate-pop">
+          <form onSubmit={submitForm} className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-auto animate-pop">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-black text-[16px] text-[#0F172A]">{editing? 'Edit Aset - '+editing.asset_code : 'Tambah Aset'}</h3>
-                <p className="text-xs text-[#64748B] mt-1">Data aset tetap, metode depresiasi, dan lokasi penyimpanan.</p>
+                <h3 className="font-bold text-[16px] text-[#0b1c30]">{editing? 'Edit Aset - '+editing.asset_code : 'Tambah Aset'}</h3>
+                <p className="text-xs text-[#45464d] mt-1">Data aset tetap, metode depresiasi, dan lokasi penyimpanan.</p>
               </div>
-              <button type="button" onClick={()=>{ setShowForm(false); setEditing(null); }} className="h-9 w-9 grid place-items-center rounded-xl border border-[#E2E8F0] text-[#64748B] hover:bg-[#F8FAFC]"><X size={16}/></button>
+              <button type="button" onClick={()=>{ setShowForm(false); setEditing(null); }} className="h-9 w-9 grid place-items-center rounded-xl border border-[#e7ecf7] text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
             </div>
 
             {formErr && (
@@ -532,7 +564,7 @@ export default function Assets(){
 
             <div className="mt-4 grid sm:grid-cols-2 gap-3">
               <div className="sm:col-span-2">
-                <label className="text-[11px] font-bold tracking-wider text-[#64748B] uppercase">Kode Aset *</label>
+                <label className="text-[11px] font-bold tracking-wider text-[#45464d] uppercase">Kode Aset *</label>
                 <div className="flex gap-2 mt-1">
                   <input value={form.asset_code} onChange={e=>setForm({...form, asset_code:e.target.value})} placeholder="AST-001" className={INPUT}/>
                   <button type="button" onClick={generateCode} title="Isi kode otomatis" className={BTN_SECONDARY+' shrink-0 whitespace-nowrap'}><Sparkles size={15}/> Otomatis</button>
@@ -540,59 +572,59 @@ export default function Assets(){
               </div>
 
               <div className="sm:col-span-2">
-                <label className="text-[11px] font-bold tracking-wider text-[#64748B] uppercase">Nama Aset *</label>
+                <label className="text-[11px] font-bold tracking-wider text-[#45464d] uppercase">Nama Aset *</label>
                 <input value={form.name} onChange={e=>setForm({...form, name:e.target.value})} placeholder="Contoh: Toyota Hilux Double Cabin" className={INPUT+' mt-1'}/>
               </div>
 
               <div>
-                <label className="text-[11px] font-bold tracking-wider text-[#64748B] uppercase">Kategori *</label>
+                <label className="text-[11px] font-bold tracking-wider text-[#45464d] uppercase">Kategori *</label>
                 <select value={form.category} onChange={e=>setForm({...form, category:e.target.value})} className={INPUT+' mt-1'}>
                   {categories.map(c=><option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
 
               <div>
-                <label className="text-[11px] font-bold tracking-wider text-[#64748B] uppercase">Tanggal Perolehan *</label>
+                <label className="text-[11px] font-bold tracking-wider text-[#45464d] uppercase">Tanggal Perolehan *</label>
                 <input type="date" value={form.acquisition_date} onChange={e=>setForm({...form, acquisition_date:e.target.value})} className={INPUT+' mt-1'}/>
               </div>
 
               <div>
-                <label className="text-[11px] font-bold tracking-wider text-[#64748B] uppercase">Harga Perolehan *</label>
+                <label className="text-[11px] font-bold tracking-wider text-[#45464d] uppercase">Harga Perolehan *</label>
                 <input type="number" min="0" step="any" value={form.acquisition_cost} onChange={e=>setForm({...form, acquisition_cost:e.target.value})} placeholder="0" className={INPUT+' mt-1'}/>
               </div>
 
               <div>
-                <label className="text-[11px] font-bold tracking-wider text-[#64748B] uppercase">Nilai Residu</label>
+                <label className="text-[11px] font-bold tracking-wider text-[#45464d] uppercase">Nilai Residu</label>
                 <input type="number" min="0" step="any" value={form.residual_value} onChange={e=>setForm({...form, residual_value:e.target.value})} placeholder="0" className={INPUT+' mt-1'}/>
               </div>
 
               <div>
-                <label className="text-[11px] font-bold tracking-wider text-[#64748B] uppercase">Umur Ekonomis (tahun) *</label>
+                <label className="text-[11px] font-bold tracking-wider text-[#45464d] uppercase">Umur Ekonomis (tahun) *</label>
                 <input type="number" min="1" step="1" value={form.useful_life_years} onChange={e=>setForm({...form, useful_life_years:e.target.value})} placeholder="5" className={INPUT+' mt-1'}/>
               </div>
 
               <div>
-                <label className="text-[11px] font-bold tracking-wider text-[#64748B] uppercase">Metode Depresiasi *</label>
+                <label className="text-[11px] font-bold tracking-wider text-[#45464d] uppercase">Metode Depresiasi *</label>
                 <select value={form.depreciation_method} onChange={e=>setForm({...form, depreciation_method:e.target.value})} className={INPUT+' mt-1'}>
                   {methods.map(m=><option key={m} value={m}>{METHOD_LABEL[m]||m}</option>)}
                 </select>
               </div>
 
               <div className="sm:col-span-2">
-                <label className="text-[11px] font-bold tracking-wider text-[#64748B] uppercase">Lokasi</label>
+                <label className="text-[11px] font-bold tracking-wider text-[#45464d] uppercase">Lokasi</label>
                 <input value={form.location} onChange={e=>setForm({...form, location:e.target.value})} placeholder="Contoh: Gudang Utama - Rak B3" className={INPUT+' mt-1'}/>
               </div>
 
               <div className="sm:col-span-2">
-                <label className="text-[11px] font-bold tracking-wider text-[#64748B] uppercase">URL Foto</label>
+                <label className="text-[11px] font-bold tracking-wider text-[#45464d] uppercase">URL Foto</label>
                 <input value={form.photo_url} onChange={e=>setForm({...form, photo_url:e.target.value})} placeholder="https://..." className={INPUT+' mt-1'}/>
-                <p className="text-[11px] text-[#94A3B8] mt-1">Tempel tautan gambar aset (opsional).</p>
+                <p className="text-[11px] text-[#76777d] mt-1">Tempel tautan gambar aset (opsional).</p>
               </div>
             </div>
 
-            {form.photo_url? <img src={form.photo_url} alt="Pratinjau" className="mt-3 h-28 w-full object-cover rounded-xl border border-[#E2E8F0] bg-[#F1F5F9]"/> : null}
+            {form.photo_url? <img src={form.photo_url} alt="Pratinjau" className="mt-3 h-28 w-full object-cover rounded-xl border border-[#e7ecf7] bg-[#e5eeff]"/> : null}
 
-            <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-[#F1F5F9]">
+            <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-[#e5eeff]">
               <button type="button" onClick={()=>{ setShowForm(false); setEditing(null); }} className={BTN_SECONDARY}>Batal</button>
               <button type="submit" disabled={saving} className={BTN_PRIMARY}>{saving? 'Menyimpan...' : (editing? 'Simpan Perubahan' : 'Simpan Aset')}</button>
             </div>
@@ -603,56 +635,56 @@ export default function Assets(){
       {/* ===== depreciation modal ===== */}
       {dep && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50">
-          <div className="bg-white rounded-[20px] p-6 w-full max-w-3xl max-h-[90vh] overflow-auto animate-pop">
+          <div className="bg-white rounded-xl p-6 w-full max-w-3xl max-h-[90vh] overflow-auto animate-pop">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-black text-[16px] text-[#0F172A]">Jadwal Depresiasi - {dep.asset && dep.asset.name}</h3>
-                <p className="text-xs text-[#64748B] mt-1">
+                <h3 className="font-bold text-[16px] text-[#0b1c30]">Jadwal Depresiasi - {dep.asset && dep.asset.name}</h3>
+                <p className="text-xs text-[#45464d] mt-1">
                   {dep.asset && dep.asset.asset_code} • Metode {METHOD_LABEL[dep.asset && dep.asset.depreciation_method]||(dep.asset && dep.asset.depreciation_method)} • Nilai buku {rupiah(dep.asset && dep.asset.book_value)}
                 </p>
               </div>
-              <button onClick={()=>setDep(null)} className="h-9 w-9 grid place-items-center rounded-xl border border-[#E2E8F0] text-[#64748B] hover:bg-[#F8FAFC]"><X size={16}/></button>
+              <button onClick={()=>setDep(null)} className="h-9 w-9 grid place-items-center rounded-xl border border-[#e7ecf7] text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
             </div>
 
             <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-              <div className="bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl p-3">
-                <div className="text-[#64748B]">Per Bulan</div>
-                <div className="font-black text-[#0F172A] break-words">{rupiah(dep.monthly)}</div>
+              <div className="bg-[#e5eeff] border border-[#e7ecf7] rounded-xl p-3">
+                <div className="text-[#45464d]">Per Bulan</div>
+                <div className="font-bold text-[#0b1c30] break-words">{rupiah(dep.monthly)}</div>
               </div>
-              <div className="bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl p-3">
-                <div className="text-[#64748B]">Akumulasi</div>
-                <div className="font-black text-[#0F172A] break-words">{rupiah(dep.accumulated)}</div>
+              <div className="bg-[#e5eeff] border border-[#e7ecf7] rounded-xl p-3">
+                <div className="text-[#45464d]">Akumulasi</div>
+                <div className="font-bold text-[#0b1c30] break-words">{rupiah(dep.accumulated)}</div>
               </div>
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
                 <div className="text-blue-700">Nilai Buku</div>
-                <div className="font-black text-blue-800 break-words">{rupiah(dep.book_value)}</div>
+                <div className="font-bold text-blue-800 break-words">{rupiah(dep.book_value)}</div>
               </div>
-              <div className="bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl p-3">
-                <div className="text-[#64748B]">Bulan Berjalan</div>
-                <div className="font-black text-[#0F172A]">{Number(dep.months_elapsed)||0} bulan</div>
+              <div className="bg-[#e5eeff] border border-[#e7ecf7] rounded-xl p-3">
+                <div className="text-[#45464d]">Bulan Berjalan</div>
+                <div className="font-bold text-[#0b1c30]">{Number(dep.months_elapsed)||0} bulan</div>
               </div>
             </div>
 
             {depLoading ? (
               <div className="mt-4 space-y-2 animate-pulse">
-                <div className="h-10 bg-[#F1F5F9] rounded-xl"/>
-                <div className="h-10 bg-[#F1F5F9] rounded-xl"/>
-                <div className="h-10 bg-[#F1F5F9] rounded-xl"/>
+                <div className="h-10 bg-[#e5eeff] rounded-xl"/>
+                <div className="h-10 bg-[#e5eeff] rounded-xl"/>
+                <div className="h-10 bg-[#e5eeff] rounded-xl"/>
               </div>
             ) : (
               <>
                 <div className="flex flex-wrap items-center justify-between gap-2 mt-5">
-                  <h4 className="text-xs font-black tracking-wider text-[#64748B] uppercase">Jadwal Tahunan</h4>
+                  <h4 className="text-xs font-bold tracking-wider text-[#45464d] uppercase">Jadwal Tahunan</h4>
                   <div className="flex flex-wrap gap-2">
                     <ExportBtns dataset="depreciation" id={dep && dep.asset && dep.asset.id}/>
-                    <button onClick={postDepreciation} disabled={posting} className={BTN_SM+' bg-[#1E40AF] text-white hover:bg-[#1E3A8A]'}>{posting? 'Memproses...' : 'Post Jurnal Depresiasi'}</button>
+                    <button onClick={postDepreciation} disabled={posting} className={BTN_SM+' bg-[#0051d5] text-white hover:bg-[#0041ab]'}>{posting? 'Memproses...' : 'Post Jurnal Depresiasi'}</button>
                   </div>
                 </div>
 
-                <div className="overflow-auto mt-2 rounded-xl border border-[#E2E8F0]">
+                <div className="overflow-auto mt-2 rounded-xl border border-[#e7ecf7]">
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className="bg-[#F1F5F9] border-b border-[#E2E8F0] text-left">
+                      <tr className="bg-[#e5eeff] border-b border-[#e7ecf7] text-left">
                         <th className={TH}>TAHUN</th>
                         <th className={TH+' text-right'}>DEPRESIASI</th>
                         <th className={TH+' text-right'}>AKUMULASI</th>
@@ -661,29 +693,29 @@ export default function Assets(){
                     </thead>
                     <tbody>
                       {(Array.isArray(dep.schedule)?dep.schedule:[]).map(s=>(
-                        <tr key={s.year} className="border-b border-[#F1F5F9] hover:bg-[#F8FAFC] transition bg-white">
-                          <td className="px-4 py-3 font-bold text-[#334155]">Tahun {s.year}</td>
+                        <tr key={s.year} className="border-b border-[#e5eeff] hover:bg-[#eff4ff] transition bg-white">
+                          <td className="px-4 py-3 font-bold text-[#2b3445]">Tahun {s.year}</td>
                           <td className="px-4 py-3 text-right">{rupiah(s.depreciation)}</td>
                           <td className="px-4 py-3 text-right">{rupiah(s.accumulated)}</td>
-                          <td className="px-4 py-3 text-right font-bold text-[#0F172A]">{rupiah(s.book_value)}</td>
+                          <td className="px-4 py-3 text-right font-bold text-[#0b1c30]">{rupiah(s.book_value)}</td>
                         </tr>
                       ))}
                       {(!Array.isArray(dep.schedule)||dep.schedule.length===0) && (
-                        <tr><td colSpan={4} className="px-4 py-6 text-center text-[#94A3B8]">Jadwal tahunan belum tersedia.</td></tr>
+                        <tr><td colSpan={4} className="px-4 py-6 text-center text-[#76777d]">Jadwal tahunan belum tersedia.</td></tr>
                       )}
                     </tbody>
                   </table>
                 </div>
 
                 <div className="flex flex-wrap items-center justify-between gap-2 mt-5">
-                  <h4 className="text-xs font-black tracking-wider text-[#64748B] uppercase">Rincian Bulanan ({accruedCount} bulan berjalan dari {monthlyAll.length})</h4>
-                  <button onClick={()=>setShowAllMonths(v=>!v)} className={BTN_SM+' bg-white border border-[#E2E8F0] text-[#334155] hover:bg-[#F8FAFC]'}>{showAllMonths? 'Tampilkan hanya bulan berjalan' : 'Tampilkan semua rencana'}</button>
+                  <h4 className="text-xs font-bold tracking-wider text-[#45464d] uppercase">Rincian Bulanan ({accruedCount} bulan berjalan dari {monthlyAll.length})</h4>
+                  <button onClick={()=>setShowAllMonths(v=>!v)} className={BTN_SM+' bg-white border border-[#e7ecf7] text-[#2b3445] hover:bg-[#eff4ff]'}>{showAllMonths? 'Tampilkan hanya bulan berjalan' : 'Tampilkan semua rencana'}</button>
                 </div>
 
-                <div className="overflow-auto mt-2 rounded-xl border border-[#E2E8F0]">
+                <div className="overflow-auto mt-2 rounded-xl border border-[#e7ecf7]">
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className="bg-[#F1F5F9] border-b border-[#E2E8F0] text-left">
+                      <tr className="bg-[#e5eeff] border-b border-[#e7ecf7] text-left">
                         <th className={TH}>PERIODE</th>
                         <th className={TH+' text-right'}>DEPRESIASI</th>
                         <th className={TH+' text-right'}>AKUMULASI</th>
@@ -693,18 +725,18 @@ export default function Assets(){
                     </thead>
                     <tbody>
                       {monthlyVisible.map((m,i)=>(
-                        <tr key={monthLabel(m.month,m.year)+'-'+i} className={'border-b border-[#F1F5F9] transition '+(m.accrued? 'bg-white hover:bg-[#F8FAFC]' : 'bg-[#F8FAFC] text-[#94A3B8]')}>
+                        <tr key={monthLabel(m.month,m.year)+'-'+i} className={'border-b border-[#e5eeff] transition '+(m.accrued? 'bg-white hover:bg-[#eff4ff]' : 'bg-[#eff4ff] text-[#76777d]')}>
                           <td className="px-4 py-3 font-bold">{monthLabel(m.month,m.year)}</td>
                           <td className="px-4 py-3 text-right">{rupiah(m.depreciation)}</td>
                           <td className="px-4 py-3 text-right">{rupiah(m.accumulated)}</td>
                           <td className="px-4 py-3 text-right font-bold">{rupiah(m.book_value)}</td>
                           <td className="px-4 py-3 text-center">
-                            <span className={'text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full border '+(m.accrued? 'bg-emerald-50 text-emerald-700 border-emerald-200':'bg-[#F1F5F9] text-[#64748B] border-[#E2E8F0]')}>{m.accrued? 'Sudah':'Rencana'}</span>
+                            <span className={'text-[11px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border '+(m.accrued? 'bg-emerald-50 text-emerald-700 border-emerald-200':'bg-[#e5eeff] text-[#45464d] border-[#e7ecf7]')}>{m.accrued? 'Sudah':'Rencana'}</span>
                           </td>
                         </tr>
                       ))}
                       {monthlyVisible.length===0 && (
-                        <tr><td colSpan={5} className="px-4 py-6 text-center text-[#94A3B8]">{monthlyAll.length===0? 'Rincian bulanan belum tersedia.' : 'Belum ada bulan yang berjalan.'}</td></tr>
+                        <tr><td colSpan={5} className="px-4 py-6 text-center text-[#76777d]">{monthlyAll.length===0? 'Rincian bulanan belum tersedia.' : 'Belum ada bulan yang berjalan.'}</td></tr>
                       )}
                     </tbody>
                   </table>
@@ -712,7 +744,7 @@ export default function Assets(){
               </>
             )}
 
-            <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-[#F1F5F9]">
+            <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-[#e5eeff]">
               <button onClick={()=>setDep(null)} className={BTN_SECONDARY}>Tutup</button>
             </div>
           </div>
@@ -722,29 +754,29 @@ export default function Assets(){
       {/* ===== maintenance modal ===== */}
       {maintAsset && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50">
-          <div className="bg-white rounded-[20px] p-6 w-full max-w-2xl max-h-[90vh] overflow-auto animate-pop">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-auto animate-pop">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-black text-[16px] text-[#0F172A]">Log Maintenance - {maintAsset.name}</h3>
-                <p className="text-xs text-[#64748B] mt-1">{maintAsset.asset_code} • {maintAsset.category} • {maintAsset.location||'-'}</p>
+                <h3 className="font-bold text-[16px] text-[#0b1c30]">Log Maintenance - {maintAsset.name}</h3>
+                <p className="text-xs text-[#45464d] mt-1">{maintAsset.asset_code} • {maintAsset.category} • {maintAsset.location||'-'}</p>
               </div>
-              <button onClick={()=>setMaintAsset(null)} className="h-9 w-9 grid place-items-center rounded-xl border border-[#E2E8F0] text-[#64748B] hover:bg-[#F8FAFC]"><X size={16}/></button>
+              <button onClick={()=>setMaintAsset(null)} className="h-9 w-9 grid place-items-center rounded-xl border border-[#e7ecf7] text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
             </div>
 
             <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-              <div className="bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl p-3">
-                <div className="text-[#64748B]">Jumlah Log</div>
-                <div className="font-black text-[#0F172A]">{maintRows.length} entri</div>
+              <div className="bg-[#e5eeff] border border-[#e7ecf7] rounded-xl p-3">
+                <div className="text-[#45464d]">Jumlah Log</div>
+                <div className="font-bold text-[#0b1c30]">{maintRows.length} entri</div>
               </div>
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
                 <div className="text-amber-700">Total Biaya Maintenance</div>
-                <div className="font-black text-amber-800 break-words">{rupiah(maintTotal)}</div>
+                <div className="font-bold text-amber-800 break-words">{rupiah(maintTotal)}</div>
               </div>
             </div>
             <div className="mt-3"><ExportBtns dataset="maintenance" id={maintAsset.id}/></div>
 
-            <form onSubmit={submitMaint} className="mt-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-3 space-y-2">
-              <div className="text-[11px] font-black tracking-wider text-[#64748B] uppercase">Tambah Log Baru</div>
+            <form onSubmit={submitMaint} className="mt-4 bg-[#eff4ff] border border-[#e7ecf7] rounded-xl p-3 space-y-2">
+              <div className="text-[11px] font-bold tracking-wider text-[#45464d] uppercase">Tambah Log Baru</div>
               <div className="grid sm:grid-cols-3 gap-2">
                 <input type="date" value={maintForm.maintenance_date} onChange={e=>setMaintForm({...maintForm, maintenance_date:e.target.value})} className={INPUT}/>
                 <select value={maintForm.type} onChange={e=>setMaintForm({...maintForm, type:e.target.value})} className={INPUT}>
@@ -758,10 +790,10 @@ export default function Assets(){
               </div>
             </form>
 
-            <div className="overflow-auto mt-4 rounded-xl border border-[#E2E8F0]">
+            <div className="overflow-auto mt-4 rounded-xl border border-[#e7ecf7]">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="bg-[#F1F5F9] border-b border-[#E2E8F0] text-left">
+                  <tr className="bg-[#e5eeff] border-b border-[#e7ecf7] text-left">
                     <th className={TH}>TANGGAL</th>
                     <th className={TH}>TIPE</th>
                     <th className={TH}>DESKRIPSI</th>
@@ -769,21 +801,21 @@ export default function Assets(){
                   </tr>
                 </thead>
                 <tbody>
-                  {maintLoading && <tr><td colSpan={4} className="px-4 py-6 text-center text-[#94A3B8]">Memuat log...</td></tr>}
+                  {maintLoading && <tr><td colSpan={4} className="px-4 py-6 text-center text-[#76777d]">Memuat log...</td></tr>}
                   {!maintLoading && maintRows.map(r=>(
-                    <tr key={r.id} className="border-b border-[#F1F5F9] hover:bg-[#F8FAFC] transition bg-white">
-                      <td className="px-4 py-3 font-bold text-[#334155]">{fmtDate(r.maintenance_date)}</td>
-                      <td className="px-4 py-3"><span className="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full border bg-[#F1F5F9] text-[#334155] border-[#E2E8F0]">{r.type}</span></td>
-                      <td className="px-4 py-3 text-[#475569]">{r.description||'-'}</td>
-                      <td className="px-4 py-3 text-right font-bold text-[#0F172A]">{rupiah(r.cost)}</td>
+                    <tr key={r.id} className="border-b border-[#e5eeff] hover:bg-[#eff4ff] transition bg-white">
+                      <td className="px-4 py-3 font-bold text-[#2b3445]">{fmtDate(r.maintenance_date)}</td>
+                      <td className="px-4 py-3"><span className="text-[11px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border bg-[#e5eeff] text-[#2b3445] border-[#e7ecf7]">{r.type}</span></td>
+                      <td className="px-4 py-3 text-[#45464d]">{r.description||'-'}</td>
+                      <td className="px-4 py-3 text-right font-bold text-[#0b1c30]">{rupiah(r.cost)}</td>
                     </tr>
                   ))}
-                  {!maintLoading && maintRows.length===0 && <tr><td colSpan={4} className="px-4 py-6 text-center text-[#94A3B8]">Belum ada log maintenance untuk aset ini.</td></tr>}
+                  {!maintLoading && maintRows.length===0 && <tr><td colSpan={4} className="px-4 py-6 text-center text-[#76777d]">Belum ada log maintenance untuk aset ini.</td></tr>}
                 </tbody>
               </table>
             </div>
 
-            <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-[#F1F5F9]">
+            <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-[#e5eeff]">
               <button onClick={()=>setMaintAsset(null)} className={BTN_SECONDARY}>Tutup</button>
             </div>
           </div>
@@ -793,50 +825,50 @@ export default function Assets(){
       {/* ===== disposal modal ===== */}
       {dispAsset && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50">
-          <form onSubmit={submitDisp} className="bg-white rounded-[20px] p-6 w-full max-w-lg max-h-[90vh] overflow-auto animate-pop">
+          <form onSubmit={submitDisp} className="bg-white rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-auto animate-pop">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-black text-[16px] text-[#0F172A]">Disposal / Jual Aset</h3>
-                <p className="text-xs text-[#64748B] mt-1">{dispAsset.asset_code} • {dispAsset.name}</p>
+                <h3 className="font-bold text-[16px] text-[#0b1c30]">Disposal / Jual Aset</h3>
+                <p className="text-xs text-[#45464d] mt-1">{dispAsset.asset_code} • {dispAsset.name}</p>
               </div>
-              <button type="button" onClick={()=>setDispAsset(null)} className="h-9 w-9 grid place-items-center rounded-xl border border-[#E2E8F0] text-[#64748B] hover:bg-[#F8FAFC]"><X size={16}/></button>
+              <button type="button" onClick={()=>setDispAsset(null)} className="h-9 w-9 grid place-items-center rounded-xl border border-[#e7ecf7] text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
             </div>
 
             <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-              <div className="bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl p-3">
-                <div className="text-[#64748B]">Harga Perolehan</div>
-                <div className="font-black text-[#0F172A] break-words">{rupiah(dispAsset.acquisition_cost)}</div>
+              <div className="bg-[#e5eeff] border border-[#e7ecf7] rounded-xl p-3">
+                <div className="text-[#45464d]">Harga Perolehan</div>
+                <div className="font-bold text-[#0b1c30] break-words">{rupiah(dispAsset.acquisition_cost)}</div>
               </div>
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
                 <div className="text-blue-700">Nilai Buku Saat Ini</div>
-                <div className="font-black text-blue-800 break-words">{rupiah(dispBook)}</div>
+                <div className="font-bold text-blue-800 break-words">{rupiah(dispBook)}</div>
               </div>
             </div>
 
             <div className="mt-4 grid sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-bold tracking-wider text-[#64748B] uppercase">Harga Jual *</label>
+                <label className="text-[11px] font-bold tracking-wider text-[#45464d] uppercase">Harga Jual *</label>
                 <input type="number" min="0" step="any" value={dispForm.price} onChange={e=>setDispForm({...dispForm, price:e.target.value})} placeholder="0" className={INPUT+' mt-1'}/>
               </div>
               <div>
-                <label className="text-[11px] font-bold tracking-wider text-[#64748B] uppercase">Tanggal Disposal *</label>
+                <label className="text-[11px] font-bold tracking-wider text-[#45464d] uppercase">Tanggal Disposal *</label>
                 <input type="date" value={dispForm.disposal_date} onChange={e=>setDispForm({...dispForm, disposal_date:e.target.value})} className={INPUT+' mt-1'}/>
               </div>
             </div>
 
-            <div className={'mt-4 rounded-xl border p-4 text-xs '+(dispGL==null? 'bg-[#F8FAFC] border-[#E2E8F0]' : (dispGL>=0? 'bg-emerald-50 border-emerald-200':'bg-red-50 border-red-200'))}>
-              <div className="text-[11px] font-black tracking-wider uppercase text-[#64748B]">Estimasi Laba / Rugi Disposal</div>
+            <div className={'mt-4 rounded-xl border p-4 text-xs '+(dispGL==null? 'bg-[#eff4ff] border-[#e7ecf7]' : (dispGL>=0? 'bg-emerald-50 border-emerald-200':'bg-red-50 border-red-200'))}>
+              <div className="text-[11px] font-bold tracking-wider uppercase text-[#45464d]">Estimasi Laba / Rugi Disposal</div>
               {dispGL==null ? (
-                <div className="mt-1 text-[#64748B]">Masukkan harga jual untuk melihat perhitungan.</div>
+                <div className="mt-1 text-[#45464d]">Masukkan harga jual untuk melihat perhitungan.</div>
               ) : (
                 <>
-                  <div className={'mt-1 text-[18px] font-black '+(dispGL>=0? 'text-emerald-700':'text-red-700')}>{rupiah(Math.abs(dispGL))}</div>
+                  <div className={'mt-1 text-[18px] font-bold '+(dispGL>=0? 'text-emerald-700':'text-red-700')}>{rupiah(Math.abs(dispGL))}</div>
                   <div className={'mt-1 font-bold '+(dispGL>=0? 'text-emerald-700':'text-red-700')}>{dispGL>=0? 'LABA (GAIN)':'RUGI (LOSS)'} • Harga jual {rupiah(dispPriceNum)} − Nilai buku {rupiah(dispBook)}</div>
                 </>
               )}
             </div>
 
-            <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-[#F1F5F9]">
+            <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-[#e5eeff]">
               <button type="button" onClick={()=>setDispAsset(null)} className={BTN_SECONDARY}>Batal</button>
               <button type="submit" disabled={dispSaving} className={BTN_PRIMARY}>{dispSaving? 'Memproses...' : 'Proses Disposal'}</button>
             </div>

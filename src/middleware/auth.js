@@ -10,10 +10,11 @@ export function auth(req,res,next){
   }catch(e){ return res.status(401).json({error:'Invalid token'}); }
 }
 export function rbac(...allowed){
+  const allow = allowed.map(r=>String(r).toLowerCase());
   return (req,res,next)=>{
-    const roles = req.user.roles || [];
-    if(roles.includes('direktur')) return next();
-    const ok = roles.some(r=> allowed.includes(r));
+    const roles = (req.user.roles || []).map(r=>String(r).toLowerCase());
+    if(roles.includes('direktur') || roles.includes('super_admin')) return next();
+    const ok = roles.some(r=> allow.includes(r));
     if(!ok) return res.status(403).json({error:'Forbidden'});
     next();
   }

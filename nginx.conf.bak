@@ -1,0 +1,52 @@
+server {
+  listen 80;
+  server_name _;
+
+  # Tanda tangan & lampiran dikirim base64 (sampai ~12 MB dari aplikasi).
+  # Default nginx 1 MB akan menolak upload (413). Naikkan dengan margin.
+  client_max_body_size 16m;
+  client_body_timeout 60s;
+
+  # Header keamanan untuk aset statis (helmet sudah menangani API).
+  add_header X-Content-Type-Options nosniff always;
+  add_header X-Frame-Options SAMEORIGIN always;
+  add_header Referrer-Policy strict-origin-when-cross-origin always;
+
+  gzip on;
+  gzip_comp_level 5;
+  gzip_min_length 1024;
+  gzip_types text/plain text/css application/javascript application/json image/svg+xml application/xml;
+
+  root /usr/share/nginx/html;
+  index index.html;
+
+  # SPA: semua route jatuh ke index.html
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+
+  # Aset ber-hash dari Vite boleh di-cache lama
+  location /assets/ {
+    expires 30d;
+    add_header Cache-Control "public, immutable";
+    try_files $uri =404;
+  }
+
+  location /api/ {
+    proxy_pass http://backend:4000;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_read_timeout 60s;
+    proxy_send_timeout 60s;
+    proxy_request_buffering off;
+  }
+
+  # Health check untuk load balancer / uptime monitor
+  location = /healthz {
+    proxy_pass http://backend:4000/api/health;
+    access_log off;
+  }
+}

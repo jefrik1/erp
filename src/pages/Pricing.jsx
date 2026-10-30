@@ -216,7 +216,7 @@ export default function Pricing(){
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <PosStat icon={Layers} tone="bg-[#1E40AF]/10 text-[#1E40AF]" label="PRICE LIST" value={lists.length + ' daftar'} sub={Object.keys(TYPE_LABEL).filter(t=> lists.some(l=> l.type===t)).map(t=> TYPE_LABEL[t]).join(' • ')||'-'}/>
+        <PosStat icon={Layers} tone="bg-[#0051d5]/10 text-[#0051d5]" label="PRICE LIST" value={lists.length + ' daftar'} sub={Object.keys(TYPE_LABEL).filter(t=> lists.some(l=> l.type===t)).map(t=> TYPE_LABEL[t]).join(' • ')||'-'}/>
         <PosStat icon={Building2} tone="bg-sky-50 text-sky-700" label="HARGA KHUSUS" value={customerPrices.length + ' baris'} sub={'rata-rata diskon '+avgDiscount.toFixed(1)+'%'}/>
         <PosStat icon={ShieldAlert} tone="bg-amber-50 text-amber-700" label="FLOOR PRICE" value={floorRows.length + ' produk'} sub="batas bawah harga jual"/>
         <PosStat icon={Sparkles} tone="bg-emerald-50 text-emerald-700" label="PROMO" value={promos.length + ' program'} sub={activePromos+' sedang aktif'}/>
@@ -230,7 +230,7 @@ export default function Pricing(){
             </button>
           </>}>
             <div className={posSearchWrap}>
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]"/>
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#76777d]"/>
               <input value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Enter'&&setAppliedQ(q)}
                 placeholder="Cari produk / customer / kode promo lalu Enter..." className={posInput+' pl-9'}/>
             </div>
@@ -251,23 +251,23 @@ export default function Pricing(){
         <div className="grid lg:grid-cols-4 gap-3 items-start">
           <PosCard className="lg:col-span-1">
             <PosCardBody className="space-y-2">
-              <div className="text-[11px] font-bold tracking-widest text-[#64748B]">DAFTAR HARGA</div>
+              <div className="text-[11px] font-bold tracking-wider text-[#45464d]">DAFTAR HARGA</div>
               {lists.map(l=>(
                 <button key={l.id} onClick={()=>setSelList(String(l.id))}
-                  className={'w-full text-left px-3 py-2 rounded-xl border transition '+(String(selList)===String(l.id)?'bg-[#1E40AF] text-white border-[#1E40AF] shadow':'bg-[#F8FAFC] border-[#E2E8F0] hover:bg-white')}>
+                  className={'w-full text-left px-3 py-2 rounded-xl border transition '+(String(selList)===String(l.id)?'bg-[#0051d5] text-white border-[#0051d5] shadow':'bg-[#eff4ff] border-[#e7ecf7] hover:bg-white')}>
                   <div className="text-sm font-bold">{l.code}</div>
-                  <div className={'text-[11px] '+(String(selList)===String(l.id)?'text-white/80':'text-[#64748B]')}>{l.name} • {TYPE_LABEL[l.type]||l.type}</div>
+                  <div className={'text-[11px] '+(String(selList)===String(l.id)?'text-white/80':'text-[#45464d]')}>{l.name} • {TYPE_LABEL[l.type]||l.type}</div>
                 </button>
               ))}
-              {!lists.length && !loading && <div className="text-xs text-[#94A3B8]">Belum ada price list.</div>}
+              {!lists.length && !loading && <div className="text-xs text-[#76777d]">Belum ada price list.</div>}
             </PosCardBody>
           </PosCard>
 
           <PosCard className="lg:col-span-3">
             <PosCardBody className="flex items-center justify-between gap-2">
               <div>
-                <div className="text-[11px] font-bold tracking-widest text-[#64748B]">ITEM HARGA</div>
-                <div className="text-sm font-bold text-[#0F172A]">{selListObj ? selListObj.name+' ('+(TYPE_LABEL[selListObj.type]||selListObj.type)+')' : 'Pilih price list'}</div>
+                <div className="text-[11px] font-bold tracking-wider text-[#45464d]">ITEM HARGA</div>
+                <div className="text-sm font-bold text-[#0b1c30]">{selListObj ? selListObj.name+' ('+(TYPE_LABEL[selListObj.type]||selListObj.type)+')' : 'Pilih price list'}</div>
               </div>
               <PosBadge tone="slate">{total} item</PosBadge>
             </PosCardBody>
@@ -275,14 +275,14 @@ export default function Pricing(){
               <>
                 <div className="overflow-auto">
                   <table className="w-full text-sm">
-                    <thead><tr className="bg-[#F1F5F9] border-y border-[#E2E8F0] text-[11px] font-bold tracking-widest text-[#64748B]">
+                    <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
                       <PosTh>PRODUK</PosTh><PosTh>SKU</PosTh><PosTh align="right">MIN QTY</PosTh><PosTh align="right">HARGA</PosTh>
                     </tr></thead>
                     <tbody>
                       {pageRows.map(it=>(
                         <tr key={it.id} className={posTr}>
-                          <td className={posTd+' font-bold text-[#0F172A]'}>{it.product_name}</td>
-                          <td className={posTd+' font-mono text-xs text-[#64748B]'}>{it.sku||'-'}</td>
+                          <td className={posTd+' font-bold text-[#0b1c30]'}>{it.product_name}</td>
+                          <td className={posTd+' font-mono text-xs text-[#45464d]'}>{it.sku||'-'}</td>
                           <td className={posTd+' text-right tabular-nums'}>{Number(it.min_qty)||1}</td>
                           <td className={posTd+' text-right font-bold tabular-nums'}>{rupiah(it.price)}</td>
                         </tr>
@@ -302,14 +302,14 @@ export default function Pricing(){
       {tab==='customer' && (
         <PosCard>
           <PosCardBody className="flex items-center justify-between gap-2">
-            <div className="text-[11px] font-bold tracking-widest text-[#64748B]">HARGA KHUSUS PER CUSTOMER</div>
+            <div className="text-[11px] font-bold tracking-wider text-[#45464d]">HARGA KHUSUS PER CUSTOMER</div>
             <PosBadge tone="slate">{total} baris</PosBadge>
           </PosCardBody>
           {loading ? <PosSkeleton rows={5} cols={5}/> : (
             <>
               <div className="overflow-auto">
                 <table className="w-full text-sm">
-                  <thead><tr className="bg-[#F1F5F9] border-y border-[#E2E8F0] text-[11px] font-bold tracking-widest text-[#64748B]">
+                  <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
                     <PosTh>CUSTOMER</PosTh><PosTh>PRODUK</PosTh><PosTh>SKU</PosTh>
                     <PosTh align="right">HARGA KHUSUS</PosTh><PosTh align="center">BERLAKU</PosTh>
                   </tr></thead>
@@ -318,9 +318,9 @@ export default function Pricing(){
                       const valid = !cp.valid_to || new Date(cp.valid_to) >= new Date();
                       return (
                         <tr key={cp.id} className={posTr}>
-                          <td className={posTd+' font-bold text-[#0F172A]'}>{cp.customer_name}</td>
+                          <td className={posTd+' font-bold text-[#0b1c30]'}>{cp.customer_name}</td>
                           <td className={posTd}>{cp.product_name}</td>
-                          <td className={posTd+' font-mono text-xs text-[#64748B]'}>{cp.sku||'-'}</td>
+                          <td className={posTd+' font-mono text-xs text-[#45464d]'}>{cp.sku||'-'}</td>
                           <td className={posTd+' text-right font-bold tabular-nums'}>{rupiah(cp.price)}</td>
                           <td className={posTd+' text-center'}>
                             <PosBadge tone={valid?'emerald':'slate'}>
@@ -345,8 +345,8 @@ export default function Pricing(){
         <PosCard>
           <PosCardBody className="flex items-start gap-3">
             <span className="w-7 h-7 rounded-lg grid place-items-center bg-amber-50 text-amber-700 shrink-0"><ShieldAlert size={14}/></span>
-            <div className="text-xs text-[#475569] leading-relaxed">
-              <b className="text-[#0F172A]">Floor price</b> = batas bawah harga jual. Kalau sales memberi harga di bawah angka ini,
+            <div className="text-xs text-[#45464d] leading-relaxed">
+              <b className="text-[#0b1c30]">Floor price</b> = batas bawah harga jual. Kalau sales memberi harga di bawah angka ini,
               sistem menandai butuh approval. Isi floor price di bawah, perubahan tercatat di audit log.
             </div>
           </PosCardBody>
@@ -354,14 +354,14 @@ export default function Pricing(){
             <>
               <div className="overflow-auto">
                 <table className="w-full text-sm">
-                  <thead><tr className="bg-[#F1F5F9] border-y border-[#E2E8F0] text-[11px] font-bold tracking-widest text-[#64748B]">
+                  <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
                     <PosTh>PRODUK</PosTh><PosTh>SKU</PosTh><PosTh align="right">FLOOR PRICE</PosTh><PosTh align="right">UBAH</PosTh>
                   </tr></thead>
                   <tbody>
                     {pageRows.map(f=>(
                       <tr key={f.id} className={posTr}>
-                        <td className={posTd+' font-bold text-[#0F172A]'}>{f.name}</td>
-                        <td className={posTd+' font-mono text-xs text-[#64748B]'}>{f.sku||'-'}</td>
+                        <td className={posTd+' font-bold text-[#0b1c30]'}>{f.name}</td>
+                        <td className={posTd+' font-mono text-xs text-[#45464d]'}>{f.sku||'-'}</td>
                         <td className={posTd+' text-right font-bold tabular-nums'}>{rupiah(f.floor_price)}</td>
                         <td className={posTd}>
                           <div className="flex items-center justify-end gap-1.5">
@@ -369,7 +369,7 @@ export default function Pricing(){
                               onChange={e=>setFloorEdit({...floorEdit, [f.id]:e.target.value})}
                               className={posInput+' w-[140px] text-right tabular-nums'}/>
                             <button onClick={()=>saveFloor(f)} disabled={floorEdit[f.id]===undefined || busy==='floor-'+f.id}
-                              className={posBtnSm+' bg-[#1E40AF] text-white border-[#1E40AF] hover:bg-[#1E3A8A] disabled:opacity-40'}>
+                              className={posBtnSm+' bg-[#0051d5] text-white border-[#0051d5] hover:bg-[#0041ab] disabled:opacity-40'}>
                               <Save size={13} className={busy==='floor-'+f.id?'animate-pulse':''}/> Simpan
                             </button>
                           </div>
@@ -396,13 +396,13 @@ export default function Pricing(){
               {pageRows.map(p=>{
                 const ben = p.benefits||{}, con = p.conditions||{};
                 return (
-                  <div key={p.id} className="rounded-[20px] border border-[#E2E8F0] bg-white p-4 shadow-sm">
+                  <div key={p.id} className="rounded-xl border border-[#e7ecf7] bg-white p-4 shadow-card">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <span className="w-8 h-8 rounded-xl grid place-items-center bg-emerald-50 text-emerald-700"><Tag size={15}/></span>
                         <div>
-                          <div className="font-black text-[14px] text-[#0F172A]">{p.code}</div>
-                          <div className="text-xs text-[#64748B]">{p.name}</div>
+                          <div className="font-bold text-[14px] text-[#0b1c30]">{p.code}</div>
+                          <div className="text-xs text-[#45464d]">{p.name}</div>
                         </div>
                       </div>
                       <PosBadge tone={p.is_active?'emerald':'slate'}>{p.is_active?'AKTIF':'NONAKTIF'}</PosBadge>
@@ -412,7 +412,7 @@ export default function Pricing(){
                       {Number(con.min_qty)>0 && <PosBadge tone="slate">min {con.min_qty} qty</PosBadge>}
                       <PosBadge tone="slate">{p.type}</PosBadge>
                     </div>
-                    <div className="mt-3 text-[11px] text-[#64748B]">
+                    <div className="mt-3 text-[11px] text-[#45464d]">
                       {p.start_date?String(p.start_date).slice(0,10):'-'} → {p.end_date?String(p.end_date).slice(0,10):'-'}
                     </div>
                   </div>
@@ -429,29 +429,29 @@ export default function Pricing(){
           <PosCard className="lg:col-span-2">
             <PosCardBody className="space-y-3">
               <div className="flex items-center gap-2">
-                <span className="w-7 h-7 rounded-lg grid place-items-center bg-[#1E40AF]/10 text-[#1E40AF]"><Calculator size={14}/></span>
+                <span className="w-7 h-7 rounded-lg grid place-items-center bg-[#0051d5]/10 text-[#0051d5]"><Calculator size={14}/></span>
                 <div>
-                  <div className="text-sm font-bold text-[#0F172A]">Cek Harga Jual</div>
-                  <div className="text-[11px] text-[#64748B]">Urutan prioritas: harga proyek → harga khusus customer → price list tipe → harga dasar</div>
+                  <div className="text-sm font-bold text-[#0b1c30]">Cek Harga Jual</div>
+                  <div className="text-[11px] text-[#45464d]">Urutan prioritas: harga proyek → harga khusus customer → price list tipe → harga dasar</div>
                 </div>
               </div>
               <form onSubmit={runCheck} className="grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">CUSTOMER</span>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">CUSTOMER</span>
                   <PosSelect size="md" value={check.customer_id} onChange={v=>setCheck({...check, customer_id:v})}>
                     <option value="">Tanpa customer</option>
                     {customers.map(c=> <option key={c.id} value={c.id}>{c.name} ({c.type||'-'})</option>)}
                   </PosSelect></label>
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">PROYEK</span>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">PROYEK</span>
                   <PosSelect size="md" value={check.project_id} onChange={v=>setCheck({...check, project_id:v})}>
                     <option value="">Tanpa proyek</option>
                     {projects.map(p=> <option key={p.id} value={p.id}>{p.project_code} {p.name}</option>)}
                   </PosSelect></label>
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">PRODUK *</span>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">PRODUK *</span>
                   <PosSelect size="md" value={check.product_id} onChange={v=>setCheck({...check, product_id:v})}>
                     <option value="">Pilih produk</option>
                     {products.map(p=> <option key={p.id} value={p.id}>{p.name}</option>)}
                   </PosSelect></label>
-                <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">QTY</span>
+                <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">QTY</span>
                   <input type="number" value={check.qty} onChange={e=>setCheck({...check, qty:e.target.value})} className={posInput+' text-right tabular-nums'}/></label>
                 <div className="sm:col-span-2 lg:col-span-4 flex justify-end">
                   <button disabled={checking} className={posBtnPrimary+' h-9 px-4 text-xs disabled:opacity-50'}>
@@ -461,13 +461,13 @@ export default function Pricing(){
               </form>
 
               {checkResult && (
-                <div className={'rounded-[20px] border p-4 '+(checkResult.below_floor?'border-red-200 bg-red-50':'border-emerald-200 bg-emerald-50')}>
+                <div className={'rounded-xl border p-4 '+(checkResult.below_floor?'border-red-200 bg-red-50':'border-emerald-200 bg-emerald-50')}>
                   <div className="flex items-center gap-2">
                     {checkResult.below_floor ? <ShieldAlert size={16} className="text-red-600"/> : <CheckCircle2 size={16} className="text-emerald-600"/>}
-                    <span className="font-black text-[18px] text-[#0F172A]">{rupiah(checkResult.price)}</span>
+                    <span className="font-bold text-[18px] text-[#0b1c30]">{rupiah(checkResult.price)}</span>
                     <PosBadge tone={checkResult.below_floor?'red':'emerald'}>sumber: {checkResult.source}</PosBadge>
                   </div>
-                  <div className="text-xs text-[#475569] mt-2">
+                  <div className="text-xs text-[#45464d] mt-2">
                     Floor price: <b>{rupiah(checkResult.floor_price)}</b> • qty {checkResult._qty}
                   </div>
                   {checkResult.warning && <div className="text-xs text-red-700 mt-1 font-bold">{checkResult.warning}</div>}
@@ -479,13 +479,13 @@ export default function Pricing(){
           <PosCard>
             <PosCardBody>
               <div className="flex items-center gap-2">
-                <History size={14} className="text-[#64748B]"/>
-                <div className="text-[11px] font-bold tracking-widest text-[#64748B]">RIWAYAT PERUBAHAN HARGA</div>
+                <History size={14} className="text-[#45464d]"/>
+                <div className="text-[11px] font-bold tracking-wider text-[#45464d]">RIWAYAT PERUBAHAN HARGA</div>
               </div>
             </PosCardBody>
             <div className="overflow-auto max-h-[360px]">
               <table className="w-full text-sm">
-                <thead><tr className="bg-[#F1F5F9] border-y border-[#E2E8F0] text-[11px] font-bold tracking-widest text-[#64748B]">
+                <thead><tr className="bg-[#e5eeff] border-y border-[#e7ecf7] text-[11px] font-bold tracking-wider text-[#45464d]">
                   <PosTh>TANGGAL</PosTh><PosTh>TABEL</PosTh><PosTh align="right">NILAI BARU</PosTh>
                 </tr></thead>
                 <tbody>
@@ -507,24 +507,24 @@ export default function Pricing(){
       {/* ---------------------------------------------------------- modals */}
       {modal==='item' && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50">
-          <form onSubmit={addItem} className="bg-white rounded-[20px] p-5 w-full max-w-md space-y-3 border shadow-xl animate-pop">
+          <form onSubmit={addItem} className="bg-white rounded-xl p-5 w-full max-w-md space-y-3 border shadow-raised animate-pop">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-black text-[16px] text-[#0F172A]">Item Harga</h3>
-                <div className="text-xs text-[#64748B] mt-0.5">Tambah produk ke {selListObj? selListObj.name : 'price list'}</div>
+                <h3 className="font-bold text-[16px] text-[#0b1c30]">Item Harga</h3>
+                <div className="text-xs text-[#45464d] mt-0.5">Tambah produk ke {selListObj? selListObj.name : 'price list'}</div>
               </div>
-              <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-[#E2E8F0] grid place-items-center text-[#64748B] hover:bg-[#F8FAFC]"><X size={16}/></button>
+              <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-[#e7ecf7] grid place-items-center text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
             </div>
             {formErr && <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{formErr}</div>}
-            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">PRODUK *</span>
+            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">PRODUK *</span>
               <PosSelect size="md" value={itemForm.product_id} onChange={v=>setItemForm({...itemForm, product_id:v})}>
                 <option value="">Pilih produk</option>
                 {products.map(p=> <option key={p.id} value={p.id}>{p.name} {p.sku?('• '+p.sku):''}</option>)}
               </PosSelect></label>
             <div className="grid grid-cols-2 gap-2">
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">HARGA Rp *</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">HARGA Rp *</span>
                 <input type="number" value={itemForm.price} onChange={e=>setItemForm({...itemForm, price:e.target.value})} className={posInput+' text-right tabular-nums'}/></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">MIN QTY</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">MIN QTY</span>
                 <input type="number" value={itemForm.min_qty} onChange={e=>setItemForm({...itemForm, min_qty:e.target.value})} className={posInput+' text-right tabular-nums'}/></label>
             </div>
             <div className="flex justify-end gap-2 pt-1">
@@ -539,31 +539,31 @@ export default function Pricing(){
 
       {modal==='customer' && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50">
-          <form onSubmit={addCustomerPrice} className="bg-white rounded-[20px] p-5 w-full max-w-md space-y-3 border shadow-xl animate-pop">
+          <form onSubmit={addCustomerPrice} className="bg-white rounded-xl p-5 w-full max-w-md space-y-3 border shadow-raised animate-pop">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-black text-[16px] text-[#0F172A]">Harga Khusus Customer</h3>
-                <div className="text-xs text-[#64748B] mt-0.5">Override harga untuk satu customer (tercatat di audit log)</div>
+                <h3 className="font-bold text-[16px] text-[#0b1c30]">Harga Khusus Customer</h3>
+                <div className="text-xs text-[#45464d] mt-0.5">Override harga untuk satu customer (tercatat di audit log)</div>
               </div>
-              <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-[#E2E8F0] grid place-items-center text-[#64748B] hover:bg-[#F8FAFC]"><X size={16}/></button>
+              <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-[#e7ecf7] grid place-items-center text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
             </div>
             {formErr && <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{formErr}</div>}
-            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">CUSTOMER *</span>
+            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">CUSTOMER *</span>
               <PosSelect size="md" value={cpForm.customer_id} onChange={v=>setCpForm({...cpForm, customer_id:v})}>
                 <option value="">Pilih customer</option>
                 {customers.map(c=> <option key={c.id} value={c.id}>{c.name}</option>)}
               </PosSelect></label>
-            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">PRODUK *</span>
+            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">PRODUK *</span>
               <PosSelect size="md" value={cpForm.product_id} onChange={v=>setCpForm({...cpForm, product_id:v})}>
                 <option value="">Pilih produk</option>
                 {products.map(p=> <option key={p.id} value={p.id}>{p.name}</option>)}
               </PosSelect></label>
-            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">HARGA KHUSUS Rp *</span>
+            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">HARGA KHUSUS Rp *</span>
               <input type="number" value={cpForm.price} onChange={e=>setCpForm({...cpForm, price:e.target.value})} className={posInput+' text-right tabular-nums'}/></label>
             <div className="grid grid-cols-2 gap-2">
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">BERLAKU DARI</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">BERLAKU DARI</span>
                 <input type="date" value={cpForm.valid_from} onChange={e=>setCpForm({...cpForm, valid_from:e.target.value})} className={posInput}/></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">SAMPAI</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">SAMPAI</span>
                 <input type="date" value={cpForm.valid_to} onChange={e=>setCpForm({...cpForm, valid_to:e.target.value})} className={posInput}/></label>
             </div>
             <div className="flex justify-end gap-2 pt-1">
@@ -578,37 +578,37 @@ export default function Pricing(){
 
       {modal==='promo' && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50">
-          <form onSubmit={addPromo} className="bg-white rounded-[20px] p-5 w-full max-w-md space-y-3 border shadow-xl animate-pop">
+          <form onSubmit={addPromo} className="bg-white rounded-xl p-5 w-full max-w-md space-y-3 border shadow-raised animate-pop">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-black text-[16px] text-[#0F172A]">Promo Baru</h3>
-                <div className="text-xs text-[#64748B] mt-0.5">Diskon persen dengan minimal qty (mis. beli 10 gratis ongkir)</div>
+                <h3 className="font-bold text-[16px] text-[#0b1c30]">Promo Baru</h3>
+                <div className="text-xs text-[#45464d] mt-0.5">Diskon persen dengan minimal qty (mis. beli 10 gratis ongkir)</div>
               </div>
-              <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-[#E2E8F0] grid place-items-center text-[#64748B] hover:bg-[#F8FAFC]"><X size={16}/></button>
+              <button type="button" onClick={()=>setModal('')} className="w-9 h-9 rounded-xl border border-[#e7ecf7] grid place-items-center text-[#45464d] hover:bg-[#eff4ff]"><X size={16}/></button>
             </div>
             {formErr && <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{formErr}</div>}
             <div className="grid grid-cols-2 gap-2">
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">KODE *</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">KODE *</span>
                 <input value={promoForm.code} onChange={e=>setPromoForm({...promoForm, code:e.target.value})} placeholder="SEMEN10" className={posInput}/></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">TIPE</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">TIPE</span>
                 <PosSelect size="md" value={promoForm.type} onChange={v=>setPromoForm({...promoForm, type:v})}>
                   <option value="PERCENT">Diskon persen</option>
                   <option value="AMOUNT">Potongan nominal</option>
                   <option value="BUNDLING">Bundling</option>
                 </PosSelect></label>
             </div>
-            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">NAMA PROMO *</span>
+            <label className="space-y-1 block"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">NAMA PROMO *</span>
               <input value={promoForm.name} onChange={e=>setPromoForm({...promoForm, name:e.target.value})} placeholder="mis. Diskon Semen 10 sak" className={posInput}/></label>
             <div className="grid grid-cols-2 gap-2">
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">DISKON %</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">DISKON %</span>
                 <input type="number" step="0.5" value={promoForm.percent} onChange={e=>setPromoForm({...promoForm, percent:e.target.value})} className={posInput+' text-right tabular-nums'}/></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">MIN QTY</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">MIN QTY</span>
                 <input type="number" value={promoForm.min_qty} onChange={e=>setPromoForm({...promoForm, min_qty:e.target.value})} className={posInput+' text-right tabular-nums'}/></label>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">MULAI</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">MULAI</span>
                 <input type="date" value={promoForm.start_date} onChange={e=>setPromoForm({...promoForm, start_date:e.target.value})} className={posInput}/></label>
-              <label className="space-y-1"><span className="text-[11px] font-bold tracking-widest text-[#64748B]">SELESAI</span>
+              <label className="space-y-1"><span className="text-[11px] font-bold tracking-wider text-[#45464d]">SELESAI</span>
                 <input type="date" value={promoForm.end_date} onChange={e=>setPromoForm({...promoForm, end_date:e.target.value})} className={posInput}/></label>
             </div>
             <div className="flex justify-end gap-2 pt-1">
