@@ -2,11 +2,11 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { pool } from '../../config/db.js';
-import { auth } from '../../middleware/auth.js';
+import { auth, getJwtSecret, getJwtRefreshSecret } from '../../middleware/auth.js';
 import { generateSecret, verifyTotp, otpauthURL, backupCodes } from '../../lib/totp.js';
 
 const router = express.Router();
-const SECRET = () => process.env.JWT_SECRET || 'erp_jwt_super_secret_2024';
+const SECRET = () => getJwtSecret();
 
 let ensured = false;
 async function ensureCols(){
@@ -113,7 +113,7 @@ router.post('/verify-login', async (req,res)=>{
     if(!ok) return res.status(401).json({error:'Kode MFA salah'});
     const payload = tokenPayloadFor(user);
     const token = jwt.sign(payload, SECRET(), { expiresIn:'8h' });
-    const refresh = jwt.sign({ id:user.id }, process.env.JWT_REFRESH_SECRET || 'erp_refresh_secret_2024', { expiresIn:'7d' });
+    const refresh = jwt.sign({ id:user.id }, getJwtRefreshSecret(), { expiresIn:'7d' });
     await pool.query("INSERT INTO audit_logs (user_id, action, entity_type) VALUES ($1,$2,'AUTH')", [user.id, usedBackup? 'LOGIN_MFA_BACKUP':'LOGIN_MFA']).catch(()=>{});
     res.json({ token, refresh, user: payload, backup_used: usedBackup });
   }catch(e){ res.status(500).json({error:e.message}); }

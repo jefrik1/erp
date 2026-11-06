@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev:backend": "node --watch src/index.js",
-    "dev": "concurrently \"npm run dev:backend\" \"vite --host 0.0.0.0 --port 5173\"",
+    "dev": "vite --host 0.0.0.0 --port 5173",
     "dev:frontend": "vite --host 0.0.0.0 --port 5173",
     "build": "vite build",
     "preview": "vite preview",

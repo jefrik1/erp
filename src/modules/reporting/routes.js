@@ -243,6 +243,65 @@ const EXPORTS = {
       };
     },
   },
+  'trial-balance': {
+    label: 'Neraca Saldo (Trial Balance)',
+    async run(q){
+      const end = q.end || (q.period ? (q.period.length === 7 ? `${q.period}-31` : q.period) : new Date().toISOString().slice(0, 10));
+      const start = q.start || '2000-01-01';
+      const r = await pool.query(`
+        SELECT a.code, a.name, a.type,
+               COALESCE(SUM(jd.debit), 0)::float AS debit,
+               COALESCE(SUM(jd.credit), 0)::float AS credit
+          FROM accounts a
+          LEFT JOIN journal_details jd ON jd.account_id = a.id
+          LEFT JOIN journal_entries je ON je.id = jd.journal_id AND je.entry_date BETWEEN $1 AND $2 AND je.posted = true
+         GROUP BY a.id, a.code, a.name, a.type
+         ORDER BY a.code`, [start, end]);
+      return {
+        columns: [
+          { label: 'Kode Akun' },
+          { label: 'Nama Akun' },
+          { label: 'Tipe' },
+          { label: 'Debit', numeric: true, total: true },
+          { label: 'Kredit', numeric: true, total: true },
+          { label: 'Saldo', numeric: true, total: true }
+        ],
+        rows: r.rows.map(x => {
+          const isDebitNormal = ['ASSET', 'EXPENSE'].includes(x.type);
+          const bal = isDebitNormal ? (num(x.debit) - num(x.credit)) : (num(x.credit) - num(x.debit));
+          return [x.code, x.name, x.type, num(x.debit), num(x.credit), bal];
+        })
+      };
+    }
+  },
+  'balance-sheet': {
+    label: 'Laporan Neraca (Balance Sheet)',
+    async run(q){
+      const asOf = q.as_of || q.end || new Date().toISOString().slice(0, 10);
+      const r = await pool.query(`
+        SELECT a.code, a.name, a.type,
+               COALESCE(SUM(jd.debit), 0)::float AS debit,
+               COALESCE(SUM(jd.credit), 0)::float AS credit
+          FROM accounts a
+          LEFT JOIN journal_details jd ON jd.account_id = a.id
+          LEFT JOIN journal_entries je ON je.id = jd.journal_id AND je.entry_date <= $1 AND je.posted = true
+         WHERE a.type IN ('ASSET', 'LIABILITY', 'EQUITY')
+         GROUP BY a.id, a.code, a.name, a.type
+         ORDER BY a.code`, [asOf]);
+      return {
+        columns: [
+          { label: 'Kode Akun' },
+          { label: 'Nama Akun' },
+          { label: 'Tipe' },
+          { label: 'Jumlah (Rp)', numeric: true, total: true }
+        ],
+        rows: r.rows.map(x => {
+          const amount = x.type === 'ASSET' ? (num(x.debit) - num(x.credit)) : (num(x.credit) - num(x.debit));
+          return [x.code, x.name, x.type, amount];
+        })
+      };
+    }
+  },
   'profit-loss': {
     label: 'Laba Rugi per Akun',
     async run(q){
@@ -391,6 +450,185 @@ router.get('/product-margin', async (req, res)=>{
         .then(x=> x.rows[0]?.n || 0).catch(()=>0),
       totals: r.rows.reduce((a,x)=>({ revenue:a.revenue+Number(x.revenue||0), cost:a.cost+Number(x.est_cost||0), margin:a.margin+Number(x.gross_margin||0) }), {revenue:0,cost:0,margin:0}) });
   }catch(e){ console.error('[margin]',e); res.status(500).json({error:e.message}); }
+});
+
+// ------------------------------------------------------------- LAPORAN KEUANGAN
+// Trial Balance (Neraca Saldo)
+router.get('/trial-balance', async (req, res) => {
+  try {
+    const end = req.query.end || (req.query.period ? (req.query.period.length === 7 ? `${req.query.period}-31` : req.query.period) : new Date(Date.now() + 7*3600*1000).toISOString().slice(0, 10));
+    const start = req.query.start || '2000-01-01';
+
+    const q = await pool.query(`
+      SELECT a.id, a.code, a.name, a.type,
+             COALESCE(SUM(jd.debit), 0)::numeric AS total_debit,
+             COALESCE(SUM(jd.credit), 0)::numeric AS total_credit
+        FROM accounts a
+        LEFT JOIN journal_details jd ON jd.account_id = a.id
+        LEFT JOIN journal_entries je ON je.id = jd.journal_id AND je.entry_date BETWEEN $1 AND $2 AND je.posted = true
+       GROUP BY a.id, a.code, a.name, a.type
+       ORDER BY a.code
+    `, [start, end]);
+
+    const accounts = q.rows.map(row => {
+      const d = Number(row.total_debit) || 0;
+      const c = Number(row.total_credit) || 0;
+      const isDebitNormal = ['ASSET', 'EXPENSE'].includes(row.type);
+      const balance = isDebitNormal ? (d - c) : (c - d);
+      return {
+        id: row.id,
+        code: row.code,
+        name: row.name,
+        type: row.type,
+        debit: d,
+        credit: c,
+        balance,
+      };
+    });
+
+    const sumDebit = accounts.reduce((s, a) => s + a.debit, 0);
+    const sumCredit = accounts.reduce((s, a) => s + a.credit, 0);
+    const isBalanced = Math.abs(sumDebit - sumCredit) < 0.01;
+
+    res.json({
+      start,
+      end,
+      accounts,
+      totals: {
+        debit: sumDebit,
+        credit: sumCredit,
+        balanced: isBalanced,
+        difference: Math.abs(sumDebit - sumCredit)
+      }
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Balance Sheet (Neraca)
+router.get('/balance-sheet', async (req, res) => {
+  try {
+    const asOf = req.query.as_of || req.query.end || new Date(Date.now() + 7*3600*1000).toISOString().slice(0, 10);
+
+    const q = await pool.query(`
+      SELECT a.id, a.code, a.name, a.type,
+             COALESCE(SUM(jd.debit), 0)::numeric AS total_debit,
+             COALESCE(SUM(jd.credit), 0)::numeric AS total_credit
+        FROM accounts a
+        LEFT JOIN journal_details jd ON jd.account_id = a.id
+        LEFT JOIN journal_entries je ON je.id = jd.journal_id AND je.entry_date <= $1 AND je.posted = true
+       GROUP BY a.id, a.code, a.name, a.type
+       ORDER BY a.code
+    `, [asOf]);
+
+    const assets = [];
+    const liabilities = [];
+    const equity = [];
+    let currentEarnings = 0; // Revenue - Expenses
+
+    for (const row of q.rows) {
+      const d = Number(row.total_debit) || 0;
+      const c = Number(row.total_credit) || 0;
+      if (row.type === 'ASSET') {
+        const val = d - c;
+        if (Math.abs(val) > 0.001) assets.push({ code: row.code, name: row.name, amount: val });
+      } else if (row.type === 'LIABILITY') {
+        const val = c - d;
+        if (Math.abs(val) > 0.001) liabilities.push({ code: row.code, name: row.name, amount: val });
+      } else if (row.type === 'EQUITY') {
+        const val = c - d;
+        if (Math.abs(val) > 0.001) equity.push({ code: row.code, name: row.name, amount: val });
+      } else if (row.type === 'REVENUE') {
+        currentEarnings += (c - d);
+      } else if (row.type === 'EXPENSE') {
+        currentEarnings -= (d - c);
+      }
+    }
+
+    const totalAssets = assets.reduce((s, a) => s + a.amount, 0);
+    const totalLiabilities = liabilities.reduce((s, l) => s + l.amount, 0);
+    const totalEquity = equity.reduce((s, e) => s + e.amount, 0) + currentEarnings;
+    const totalLiabilitiesAndEquity = totalLiabilities + totalEquity;
+
+    res.json({
+      as_of: asOf,
+      assets,
+      total_assets: totalAssets,
+      liabilities,
+      total_liabilities: totalLiabilities,
+      equity: [
+        ...equity,
+        { code: '3-9999', name: 'Laba/Rugi Periode Berjalan', amount: currentEarnings }
+      ],
+      total_equity: totalEquity,
+      total_liabilities_and_equity: totalLiabilitiesAndEquity,
+      balanced: Math.abs(totalAssets - totalLiabilitiesAndEquity) < 0.01,
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Profit & Loss (Laba Rugi)
+router.get('/profit-loss', async (req, res) => {
+  try {
+    const start = req.query.start || new Date(Date.now() + 7*3600*1000 - 30*86400000).toISOString().slice(0, 10);
+    const end = req.query.end || new Date(Date.now() + 7*3600*1000).toISOString().slice(0, 10);
+
+    const q = await pool.query(`
+      SELECT a.id, a.code, a.name, a.type,
+             COALESCE(SUM(jd.debit), 0)::numeric AS total_debit,
+             COALESCE(SUM(jd.credit), 0)::numeric AS total_credit
+        FROM accounts a
+        LEFT JOIN journal_details jd ON jd.account_id = a.id
+        LEFT JOIN journal_entries je ON je.id = jd.journal_id AND je.entry_date BETWEEN $1 AND $2 AND je.posted = true
+       WHERE a.type IN ('REVENUE', 'EXPENSE')
+       GROUP BY a.id, a.code, a.name, a.type
+       ORDER BY a.code
+    `, [start, end]);
+
+    const revenues = [];
+    const cogs = [];
+    const opExpenses = [];
+
+    for (const row of q.rows) {
+      const d = Number(row.total_debit) || 0;
+      const c = Number(row.total_credit) || 0;
+      if (row.type === 'REVENUE') {
+        const val = c - d;
+        if (Math.abs(val) > 0.001) revenues.push({ code: row.code, name: row.name, amount: val });
+      } else if (row.type === 'EXPENSE') {
+        const val = d - c;
+        if (row.code.startsWith('5-')) {
+          if (Math.abs(val) > 0.001) cogs.push({ code: row.code, name: row.name, amount: val });
+        } else {
+          if (Math.abs(val) > 0.001) opExpenses.push({ code: row.code, name: row.name, amount: val });
+        }
+      }
+    }
+
+    const totalRevenue = revenues.reduce((s, r) => s + r.amount, 0);
+    const totalCogs = cogs.reduce((s, c) => s + c.amount, 0);
+    const grossProfit = totalRevenue - totalCogs;
+    const totalOpExpense = opExpenses.reduce((s, e) => s + e.amount, 0);
+    const netProfit = grossProfit - totalOpExpense;
+
+    res.json({
+      start,
+      end,
+      revenues,
+      total_revenue: totalRevenue,
+      cogs,
+      total_cogs: totalCogs,
+      gross_profit: grossProfit,
+      operating_expenses: opExpenses,
+      total_operating_expense: totalOpExpense,
+      net_profit: netProfit,
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 router.get('/export/types', (_req, res)=>{

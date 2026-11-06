@@ -213,11 +213,11 @@ export default function SalesInvoices(){
                     <td className="px-4 py-3 align-middle" onClick={e=>e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-2">
                         {!isPaid ? (
-                          <button onClick={()=>openPay(inv)} className="h-7 px-3.5 rounded-full bg-brand text-white text-xs font-bold hover:bg-brand-strong whitespace-nowrap">Bayar</button>
+                          <button onClick={()=>openPay(inv)} className="h-8 px-3.5 rounded-full bg-brand text-white text-xs font-bold hover:bg-brand-strong whitespace-nowrap">Bayar</button>
                         ) : (
-                          <button onClick={()=>handleKirimWA(inv)} className="h-7 px-3.5 rounded-full bg-[#007a55] text-white text-xs font-bold hover:bg-[#047857] whitespace-nowrap">Kirim WA</button>
+                          <button onClick={()=>handleKirimWA(inv)} className="h-8 px-3.5 rounded-full bg-[#007a55] text-white text-xs font-bold hover:bg-[#047857] whitespace-nowrap">Kirim WA</button>
                         )}
-                        <button onClick={()=>handleKirimWA(inv)} aria-label="Lainnya" className="w-7 h-7 grid place-items-center rounded-full hover:bg-surface-3 text-ink-3 hover:text-ink-2 transition"><MoreVertical size={14} /></button>
+                        <button onClick={()=>handleKirimWA(inv)} aria-label="Lainnya" className="w-8 h-8 grid place-items-center rounded-full hover:bg-surface-3 text-ink-3 hover:text-ink-2 transition"><MoreVertical size={14} /></button>
                       </div>
                     </td>
                   </tr>

@@ -53,6 +53,8 @@ import errorsRoutes from './modules/errors/routes.js';
 import { errorCapture } from './middleware/error-capture.js';
 import { startOutboxWorker } from './lib/outbox-worker.js';
 import { logError, recentErrors, errorStats } from './lib/error-log.js';
+import { redisStatus } from './lib/redis.js';
+import { openApiSpec, swaggerHtml } from './lib/swagger.js';
 
 dotenv.config();
 const app = express();
@@ -91,6 +93,13 @@ app.use(morgan(process.env.NODE_ENV==='production' ? 'combined' : 'dev'));
 // dan tetap melewati proxy /api (nginx & vite). Lampiran surat dokter TIDAK di sini —
 // itu hanya bisa dibaca lewat endpoint ber-auth /api/hr/leaves/:id/attachment.
 app.use('/api/media/products', express.static(path.resolve('uploads','products'), { maxAge:'7d', immutable:true, fallthrough:true }));
+
+// Dokumentasi OpenAPI & Swagger UI interaktif
+app.get('/api/docs/spec.json', (req, res) => res.json(openApiSpec));
+app.get('/api/docs', (req, res) => {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(swaggerHtml());
+});
 
 
 // ---------- AUDIT TRAIL: catat semua aksi tulis yang sukses ke audit_logs ----------
@@ -133,6 +142,48 @@ app.use((req,res,next)=>{
   });
   next();
 });
+app.get('/api/metrics/prometheus', (req, res) => {
+  const l = [...METRICS.latency].sort((a,b)=>a-b);
+  const pct = (p)=> l.length? Math.round(l[Math.min(l.length-1, Math.floor(l.length*p/100))]*10)/10 : 0;
+  const mem = process.memoryUsage();
+  const uptime = Math.round(process.uptime());
+
+  let out = '';
+  out += '# HELP erp_uptime_seconds Total application uptime in seconds\n';
+  out += '# TYPE erp_uptime_seconds gauge\n';
+  out += `erp_uptime_seconds ${uptime}\n\n`;
+
+  out += '# HELP erp_http_requests_total Total HTTP requests handled\n';
+  out += '# TYPE erp_http_requests_total counter\n';
+  out += `erp_http_requests_total ${METRICS.requests}\n\n`;
+
+  out += '# HELP erp_http_errors_5xx_total Total HTTP 5xx errors\n';
+  out += '# TYPE erp_http_errors_5xx_total counter\n';
+  out += `erp_http_errors_5xx_total ${METRICS.errors}\n\n`;
+
+  out += '# HELP erp_http_requests_by_status HTTP requests grouped by status code\n';
+  out += '# TYPE erp_http_requests_by_status counter\n';
+  for (const [st, count] of Object.entries(METRICS.byStatus)) {
+    out += `erp_http_requests_by_status{status="${st}"} ${count}\n`;
+  }
+  out += '\n';
+
+  out += '# HELP erp_http_latency_ms HTTP latency percentiles in milliseconds\n';
+  out += '# TYPE erp_http_latency_ms gauge\n';
+  out += `erp_http_latency_ms{quantile="0.5"} ${pct(50)}\n`;
+  out += `erp_http_latency_ms{quantile="0.95"} ${pct(95)}\n`;
+  out += `erp_http_latency_ms{quantile="0.99"} ${pct(99)}\n\n`;
+
+  out += '# HELP erp_memory_bytes Process memory metrics\n';
+  out += '# TYPE erp_memory_bytes gauge\n';
+  out += `erp_memory_bytes{type="rss"} ${mem.rss}\n`;
+  out += `erp_memory_bytes{type="heapTotal"} ${mem.heapTotal}\n`;
+  out += `erp_memory_bytes{type="heapUsed"} ${mem.heapUsed}\n`;
+
+  res.setHeader('Content-Type', 'text/plain; version=0.0.4; charset=utf-8');
+  res.send(out);
+});
+
 app.get('/api/metrics', auth, rbac('direktur','super_admin','auditor'), (req,res)=>{
   const l = [...METRICS.latency].sort((a,b)=>a-b);
   const pct = (p)=> l.length? Math.round(l[Math.min(l.length-1, Math.floor(l.length*p/100))]*10)/10 : 0;
@@ -153,20 +204,33 @@ app.get('/api/metrics/errors', auth, rbac('direktur','super_admin','auditor'), (
     log_dir: 'logs/', webhook: !!process.env.ERROR_WEBHOOK_URL });
 });
 
-// Health check untuk monitoring/uptime probe: benar-benar mengecek DB.
+// Health check untuk monitoring/uptime probe: mengecek DB & Redis.
 // 200 = siap dipakai, 503 = DB tidak bisa dihubungi (jangan kirim traffic).
 app.get('/api/health', async (req,res)=>{
   const started = Date.now();
+  let dbOk = false;
+  let dbMs = 0;
   try{
     await pool.query('SELECT 1');
-    res.json({
-      status:'ok', time:new Date().toISOString(),
-      uptime_s: Math.round(process.uptime()), db_ms: Date.now()-started,
-      version: process.env.APP_VERSION || '1.0.0', env: process.env.NODE_ENV || 'development',
-    });
-  }catch(e){
-    res.status(503).json({ status:'degraded', time:new Date().toISOString(), error:'database unreachable' });
-  }
+    dbOk = true;
+    dbMs = Date.now() - started;
+  }catch(_e){}
+
+  const redis = redisStatus();
+  const allOk = dbOk && (!redis.configured || redis.connected);
+
+  const payload = {
+    status: allOk ? 'ok' : 'degraded',
+    time: new Date().toISOString(),
+    uptime_s: Math.round(process.uptime()),
+    checks: {
+      database: dbOk ? { status: 'ok', latency_ms: dbMs } : { status: 'down', error: 'database unreachable' },
+      redis,
+    },
+    version: process.env.APP_VERSION || '1.0.0',
+    env: process.env.NODE_ENV || 'development',
+  };
+  res.status(dbOk ? 200 : 503).json(payload);
 });
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', auth, dashboardRoutes);
@@ -242,14 +306,32 @@ async function runMigrations(){
     const path = await import('path');
     const dir = path.resolve('migrations');
     if(!fs.existsSync(dir)) return;
+    await lockClient.query(`
+      CREATE TABLE IF NOT EXISTS schema_migrations (
+        version VARCHAR(255) PRIMARY KEY,
+        applied_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+    // Backfill dari audit_logs lama jika tabel baru dibuat
+    const migCount = await lockClient.query("SELECT COUNT(*) FROM schema_migrations");
+    if(parseInt(migCount.rows[0].count, 10) === 0){
+      await lockClient.query(`
+        INSERT INTO schema_migrations (version, applied_at)
+        SELECT DISTINCT substring(new_value::text from '"file":"([^"]+)"'), created_at
+          FROM audit_logs
+         WHERE entity_type='MIGRATION' AND new_value IS NOT NULL
+        ON CONFLICT DO NOTHING
+      `).catch(()=>{});
+    }
+
     const files = fs.readdirSync(dir).sort();
     // ponytail: 009_aging_rebuild must re-run to fix 404 seed; force rerun list
     const forceRerun = new Set(['009_aging_rebuild.sql']);
     for(const f of files){
       if(!f.endsWith('.sql')) continue;
       if(!forceRerun.has(f)){
-        const chk = await pool.query("SELECT COUNT(*) FROM audit_logs WHERE entity_type='MIGRATION' AND new_value::text LIKE $1",['%'+f+'%']);
-        if(parseInt(chk.rows[0].count)>0){
+        const chk = await lockClient.query("SELECT 1 FROM schema_migrations WHERE version=$1", [f]);
+        if(chk.rows.length > 0){
           console.log('migration '+f+' already applied');
           continue;
         }
@@ -258,8 +340,9 @@ async function runMigrations(){
       }
       const sql = fs.readFileSync(path.join(dir,f),'utf8');
       console.log('Running migration '+f+' ('+sql.length+' chars)');
-      await pool.query(sql);
-      await pool.query("INSERT INTO audit_logs (user_id,action,entity_type,entity_id,new_value) VALUES (1,'MIGRATE','MIGRATION',0,$1)",[JSON.stringify({file:f})]);
+      await lockClient.query(sql);
+      await lockClient.query("INSERT INTO schema_migrations (version) VALUES ($1) ON CONFLICT (version) DO UPDATE SET applied_at=NOW()", [f]);
+      await lockClient.query("INSERT INTO audit_logs (user_id,action,entity_type,entity_id,new_value) VALUES (1,'MIGRATE','MIGRATION',0,$1)",[JSON.stringify({file:f})]);
       console.log('Migration '+f+' done');
     }
   }catch(e){ console.error('migration err',e.message); }

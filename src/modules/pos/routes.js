@@ -1,5 +1,6 @@
 import express from 'express';
 import { pool } from '../../config/db.js';
+import { rbac } from '../../middleware/auth.js';
 import authRoutes from './auth-routes.js';
 import transactionRoutes from './transaction-routes.js';
 import supervisorRoutes from './supervisor-routes.js';
@@ -36,16 +37,11 @@ router.post('/transaction', verifyShift, async (req, res) => transactionRoutes(r
 router.use('/transaction', transactionRoutes);
 
 // ========== SUPERVISOR ROUTES (requires POS_SUPERVISOR role) ==========
-const supervisorOnly = (req, res, next) => {
-  // Role check happens at parent middleware level
-  next();
-};
+const supervisorOnly = rbac('POS_SUPERVISOR', 'POS_MANAGER', 'direktur', 'super_admin');
 router.use('/supervisor', supervisorOnly, supervisorRoutes);
 
 // ========== MANAGER ROUTES (requires POS_MANAGER role) ==========
-const managerOnly = (req, res, next) => {
-  next();
-};
+const managerOnly = rbac('POS_MANAGER', 'direktur', 'super_admin');
 router.use('/manager', managerOnly, managerRoutes);
 
 // ========== PRODUCT LOOKUP (fast, cached) ==========

@@ -1,10 +1,33 @@
 import jwt from 'jsonwebtoken';
+
+export function getJwtSecret() {
+  const secret = process.env.JWT_SECRET;
+  if (!secret || secret === 'erp_jwt_super_secret_2024') {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('[FATAL] JWT_SECRET tidak aman atau tidak di-set di environment produksi');
+    }
+    return 'erp_jwt_super_secret_2024';
+  }
+  return secret;
+}
+
+export function getJwtRefreshSecret() {
+  const secret = process.env.JWT_REFRESH_SECRET;
+  if (!secret || secret === 'erp_refresh_secret_2024') {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('[FATAL] JWT_REFRESH_SECRET tidak aman atau tidak di-set di environment produksi');
+    }
+    return 'erp_refresh_secret_2024';
+  }
+  return secret;
+}
+
 export function auth(req,res,next){
   const h = req.headers.authorization;
   if(!h) return res.status(401).json({error:'No token'});
   const token = h.replace('Bearer ','');
   try{
-    const payload = jwt.verify(token, process.env.JWT_SECRET || 'erp_jwt_super_secret_2024');
+    const payload = jwt.verify(token, getJwtSecret());
     req.user = payload;
     next();
   }catch(e){ return res.status(401).json({error:'Invalid token'}); }
@@ -12,7 +35,7 @@ export function auth(req,res,next){
 export function rbac(...allowed){
   const allow = allowed.map(r=>String(r).toLowerCase());
   return (req,res,next)=>{
-    const roles = (req.user.roles || []).map(r=>String(r).toLowerCase());
+    const roles = (req.user?.roles || []).map(r=>String(r).toLowerCase());
     if(roles.includes('direktur') || roles.includes('super_admin')) return next();
     const ok = roles.some(r=> allow.includes(r));
     if(!ok) return res.status(403).json({error:'Forbidden'});

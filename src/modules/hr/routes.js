@@ -8,6 +8,7 @@ import { paginate } from '../../utils/helpers.js';
 import { sendReport } from '../../lib/exporters.js';
 import { postJournal, ensureCoa, withTx } from '../../lib/journal.js';
 import { createEmployeeAccount, ensureRoleId, normalizeRole, isAdminRole, roleForEmployee, usernameFrom } from './employeeAccounts.js';
+import { hitungBpjsTK, hitungBpjsKesehatan, hitungPph21, hitungGajiNet } from './payroll-engine.js';
 const router = express.Router();
 
 const num = (v)=> parseFloat(v ?? 0) || 0;
@@ -465,10 +466,15 @@ router.post('/payrolls/generate', rbac('hrd','direktur','super_admin'), async (r
       if(ada.rows[0] && ada.rows[0].status==='PAID'){ dilewati++; continue; }
       const basic=num(e.basic_salary);
       const allowances=basic*0.1;
-      const bpjs_emp=basic*0.02;
-      const bpjs_comp=basic*0.04;
-      const pph21=basic*0.05;
-      const net=basic+allowances-bpjs_emp-pph21;
+      const bpjsTK = hitungBpjsTK({ basicSalary: basic });
+      const bpjsKes = hitungBpjsKesehatan({ basicSalary: basic });
+      const bpjs = { ...bpjsTK, ...bpjsKes };
+      const pph = hitungPph21({ grossSalary: basic + allowances, ptkpStatus: 'TK/0' });
+      const resGaji = hitungGajiNet({ basicSalary: basic, allowances, bpjs, pph21: pph });
+      const bpjs_emp = (bpjs.jht_emp || 0) + (bpjs.jp_emp || 0) + (bpjs.bpjs_kes_emp || 0);
+      const bpjs_comp = (bpjs.jht_company || 0) + (bpjs.jp_company || 0) + (bpjs.jkk || 0) + (bpjs.jkm || 0) + (bpjs.bpjs_kes_company || 0);
+      const pph21 = pph.pph21_monthly;
+      const net = resGaji.netSalary;
       await client.query(
         `INSERT INTO payrolls (employee_id, period, basic_salary, allowances, bpjs_employee, bpjs_company, pph21, net_salary, status)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'DRAFT')
@@ -492,6 +498,46 @@ router.post('/payrolls/:id/status', rbac('hrd','direktur','super_admin'), async 
     const r=await pool.query('UPDATE payrolls SET status=$1 WHERE id=$2 RETURNING *',[st, req.params.id]);
     if(!r.rows[0]) return res.status(404).json({error:'Payroll tidak ditemukan'});
     res.json({ ok:true, row:r.rows[0] });
+  }catch(e){ res.status(500).json({error:e.message}); }
+});
+
+// Slip gaji karyawan lengkap (bisa diakses HRD/direktur/super_admin atau karyawan bersangkutan)
+router.get('/payrolls/:id/slip', rbac('hrd','direktur','super_admin'), async (req,res)=>{
+  try{
+    const r = await pool.query(
+      `SELECT p.*, e.name AS employee_name, e.employee_code, e.position, e.department,
+              e.npwp, e.bpjs_number, b.name AS branch_name, c.name AS company_name
+         FROM payrolls p
+         JOIN employees e ON e.id = p.employee_id
+         LEFT JOIN branches b ON b.id = e.branch_id
+         LEFT JOIN companies c ON c.id = b.company_id
+        WHERE p.id = $1`, [req.params.id]);
+    const row = r.rows[0];
+    if(!row) return res.status(404).json({error:'Payroll tidak ditemukan'});
+
+    const roles = (req.user?.roles||[]).map(x=>String(x).toLowerCase());
+    const isHrOrAdmin = roles.some(x=>['hrd','direktur','super_admin'].includes(x));
+    if(!isHrOrAdmin && req.user?.employee_id !== row.employee_id){
+      return res.status(403).json({error:'Tidak berhak mengakses slip gaji ini'});
+    }
+
+    const basic = num(row.basic_salary);
+    const allowances = num(row.allowances);
+    const overtime = num(row.overtime);
+    const deductions = num(row.deductions);
+    const bpjsTK = hitungBpjsTK({ basicSalary: basic });
+    const bpjsKes = hitungBpjsKesehatan({ basicSalary: basic });
+    const bpjs = { ...bpjsTK, ...bpjsKes };
+    const pph = { pph21_monthly: num(row.pph21) };
+    const slipCalc = hitungGajiNet({ basicSalary: basic, allowances, overtime, deductions, bpjs, pph21: pph });
+
+    res.json({
+      ok: true,
+      slip: {
+        ...row,
+        detail: slipCalc.slip
+      }
+    });
   }catch(e){ res.status(500).json({error:e.message}); }
 });
 

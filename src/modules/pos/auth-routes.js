@@ -2,6 +2,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { pool } from '../../config/db.js';
+import { getJwtSecret } from '../../middleware/auth.js';
 
 const router = express.Router();
 
@@ -68,7 +69,7 @@ router.post('/cashier-login', async (req, res) => {
     await pool.query('UPDATE users SET last_login = NOW() WHERE id = $1', [user.id]);
     
     const payload = { id: user.id, username: user.username, roles, shift_id: shiftId, register_id };
-    const token = jwt.sign(payload, process.env.JWT_SECRET || 'erp_jwt_super_secret_2024', { expiresIn: '12h' });
+    const token = jwt.sign(payload, getJwtSecret(), { expiresIn: '12h' });
 
     res.json({ 
       token, 

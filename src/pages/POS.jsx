@@ -492,7 +492,7 @@ export default function POS(){
                       </div>
                       <div className="font-bold text-[13px] leading-tight mt-2 line-clamp-2 min-h-[34px] text-ink">{p.name}</div>
                       <div className="text-[11px] text-ink-2 mt-1 flex items-center gap-1 flex-wrap">
-                        Stok <b className="num text-ink">{fmtQty(stock)}</b>
+                        Stok <b className="num text-ink">{fmtQty(stock)}</b>{p.unit_code? <span className="text-ink-3">{p.unit_code}</span>:null}
                         {low ? <span className="text-red-600 font-bold">• habis</span>
                               : diKeranjang>0 ? <span className="text-brand font-bold">• {diKeranjang} di keranjang</span> : null}
                       </div>
