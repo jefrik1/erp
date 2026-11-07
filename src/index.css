@@ -36,6 +36,26 @@
   --info-line: 185 230 254;
 }
 
+
+.dark {
+  --bg: 11 15 25;
+  --surface: 17 23 38;
+  --surface-2: 22 29 46;
+  --surface-3: 29 37 56;
+  --surface-4: 38 48 71;
+  --line: 35 43 61;
+  --line-strong: 51 65 92;
+  --ink: 231 234 240;
+  --ink-2: 163 173 194;
+  --ink-3: 130 141 166;
+  --navy: 11 15 25;
+  --navy-2: 17 23 38;
+  --brand: 49 107 243;
+  --brand-strong: 30 64 175;
+  --brand-tint: 59 130 246;
+  --brand-soft: 23 37 84;
+}
+
 @layer base {
   html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
   body {

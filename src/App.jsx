@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
+import { MotionConfig } from 'motion/react';
 import Layout from './components/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
 import { DialogProvider } from './components/DialogProvider';
@@ -83,6 +84,7 @@ function Protected({children, allow}){
 export default function App(){
   return (
     <BrowserRouter>
+      <MotionConfig reducedMotion="user">
       <DialogProvider>
       <Suspense fallback={
         <div className="min-h-[100dvh] bg-bg">
@@ -166,6 +168,7 @@ export default function App(){
       </ErrorBoundary>
       </Suspense>
       </DialogProvider>
+      </MotionConfig>
     </BrowserRouter>
   )
 }

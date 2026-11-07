@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Toaster, toast } from 'react-hot-toast';
 import { Search, ScanLine, LayoutGrid, List, Trash2, Plus, ChevronDown, ArrowLeft, CreditCard, User, Phone, MapPin, StickyNote, Ticket, Percent } from 'lucide-react';
 import api from '../lib/api';
@@ -39,6 +40,7 @@ export default function POS(){
   const [closingCash,setClosingCash]=useState('');
   const [shiftNotes,setShiftNotes]=useState('');
   const [shiftBusy,setShiftBusy]=useState(false);
+  const [recentlyScannedId, setRecentlyScannedId]=useState(null);
   const loadShift = async()=>{ try{ const r=await api.get('/pos/shift/current'); setShift(r.data?.shift||null); setShiftSales(r.data?.sales||null); }catch(e){} };
   useEffect(()=>{ loadShift(); },[]);
 
@@ -119,7 +121,7 @@ export default function POS(){
       const hit = list.find(x=> String(x.barcode||'')===code)
         || list.find(x=> String(x.sku||'').toUpperCase()===String(code).toUpperCase())
         || list[0];
-      if(hit) add(hit); else toast.error('Produk tidak ditemukan: '+code);
+      if(hit) { add(hit); setRecentlyScannedId(hit.id); setTimeout(()=>setRecentlyScannedId(null), 1600); } else toast.error('Produk tidak ditemukan: '+code);
     }catch(_e){ toast.error('Gagal mencari produk: '+code); }
   },[products]);
   const { lastScan } = useBarcodeScanner({ onScan: scanLookup });
@@ -474,7 +476,7 @@ export default function POS(){
               const diKeranjang = qtyDiKeranjang(p.id);
               const penuh = diKeranjang >= stock;
               return (
-                <div key={p.id} className={"bg-white rounded-xl border border-line overflow-hidden hover:border-[#93C5FD] hover:shadow-card transition group flex flex-col "+(viewMode==='list'?"flex-row !p-3 items-center gap-3":"p-3")}>
+                <div key={p.id} className={"bg-surface rounded-xl border border-line overflow-hidden hover:border-brand-tint/60 hover:shadow-card transition-all duration-200 group flex flex-col "+(viewMode==='list'?"flex-row !p-3 items-center gap-3":"p-3")+(recentlyScannedId===p.id?" ring-2 ring-emerald-500 shadow-[0_0_16px_rgba(16,185,129,0.45)]":"")}>
                   {viewMode==='grid' ? (
                     <>
                       <div className="flex items-center justify-between">
@@ -556,7 +558,7 @@ export default function POS(){
             {(discTotal>0) && <div className="flex justify-between text-emerald-700"><span className="text-xs font-semibold">Diskon {discPct>0?discPct+'%':''} {vAmt>0?'+ Voucher':''}</span><span className="font-bold text-sm">-{rupiah(discTotal)}</span></div>}
             <div className="flex justify-between text-ink-2"><span className="text-xs font-semibold">PPN 11%</span><span className="font-bold text-ink text-sm">{rupiah(ppn)}</span></div>
             <div className="flex justify-between items-center border-t border-line pt-2">
-              <span className="font-bold text-ink">Total</span><span className="font-bold text-ink text-[16px]">{rupiah(grand)}</span>
+              <span className="font-bold text-ink">Total</span><motion.span key={grand} initial={{ scale: 1.08 }} animate={{ scale: 1 }} transition={{ duration: 0.2 }} className="font-bold text-brand text-[17px] num">{rupiah(grand)}</motion.span>
             </div>
             {dpPct>0
               ? <><div className="flex justify-between text-xs"><span>DP ({dpPct}%)</span><span className="text-emerald-700 font-bold">{rupiah(dp_amount)}</span></div><div className="flex justify-between text-xs font-bold text-amber-600"><span>Sisa</span><span>{rupiah(remaining_amount)}</span></div></>

@@ -1,42 +1,111 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { motion } from 'motion/react';
 import { ArrowLeft, Search, ChevronDown, Minus, Plus, Inbox, RefreshCw, FileSpreadsheet, FileText, FileCode2 } from 'lucide-react';
 
-// Primitif UI bersama — diselaraskan dengan Stitch "UI Redesign and Polish":
-// kartu putih tanpa border + shadow-card, radius 12, aksen biru #0051d5,
-// judul Plus Jakarta Sans, label 11px uppercase, angka tabular.
+// Primitif UI bersama — Linear / Stripe / Stitch Enterprise Design:
+// Kartu berdaya haptik, spring entrance, micro-interactions, Plus Jakarta Sans display,
+// tabular nums, dan visual feedback interaktif.
+
+// ------------------------------------------------------------- Animated Number Helper
+function AnimatedNumber({ value }){
+  const [display, setDisplay] = useState(value);
+  const prevRef = useRef(null);
+
+  useEffect(() => {
+    if (value == null) { setDisplay(''); return; }
+    const str = String(value);
+    const numPart = str.replace(/[^0-9]/g, '');
+    if (!numPart || numPart.length > 15) { setDisplay(value); return; }
+
+    const isRupiah = str.startsWith('Rp');
+    const target = parseFloat(numPart);
+    if (isNaN(target)) { setDisplay(value); return; }
+
+    const start = prevRef.current != null ? prevRef.current : 0;
+    prevRef.current = target;
+    const startTime = performance.now();
+    const duration = 650;
+
+    let animId;
+    const tick = (now) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(1, elapsed / duration);
+      // easeOutCubic
+      const ease = 1 - Math.pow(1 - progress, 3);
+      const current = Math.round(start + (target - start) * ease);
+
+      if (isRupiah) {
+        setDisplay('Rp ' + new Intl.NumberFormat('id-ID').format(current));
+      } else {
+        setDisplay(str.replace(/[\d,.]+/, new Intl.NumberFormat('id-ID').format(current)));
+      }
+
+      if (progress < 1) {
+        animId = requestAnimationFrame(tick);
+      } else {
+        setDisplay(value);
+      }
+    };
+    animId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(animId);
+  }, [value]);
+
+  return <span>{display}</span>;
+}
 
 // ------------------------------------------------------------- page header
 export function PosPageHeader({ title, subtitle, badge, onBack, icon:Icon, actions }){
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+      className="flex flex-wrap items-center gap-3"
+    >
       {onBack ? (
-        <button onClick={onBack} aria-label="Kembali"
-          className="w-10 h-10 rounded-lg bg-surface shadow-card grid place-items-center hover:bg-surface-2 text-ink shrink-0 transition-colors">
+        <motion.button
+          whileTap={{ scale: 0.94 }}
+          onClick={onBack} aria-label="Kembali"
+          className="w-10 h-10 rounded-xl bg-surface border border-line shadow-card grid place-items-center hover:bg-surface-2 text-ink shrink-0 transition-colors"
+        >
           <ArrowLeft size={18}/>
-        </button>
+        </motion.button>
       ) : Icon ? (
-        <div className="w-12 h-12 rounded-xl bg-brand-tint text-white grid place-items-center shrink-0 shadow-sm">
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand to-brand-tint text-white grid place-items-center shrink-0 shadow-md shadow-brand/10">
           <Icon size={24} strokeWidth={2}/>
         </div>
       ) : null}
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <h1 className="font-display text-headline-lg font-bold tracking-tight text-ink leading-tight">{title}</h1>
-          {badge && <span className="text-label-sm px-2.5 py-1 rounded-full bg-brand-soft text-[#00174b] leading-none">{badge}</span>}
+          {badge && (
+            <span className="text-label-sm px-2.5 py-1 rounded-full bg-brand-soft text-brand-strong border border-brand/20 font-semibold leading-none shadow-sm">
+              {badge}
+            </span>
+          )}
         </div>
         {subtitle && <p className="text-body-sm text-ink-2 mt-1 max-w-[90ch]">{subtitle}</p>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto sm:ml-auto">{actions}</div>}
-    </div>
-  )
+    </motion.div>
+  );
 }
 
 // -------------------------------------------------------------------- card
 export function PosCard({ children, className='' }){
-  return <div className={"bg-surface rounded-xl shadow-card overflow-hidden "+className}>{children}</div>;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+      className={"bg-surface rounded-xl shadow-card border border-line/80 hover:shadow-raised hover:border-brand/20 transition-all duration-200 overflow-hidden "+className}
+    >
+      {children}
+    </motion.div>
+  );
 }
 export function PosCardBody({ children, className='' }){
-  return <div className={"p-4 "+className}>{children}</div>;
+  return <div className={"p-4 sm:p-5 "+className}>{children}</div>;
 }
 
 // ------------------------------------------------------------------ search
@@ -44,54 +113,81 @@ export function PosSearch({ value, onChange, onSearch, placeholder, rightExtra }
   return (
     <div className="flex gap-2 min-w-0 flex-1">
       <div className="flex-1 relative min-w-0">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3" />
+        <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-3 pointer-events-none" />
         <input
           value={value} onChange={e=>onChange(e.target.value)}
           onKeyDown={e=>e.key==='Enter'&&onSearch?.()}
           placeholder={placeholder}
-          className="w-full h-10 pl-9 pr-3 bg-surface-2 border border-transparent rounded-lg text-body-md text-ink placeholder:text-ink-3 outline-none focus:bg-surface focus:border-brand-tint/40 focus:ring-2 focus:ring-brand-tint/15 transition"
+          className="w-full h-10 pl-9 pr-3 bg-surface-2 border border-transparent rounded-xl text-body-md text-ink placeholder:text-ink-3 outline-none focus:bg-surface focus:border-brand-tint/40 focus:ring-2 focus:ring-brand-tint/15 transition-all"
         />
       </div>
-      <button onClick={onSearch} className="hidden sm:inline-flex h-10 px-4 bg-surface shadow-card rounded-lg text-label-md text-ink hover:bg-surface-2 active:scale-[.98] transition shrink-0">Cari</button>
+      <motion.button
+        whileTap={{ scale: 0.94 }}
+        onClick={onSearch}
+        className="hidden sm:inline-flex items-center h-10 px-4 bg-surface border border-line shadow-card rounded-xl text-label-md font-semibold text-ink hover:bg-surface-2 transition shrink-0"
+      >
+        Cari
+      </motion.button>
       {rightExtra}
     </div>
-  )
+  );
 }
 
 // -------------------------------------------------------------------- chip
 export function PosChip({ active, children, onClick }){
   return (
-    <button onClick={onClick}
-      className={"h-8 px-3.5 rounded-full text-label-sm border whitespace-nowrap transition shrink-0 "+
+    <button
+      onClick={onClick}
+      className={"relative h-8 px-3.5 rounded-full text-label-sm border whitespace-nowrap transition-colors shrink-0 outline-none "+
         (active
-          ? "bg-navy text-white border-navy shadow-sm"
-          : "bg-surface-2 text-ink-2 border-transparent hover:bg-surface-3")}>
-      {children}
+          ? "text-white border-transparent font-semibold"
+          : "bg-surface-2 text-ink-2 border-transparent hover:bg-surface-3 hover:text-ink")}
+    >
+      {active && (
+        <motion.span
+          layoutId="pos-chip-active-pill"
+          className="absolute inset-0 bg-navy dark:bg-brand-tint rounded-full shadow-sm -z-0"
+          transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+        />
+      )}
+      <span className="relative z-10">{children}</span>
     </button>
-  )
+  );
 }
 
 // ------------------------------------------------------------------- table
 export function PosTableWrap({ children }){
-  return <div className="overflow-auto"><table className="w-full text-left border-collapse">{children}</table></div>;
+  return (
+    <div className="overflow-auto border border-line rounded-xl bg-surface">
+      <table className="w-full text-left border-collapse">{children}</table>
+    </div>
+  );
 }
 export function PosTableHead({ children }){
-  return <thead><tr className="bg-surface-2 text-ink-2 text-label-sm uppercase tracking-wider">{children}</tr></thead>;
+  return (
+    <thead>
+      <tr className="sticky top-0 z-10 backdrop-blur-md bg-surface-2/90 text-ink-2 text-label-sm uppercase tracking-wider border-b border-line shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+        {children}
+      </tr>
+    </thead>
+  );
 }
-export function PosSelect({ value, onChange, children, size='sm' }){    // size: 'sm' = h-8 (toolbar), 'md' = h-10 (form)
+export function PosSelect({ value, onChange, children, size='sm' }){
   return (
     <div className="relative">
-      <select value={value} onChange={e=>onChange(e.target.value)}
-        className={(size==='md'?'h-10':'h-8')+" w-full pl-3 pr-8 bg-surface-2 border border-transparent rounded-lg text-body-md font-medium text-ink outline-none focus:bg-surface focus:border-brand-tint/40 appearance-none transition"}>
+      <select
+        value={value} onChange={e=>onChange(e.target.value)}
+        className={(size==='md'?'h-10':'h-8')+" w-full pl-3 pr-8 bg-surface-2 border border-transparent rounded-lg text-body-md font-medium text-ink outline-none focus:bg-surface focus:border-brand-tint/40 focus:ring-2 focus:ring-brand-tint/15 appearance-none transition-all"}
+      >
         {children}
       </select>
       <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-3 pointer-events-none"/>
     </div>
-  )
+  );
 }
 
 export const posTh = "px-4 py-3 whitespace-nowrap text-label-sm uppercase tracking-wider text-ink-2 font-semibold";
-export const posTr = "border-b border-line hover:bg-surface-2/70 transition-colors";
+export const posTr = "border-b border-line/80 hover:bg-brand-soft/40 relative before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[3px] hover:before:bg-brand transition-colors duration-150";
 export const posTd = "px-4 py-3 text-body-md text-ink";
 
 export function PosTh({ children, align='left', className='' }){
@@ -108,16 +204,36 @@ const TONES = {
   teal:    'bg-success-soft text-success border-success-line/60',
   purple:  'bg-[#f3efff] text-[#5b3fd6] border-[#e8ddff]',
 };
+
 export function PosBadge({ tone='slate', children, title }){
-  return <span title={title} className={"inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-label-sm whitespace-nowrap "+(TONES[tone]||TONES.slate)}>{children}</span>
+  const strChildren = typeof children === 'string' ? children : '';
+  const isPulse = /red|danger|amber|warning/i.test(tone) ||
+    /kritis|danger|overdue|warning|in_transit|pending|loading|waspada|proses|picking/i.test(strChildren);
+
+  return (
+    <span
+      title={title}
+      className={"inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-label-sm font-semibold whitespace-nowrap shadow-sm "+(TONES[tone]||TONES.slate)}
+    >
+      {isPulse ? (
+        <span className="relative flex h-2 w-2 mr-0.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-current"></span>
+        </span>
+      ) : (
+        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60"/>
+      )}
+      {children}
+    </span>
+  );
 }
 
 // --------------------------------------------------- state: kosong/loading
 export function PosEmpty({ text='Belum ada data', colSpan, hint }){
   const inner = (
     <div className="py-12 text-center">
-      <div className="w-12 h-12 rounded-xl bg-surface-2 text-ink-3 grid place-items-center mx-auto"><Inbox size={22}/></div>
-      <div className="mt-3 text-label-lg text-ink">{text}</div>
+      <div className="w-12 h-12 rounded-2xl bg-surface-2 text-ink-3 grid place-items-center mx-auto shadow-inner"><Inbox size={22}/></div>
+      <div className="mt-3 text-label-lg font-semibold text-ink">{text}</div>
       <div className="text-body-sm text-ink-3 mt-1">{hint || 'Coba ubah filter atau muat ulang data.'}</div>
     </div>
   );
@@ -129,7 +245,7 @@ export function PosSkeleton({ rows=5, cols=4 }){
     <div className="p-4 space-y-3">
       {Array.from({ length: rows }).map((_, r)=>(
         <div key={r} className="grid gap-3" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0,1fr))` }}>
-          {Array.from({ length: cols }).map((__, c)=> <div key={c} className="h-4 skeleton rounded"/>) }
+          {Array.from({ length: cols }).map((__, c)=> <div key={c} className="h-4 skeleton rounded-lg"/>) }
         </div>
       ))}
     </div>
@@ -138,9 +254,17 @@ export function PosSkeleton({ rows=5, cols=4 }){
 export function PosError({ message, onRetry }){
   return (
     <div className="p-8 text-center">
-      <div className="text-label-lg text-danger">Gagal memuat data</div>
+      <div className="text-label-lg font-bold text-danger">Gagal memuat data</div>
       <div className="text-body-sm text-ink-2 mt-1">{message}</div>
-      {onRetry && <button onClick={onRetry} className={posBtnSecondary+' h-9 px-4 text-label-md mt-4'}><RefreshCw size={14}/> Coba Lagi</button>}
+      {onRetry && (
+        <motion.button
+          whileTap={{ scale: 0.94 }}
+          onClick={onRetry}
+          className={posBtnSecondary+' h-9 px-4 text-label-md mt-4'}
+        >
+          <RefreshCw size={14}/> Coba Lagi
+        </motion.button>
+      )}
     </div>
   );
 }
@@ -154,18 +278,24 @@ export function PosPager({ page, setPage, total, size=10, unit='baris' }){
   return (
     <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-t border-line bg-surface">
       <span className="text-label-sm text-ink-2 font-normal">
-        Menampilkan <b className="text-ink num">{from}-{to}</b> dari <b className="text-ink num">{total}</b> {unit}
+        Menampilkan <b className="text-ink num font-semibold">{from}-{to}</b> dari <b className="text-ink num font-semibold">{total}</b> {unit}
       </span>
       <div className="flex items-center gap-1.5">
-        <button type="button" disabled={p <= 1} onClick={()=>setPage(p - 1)}
-          className="h-8 px-3 rounded-lg bg-surface-2 text-label-sm text-ink hover:bg-surface-3 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+        <motion.button
+          whileTap={{ scale: 0.94 }}
+          type="button" disabled={p <= 1} onClick={()=>setPage(p - 1)}
+          className="h-8 px-3 rounded-lg bg-surface-2 text-label-sm font-semibold text-ink hover:bg-surface-3 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
           Sebelumnya
-        </button>
-        <span className="text-label-sm text-ink num px-1.5">{p}/{pages}</span>
-        <button type="button" disabled={p >= pages} onClick={()=>setPage(p + 1)}
-          className="h-8 px-3 rounded-lg bg-surface-2 text-label-sm text-ink hover:bg-surface-3 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+        </motion.button>
+        <span className="text-label-sm text-ink num font-semibold px-2">{p}/{pages}</span>
+        <motion.button
+          whileTap={{ scale: 0.94 }}
+          type="button" disabled={p >= pages} onClick={()=>setPage(p + 1)}
+          className="h-8 px-3 rounded-lg bg-surface-2 text-label-sm font-semibold text-ink hover:bg-surface-3 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
           Berikutnya
-        </button>
+        </motion.button>
       </div>
     </div>
   );
@@ -174,12 +304,18 @@ export function PosPager({ page, setPage, total, size=10, unit='baris' }){
 // ---------------------------------------------- kartu ringkasan (statistik)
 export function PosStat({ label, value, sub, tone='bg-surface-2 text-ink-2', icon:Icon }){
   return (
-    <div className="bg-surface rounded-lg shadow-card border border-line p-4 min-h-[104px] flex flex-col justify-between">
+    <div className="group relative bg-surface rounded-xl shadow-card border border-line/80 hover:shadow-raised hover:border-brand/30 transition-all duration-200 p-4 min-h-[104px] flex flex-col justify-between overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[3px] before:rounded-t-lg before:bg-gradient-to-r before:from-brand-tint before:to-sky-400">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[11px] uppercase tracking-[.04em] text-ink-3 font-semibold">{label}</span>
-        {Icon && <span className={"w-7 h-7 rounded grid place-items-center shrink-0 "+tone}><Icon size={18} strokeWidth={2}/></span>}
+        <span className="text-[11px] uppercase tracking-[.06em] text-ink-3 font-semibold">{label}</span>
+        {Icon && (
+          <span className={"w-7 h-7 rounded-lg grid place-items-center shrink-0 shadow-sm transition-transform duration-200 group-hover:scale-110 "+tone}>
+            <Icon size={16} strokeWidth={2}/>
+          </span>
+        )}
       </div>
-      <div className="text-[22px] font-bold text-ink mt-2 num leading-none tracking-tight">{value}</div>
+      <div className="text-[22px] font-bold text-ink mt-2 num leading-none tracking-tight">
+        <AnimatedNumber value={value} />
+      </div>
       {sub && <div className="text-body-sm text-ink-3 mt-1.5">{sub}</div>}
     </div>
   );
@@ -219,36 +355,42 @@ export function PosExportButtons({ onExport, busyKey='', formats=['xlsx','pdf','
         const Ico = m.Icon;
         const busy = busyKey === f;
         return (
-          <button key={f} type="button" disabled={disabled || !!busyKey} onClick={()=>onExport(f)}
+          <motion.button
+            whileTap={{ scale: 0.94 }}
+            key={f} type="button" disabled={disabled || !!busyKey} onClick={()=>onExport(f)}
             title={`Unduh ${prefix ? prefix+' ' : ''}sebagai ${m.label}`}
             className={(size === 'sm' ? 'h-8 px-3 text-label-sm' : 'h-10 px-4 text-label-md') +
-              ' inline-flex items-center justify-center gap-1.5 rounded-lg font-semibold whitespace-nowrap transition active:scale-[.98] disabled:opacity-50 disabled:cursor-not-allowed ' + m.cls}>
+              ' inline-flex items-center justify-center gap-1.5 rounded-lg font-semibold whitespace-nowrap transition active:scale-[.98] disabled:opacity-50 disabled:cursor-not-allowed ' + m.cls}
+          >
             {busy ? <RefreshCw size={13} className="animate-spin"/> : <Ico size={13}/>}
             {prefix ? <span>{prefix}</span> : null}<span>{m.label}</span>
-          </button>
+          </motion.button>
         );
       })}
     </div>
   );
 }
 
+export const posInput = "w-full h-10 px-3 bg-surface-2 border border-transparent rounded-lg text-body-md text-ink outline-none focus:bg-surface focus:border-brand-tint/40 focus:ring-2 focus:ring-brand-tint/15 placeholder:text-ink-3 transition-all";
+export const posBtnPrimary = "h-10 px-4 bg-brand text-white rounded-lg inline-flex items-center justify-center gap-1.5 text-label-md font-semibold shadow-sm hover:bg-brand-strong active:scale-[.96] transition-all whitespace-nowrap";
+export const posBtnSecondary = "h-10 px-4 bg-surface text-ink rounded-lg shadow-card border border-line inline-flex items-center justify-center gap-1.5 text-label-md font-semibold hover:bg-surface-2 active:scale-[.96] transition-all whitespace-nowrap";
+export const posBtnSm = "h-8 px-3 bg-surface-2 rounded-lg inline-flex items-center justify-center gap-1.5 text-label-sm font-semibold text-ink-2 hover:bg-surface-3 active:scale-[.96] transition-all whitespace-nowrap";
 
-export const posInput = "w-full h-10 px-3 bg-surface-2 border border-transparent rounded-lg text-body-md text-ink outline-none focus:bg-surface focus:border-brand-tint/40 focus:ring-2 focus:ring-brand-tint/15 placeholder:text-ink-3 transition";
-export const posBtnPrimary = "h-10 px-4 bg-brand text-white rounded-lg inline-flex items-center justify-center gap-1.5 text-label-md font-semibold shadow-sm hover:bg-brand-strong active:scale-[.98] transition whitespace-nowrap";
-export const posBtnSecondary = "h-10 px-4 bg-surface text-ink rounded-lg shadow-card inline-flex items-center justify-center gap-1.5 text-label-md font-semibold hover:bg-surface-2 active:scale-[.98] transition whitespace-nowrap";
-export const posBtnSm = "h-8 px-3 bg-surface-2 rounded-lg inline-flex items-center justify-center gap-1.5 text-label-sm font-semibold text-ink-2 hover:bg-surface-3 transition whitespace-nowrap";
-
-// Stepper qty keranjang: tombol − / + dengan angka yang bisa diketik langsung.
-// Draft lokal supaya field boleh kosong saat mengetik; clamp saat blur/Enter.
-// onExceed(nilaiAsli) dipanggil SEBELUM nilai di-clamp ke `max`, jadi pemanggil bisa
-// menampilkan peringatan (mis. stok kurang). Callback ini murni notifikasi: tidak
-// mengubah draft/qty di sini, urutan tetap onExceed → onChange(nilaiTer-clamp).
+// Stepper qty keranjang: tombol − / + dengan getaran kinetik jika melebihi batas stok.
 export function PosQtyInput({ value, onChange, onExceed, min=1, max=9999, className='' }){
   const [draft,setDraft]=useState(String(value ?? min));
+  const [isOver, setIsOver]=useState(false);
+
   useEffect(()=>{ setDraft(String(value ?? min)); },[value]);
   const toInt=(n)=>{ const v=Math.round(Number(n)); return Number.isFinite(v)?v:min; };
   const clamp=(n)=>{ const v=toInt(n); return Math.min(max, Math.max(min, v)); };
-  const notifyOver=(n)=>{ if(n>max) onExceed?.(n); };
+  const notifyOver=(n)=>{
+    if(n>max) {
+      setIsOver(true);
+      setTimeout(()=>setIsOver(false), 500);
+      onExceed?.(n);
+    }
+  };
   const commit=()=>{
     const n=toInt(String(draft).replace(/[^0-9]/g,''));
     notifyOver(n);
@@ -257,25 +399,43 @@ export function PosQtyInput({ value, onChange, onExceed, min=1, max=9999, classN
     if(v!==Number(value)) onChange(v);
   };
   return (
-    <div className={"inline-flex items-center gap-1 bg-surface-2 rounded-full p-1 "+className}>
-      <button type="button" aria-label="Kurangi qty" onClick={()=>onChange(clamp(Number(value)-1))} className="w-6 h-6 rounded-full bg-surface grid place-items-center hover:bg-surface-3 text-ink-2 shrink-0"><Minus size={12}/></button>
+    <motion.div
+      animate={isOver ? { x: [0, -6, 6, -4, 4, 0] } : { x: 0 }}
+      transition={{ duration: 0.35 }}
+      className={"inline-flex items-center gap-1 bg-surface-2 rounded-full p-1 border transition-colors " +
+        (isOver ? "border-amber-500 bg-amber-500/10" : "border-transparent") + " " + className}
+    >
+      <motion.button
+        whileTap={{ scale: 0.94 }}
+        type="button" aria-label="Kurangi qty" onClick={()=>onChange(clamp(Number(value)-1))}
+        className="w-6 h-6 rounded-full bg-surface grid place-items-center hover:bg-surface-3 text-ink-2 shrink-0 shadow-sm"
+      >
+        <Minus size={12}/>
+      </motion.button>
       <input
         type="text" inputMode="numeric" aria-label="Qty" value={draft}
         onChange={e=>{
           const raw=e.target.value.replace(/[^0-9]/g,'');
-          if(raw===''){ setDraft(''); return; }               // kosong = biarkan user mengetik ulang
+          if(raw===''){ setDraft(''); return; }
           const n=toInt(raw);
-          notifyOver(n);                                      // peringatan dulu...
-          const v=clamp(n);                                   // ...lalu qty dipaksa ke stok
-          setDraft(String(v));                                // input langsung ikut nilai stok, bukan angka ketikan
+          notifyOver(n);
+          const v=clamp(n);
+          setDraft(String(v));
           onChange(v);
         }}
         onFocus={e=>e.target.select()}
         onBlur={commit}
         onKeyDown={e=>{ if(e.key==='Enter'){ e.preventDefault(); e.currentTarget.blur(); } }}
-        className="w-9 text-center text-label-md bg-transparent outline-none num text-ink"
+        className="w-9 text-center text-label-md bg-transparent outline-none num text-ink font-semibold"
       />
-      <button type="button" aria-label="Tambah qty" onClick={()=>{ const n=toInt(Number(value)+1); notifyOver(n); onChange(clamp(n)); }} className="w-6 h-6 rounded-full bg-surface shadow-sm grid place-items-center hover:bg-surface-3 text-ink-2 shrink-0"><Plus size={12}/></button>
-    </div>
-  )
+      <motion.button
+        whileTap={{ scale: 0.94 }}
+        type="button" aria-label="Tambah qty"
+        onClick={()=>{ const n=toInt(Number(value)+1); notifyOver(n); onChange(clamp(n)); }}
+        className="w-6 h-6 rounded-full bg-surface shadow-sm grid place-items-center hover:bg-surface-3 text-ink-2 shrink-0"
+      >
+        <Plus size={12}/>
+      </motion.button>
+    </motion.div>
+  );
 }

@@ -1,27 +1,47 @@
 import { useState } from 'react';
-import { Check, Loader2, ShieldCheck, BookOpen, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Check, Loader2, ShieldCheck, BookOpen, ChevronRight, KeyRound, Building2, CheckCircle2, Shield, Lock, Layers } from 'lucide-react';
 import api from '../lib/api';
 import { useAuth } from '../store/auth';
 import { Link, useNavigate } from 'react-router-dom';
 import { homeFor } from '../config/access';
 
 export default function Login(){
-  const [u,setU]=useState('admin'); const [p,setP]=useState('admin123'); const [err,setErr]=useState(''); const [loading,setLoading]=useState(false);
-  const {setAuth} = useAuth(); const nav=useNavigate();
+  const [u,setU]=useState('admin');
+  const [p,setP]=useState('admin123');
+  const [err,setErr]=useState('');
+  const [loading,setLoading]=useState(false);
+  const [shake, setShake]=useState(false);
+  const {setAuth} = useAuth();
+  const nav=useNavigate();
   const [mfa,setMfa]=useState(false);
   const [mfaToken,setMfaToken]=useState('');
   const [code,setCode]=useState('');
+
+  const triggerShake = () => {
+    setShake(true);
+    setTimeout(()=>setShake(false), 500);
+  };
+
   const submit=async(e)=>{
-    e.preventDefault(); setLoading(true); setErr('');
+    e.preventDefault();
+    setLoading(true); setErr('');
     try{
       const r=await api.post('/auth/login',{username:u,password:p});
       if(r.data?.mfa_required){
         setMfaToken(r.data.mfa_token); setMfa(true); setErr('');
         return;
       }
-      setAuth(r.data.user, r.data.token); nav(homeFor(r.data.user?.roles||[]));
-    }catch(e){ setErr(e.response?.data?.error||'Login gagal'); }finally{setLoading(false);}
+      setAuth(r.data.user, r.data.token);
+      nav(homeFor(r.data.user?.roles||[]));
+    }catch(e){
+      triggerShake();
+      setErr(e.response?.data?.error||'Login gagal. Periksa username dan password.');
+    }finally{
+      setLoading(false);
+    }
   };
+
   const verifyMfa=async(e)=>{
     e.preventDefault();
     setLoading(true); setErr('');
@@ -29,65 +49,116 @@ export default function Login(){
       const r=await api.post('/auth/mfa/verify-login',{ mfa_token:mfaToken, code });
       setAuth(r.data.user, r.data.token);
       nav(homeFor(r.data.user?.roles||[]));
-    }catch(err){ setErr(err.response?.data?.error||'Kode MFA salah'); }
-    finally{ setLoading(false); }
+    }catch(err){
+      triggerShake();
+      setErr(err.response?.data?.error||'Kode MFA tidak valid atau kadaluarsa');
+    }finally{
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-[100dvh] grid lg:grid-cols-[1.05fr_1fr] bg-bg">
-      {/* panel kiri — navy, mengikuti sidebar Stitch */}
-      <div className="hidden lg:flex flex-col justify-between p-12 bg-navy text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.18]" style={{background:'radial-gradient(720px 480px at 15% 10%, #316bf3, transparent 70%), radial-gradient(600px 420px at 90% 95%, #009668, transparent 70%)'}}/>
-        <div className="relative">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-brand grid place-items-center font-display font-bold text-[17px]">SM</div>
-            <div className="flex flex-col">
-              <span className="font-display text-headline-sm font-bold leading-tight tracking-tight">Sumber Material</span>
-              <span className="text-label-sm uppercase tracking-wider text-white/45">Enterprise ERP</span>
-            </div>
+    <div className="min-h-[100dvh] grid lg:grid-cols-[1.1fr_1fr] bg-bg selection:bg-brand/20">
+      {/* Left panel — Industrial Architecture Showcase */}
+      <div className="hidden lg:flex flex-col justify-between p-12 bg-navy text-white relative overflow-hidden select-none">
+        {/* Subtle grid pattern background */}
+        <div className="absolute inset-0 opacity-[0.06] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:32px_32px]" />
+        
+        {/* Ambient colored orbs */}
+        <div className="absolute inset-0 opacity-[0.22] pointer-events-none" style={{background:'radial-gradient(640px 480px at 15% 15%, #316bf3, transparent 70%), radial-gradient(540px 420px at 85% 85%, #009668, transparent 70%)'}}/>
+
+        {/* Top brand header */}
+        <div className="relative z-10 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand to-brand-tint grid place-items-center font-display font-bold text-white text-[16px] shadow-lg shadow-brand/30">
+            SM
           </div>
-          <div className="mt-20 max-w-[520px]">
-            <h1 className="font-display text-[40px] leading-[1.05] font-bold tracking-tight">
-              Kelola material.<br/>Kirim tepat waktu.<br/><span className="text-[#6ffbbe]">Catat otomatis.</span>
-            </h1>
-            <p className="text-body-lg text-white/60 mt-5 leading-relaxed max-w-[440px]">
-              ERP untuk distributor material bangunan: multi-gudang, multi-satuan, batch, dan approval berjenjang untuk satu lokasi operasional.
-            </p>
-            <div className="mt-10 space-y-3">
-              {['Multi-gudang, multi-satuan, dan batch','Approval berjenjang dengan audit trail','PPN 11%, faktur pajak, dan laporan keuangan'].map(t=>(
-                <div key={t} className="flex items-center gap-3 text-body-md text-white/75">
-                  <span className="w-5 h-5 rounded-full bg-white/10 grid place-items-center shrink-0"><Check size={12}/></span>{t}
-                </div>
-              ))}
-            </div>
+          <div className="flex flex-col">
+            <span className="font-display text-headline-sm font-bold leading-tight tracking-tight text-white">Sumber Material</span>
+            <span className="text-[10px] uppercase tracking-widest text-white/50 font-semibold">Enterprise ERP</span>
           </div>
         </div>
-        <div className="relative flex items-center justify-between text-label-sm text-white/40">
-          <span>PT Sumber Material Jaya — sistem ERP internal</span>
-          <span className="flex items-center gap-1.5"><ShieldCheck size={14}/> Akses teraudit</span>
+
+        {/* Hero Content */}
+        <div className="relative z-10 my-auto max-w-[540px]">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-xs text-white/80 font-medium mb-6 backdrop-blur-md">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"/>
+            Single-Company Distribution Platform
+          </div>
+
+          <h1 className="font-display text-[42px] leading-[1.08] font-bold tracking-tight text-white">
+            Kelola material.<br/>
+            Kirim tepat waktu.<br/>
+            <span className="bg-gradient-to-r from-emerald-300 to-sky-300 bg-clip-text text-transparent">
+              Catat otomatis.
+            </span>
+          </h1>
+
+          <p className="text-body-lg text-white/65 mt-5 leading-relaxed max-w-[460px]">
+            Sistem ERP terintegrasi untuk distribusi bahan bangunan & baja: multi-gudang, kartu stok FEFO, jembatan timbang, dan buku besar append-only.
+          </p>
+
+          {/* Floating Metric Badges */}
+          <div className="grid grid-cols-2 gap-3 mt-10">
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.5 }}
+              className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md"
+            >
+              <div className="text-[11px] uppercase tracking-wider text-white/45 font-semibold">Buku Besar</div>
+              <div className="text-lg font-bold num mt-0.5 text-white flex items-center gap-1.5">
+                <CheckCircle2 size={16} className="text-emerald-400"/> Rp 27,5 M Seimbang
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md"
+            >
+              <div className="text-[11px] uppercase tracking-wider text-white/45 font-semibold">Audit Trail</div>
+              <div className="text-lg font-bold num mt-0.5 text-white flex items-center gap-1.5">
+                <Shield size={16} className="text-sky-400"/> 100% Immutable Trigger
+              </div>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Footer info */}
+        <div className="relative z-10 flex items-center justify-between text-label-sm text-white/40 pt-6 border-t border-white/10">
+          <span>PT Sumber Material Jaya</span>
+          <span className="flex items-center gap-1.5 font-medium"><ShieldCheck size={14} className="text-emerald-400"/> Sesi aman & teraudit</span>
         </div>
       </div>
 
-      {/* panel kanan — form */}
-      <div className="flex items-center justify-center p-6">
+      {/* Right panel — Auth Form */}
+      <div className="flex items-center justify-center p-6 sm:p-10">
         <div className="w-full max-w-[420px]">
+          {/* Mobile brand header */}
           <div className="lg:hidden flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-lg bg-brand grid place-items-center text-white font-display font-bold">SM</div>
+            <div className="w-10 h-10 rounded-xl bg-brand grid place-items-center text-white font-display font-bold">SM</div>
             <div className="flex flex-col">
               <span className="font-display text-headline-sm font-bold leading-tight">Sumber Material</span>
               <span className="text-label-sm uppercase tracking-wider text-ink-3">Enterprise ERP</span>
             </div>
           </div>
 
-          <div className="bg-surface rounded-2xl shadow-card p-8">
-            <h2 className="font-display text-headline-lg font-bold text-ink tracking-tight">Masuk ke ERP</h2>
-            <p className="text-body-sm text-ink-2 mt-1.5">Pilih akun demo di bawah — dashboard & menu menyesuaikan role akun.</p>
+          <motion.div
+            animate={shake ? { x: [0, -8, 8, -6, 6, -3, 3, 0] } : { x: 0 }}
+            transition={{ duration: 0.45 }}
+            className="bg-surface rounded-3xl shadow-card border border-line p-7 sm:p-8 relative overflow-hidden"
+          >
+            <div className="mb-6">
+              <h2 className="font-display text-headline-lg font-bold text-ink tracking-tight">Masuk ke ERP</h2>
+              <p className="text-body-sm text-ink-2 mt-1">Pilih profil peran di bawah atau gunakan kredensial resmi Anda.</p>
+            </div>
 
-            {/* Akun demo untuk testing — hapus blok ini sebelum produksi. */}
-            <div className="mt-5 rounded-xl border border-line bg-surface-2/60 p-2">
-              <div className="flex items-center justify-between px-1 pb-1.5">
-                <span className="text-label-sm font-semibold text-ink-2 uppercase tracking-wider">Akun demo</span>
-                <span className="text-label-sm text-ink-3">klik untuk isi otomatis</span>
+            {/* Demo selector pill grid */}
+            <div className="rounded-2xl border border-line bg-surface-2/60 p-2.5 mb-6">
+              <div className="flex items-center justify-between px-1 pb-2">
+                <span className="text-[11px] font-bold text-ink-2 uppercase tracking-wider">Akses Demo Cepat</span>
+                <span className="text-[11px] text-ink-3">1-klik auto-fill</span>
               </div>
               <div className="grid grid-cols-3 gap-1.5">
                 {[
@@ -100,70 +171,147 @@ export default function Login(){
                   ['hrd','hrd123','HRD'],
                   ['driver','driver123','Driver'],
                   ['auditor','auditor123','Auditor'],
-                ].map(([usr,pw,role])=>(
-                  <button type="button" key={usr} onClick={()=>{setU(usr);setP(pw);setErr('');}}
+                ].map(([usr,pw,roleName])=>(
+                  <motion.button
+                    whileTap={{ scale: 0.94 }}
+                    type="button" key={usr} onClick={()=>{setU(usr);setP(pw);setErr('');}}
                     title={usr+' / '+pw}
-                    className={"text-left rounded-lg px-2 py-1.5 border transition-colors "+(u===usr?'bg-brand text-white border-brand shadow-sm':'bg-surface hover:bg-surface-3 border-transparent')}>
-                    <span className={"block text-label-md font-semibold truncate "+(u===usr?'text-white':'text-ink')}>{role}</span>
-                    <span className={"block text-label-sm font-normal truncate "+(u===usr?'text-white/70':'text-ink-3')}>{usr}</span>
-                    <span className={"block text-[10px] font-mono truncate "+(u===usr?'text-white/55':'text-ink-3/80')}>{pw}</span>
-                  </button>
+                    className={"text-left rounded-xl px-2.5 py-1.5 border transition-all "+
+                      (u===usr
+                        ? 'bg-brand text-white border-brand shadow-sm font-semibold'
+                        : 'bg-surface hover:bg-surface-3 border-line/60 text-ink')
+                    }
+                  >
+                    <span className={"block text-label-sm font-bold truncate "+(u===usr?'text-white':'text-ink')}>{roleName}</span>
+                    <span className={"block text-[11px] font-mono truncate "+(u===usr?'text-white/70':'text-ink-3')}>{usr}</span>
+                  </motion.button>
                 ))}
               </div>
             </div>
 
-            {mfa ? (
-              <form onSubmit={verifyMfa} className="mt-6">
-                <div className="rounded-lg bg-brand-soft text-brand-strong text-body-sm px-3 py-2 mb-4">
-                  Akun <b>{u}</b> memakai verifikasi dua langkah. Masukkan 6 digit dari aplikasi authenticator
-                  (atau kode cadangan).
-                </div>
-                <label className="block text-label-md text-ink-2" htmlFor="login-mfa">Kode MFA</label>
-                <input id="login-mfa" value={code} onChange={e=>setCode(e.target.value)} inputMode="numeric" autoFocus
-                  className="mt-1.5 w-full h-11 px-3 bg-surface-2 border border-transparent rounded-lg text-body-lg tracking-[0.3em] font-mono text-ink outline-none focus:bg-surface focus:border-brand-tint/40 transition" placeholder="000000"/>
-                {err && <div className="mt-3 text-body-sm text-danger bg-danger-soft rounded-lg px-3 py-2" role="alert">{err}</div>}
-                <button disabled={loading}
-                  className="mt-6 w-full h-11 bg-brand text-white rounded-lg text-label-lg shadow-sm hover:bg-brand-strong disabled:opacity-60 transition-colors inline-flex items-center justify-center gap-2">
-                  {loading ? <><Loader2 size={16} className="animate-spin"/> Memverifikasi...</> : 'Verifikasi & Masuk'}
-                </button>
-                <button type="button" onClick={()=>{ setMfa(false); setCode(''); setErr(''); }}
-                  className="mt-2 w-full h-9 text-label-sm text-ink-3 hover:text-ink">Kembali</button>
-              </form>
-            ) : (
-            <form onSubmit={submit} className="mt-6">
-              <label className="block text-label-md text-ink-2" htmlFor="login-username">Username</label>
-              <input id="login-username" value={u} onChange={e=>setU(e.target.value)} autoComplete="username"
-                className="mt-1.5 w-full h-11 px-3 bg-surface-2 border border-transparent rounded-lg text-body-md text-ink outline-none focus:bg-surface focus:border-brand-tint/40 focus:ring-2 focus:ring-brand-tint/15 transition" placeholder="admin"/>
+            {/* Form Step Transition */}
+            <AnimatePresence mode="wait">
+              {mfa ? (
+                <motion.form
+                  key="mfa-form"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.2 }}
+                  onSubmit={verifyMfa}
+                  className="space-y-4"
+                >
+                  <div className="rounded-2xl bg-brand-soft border border-brand/20 text-brand-strong text-body-sm p-3.5">
+                    <div className="flex items-center gap-2 font-bold mb-1">
+                      <KeyRound size={16}/> Verifikasi Dua Langkah (MFA)
+                    </div>
+                    Akun <b>{u}</b> diamankan dengan Authenticator TOTP. Masukkan 6 digit dari aplikasi Anda.
+                  </div>
 
-              <label className="block text-label-md text-ink-2 mt-4" htmlFor="login-password">Password</label>
-              <input id="login-password" type="password" value={p} onChange={e=>setP(e.target.value)} autoComplete="current-password"
-                className="mt-1.5 w-full h-11 px-3 bg-surface-2 border border-transparent rounded-lg text-body-md text-ink outline-none focus:bg-surface focus:border-brand-tint/40 focus:ring-2 focus:ring-brand-tint/15 transition" placeholder="••••••••"/>
+                  <div>
+                    <label className="block text-label-md font-semibold text-ink-2" htmlFor="login-mfa">Kode Verifikasi 6 Digit</label>
+                    <input
+                      id="login-mfa"
+                      value={code}
+                      onChange={e=>setCode(e.target.value.replace(/[^0-9]/g,'').slice(0,6))}
+                      inputMode="numeric"
+                      autoFocus
+                      className="mt-1.5 w-full h-12 px-3 bg-surface-2 border border-line rounded-xl text-center text-headline-sm tracking-[0.4em] font-mono font-bold text-ink outline-none focus:bg-surface focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
+                      placeholder="000000"
+                    />
+                  </div>
 
-              {err && <div className="mt-3 text-body-sm text-danger bg-danger-soft rounded-lg px-3 py-2" role="alert">{err}</div>}
+                  {err && (
+                    <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-body-sm text-danger bg-danger-soft border border-danger-line/60 rounded-xl px-3 py-2 font-medium" role="alert">
+                      {err}
+                    </motion.div>
+                  )}
 
-              <button disabled={loading}
-                className="mt-6 w-full h-11 bg-brand text-white rounded-lg text-label-lg shadow-sm hover:bg-brand-strong disabled:opacity-60 transition-colors inline-flex items-center justify-center gap-2">
-                {loading ? <><Loader2 size={16} className="animate-spin"/> Memproses...</> : 'Masuk'}
-              </button>
-            </form>
-            )}
+                  <motion.button
+                    whileTap={{ scale: 0.96 }}
+                    disabled={loading || code.length < 6}
+                    className="w-full h-11 bg-brand text-white rounded-xl text-label-lg font-bold shadow-sm hover:bg-brand-strong disabled:opacity-50 transition-all inline-flex items-center justify-center gap-2"
+                  >
+                    {loading ? <><Loader2 size={16} className="animate-spin"/> Memverifikasi...</> : 'Verifikasi & Masuk'}
+                  </motion.button>
 
-            <div className="text-label-sm text-center text-ink-3 mt-5">Hubungi IT support jika mengalami kendala login</div>
+                  <button
+                    type="button" onClick={()=>{ setMfa(false); setCode(''); setErr(''); }}
+                    className="w-full h-9 text-label-sm font-semibold text-ink-3 hover:text-ink transition-colors"
+                  >
+                    ← Kembali ke Username & Password
+                  </button>
+                </motion.form>
+              ) : (
+                <motion.form
+                  key="password-form"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.2 }}
+                  onSubmit={submit}
+                  className="space-y-4"
+                >
+                  <div>
+                    <label className="block text-label-md font-semibold text-ink-2" htmlFor="login-username">Username</label>
+                    <input
+                      id="login-username"
+                      value={u}
+                      onChange={e=>setU(e.target.value)}
+                      autoComplete="username"
+                      className="mt-1.5 w-full h-11 px-3.5 bg-surface-2 border border-line rounded-xl text-body-md font-medium text-ink outline-none focus:bg-surface focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
+                      placeholder="admin"
+                    />
+                  </div>
 
-            {/* Guidebook publik — bisa dibaca sebelum punya akun */}
-            <Link to="/panduan" className="mt-3 flex items-center gap-2.5 rounded-lg border border-line bg-surface-2 hover:bg-surface hover:border-brand-tint/40 transition px-3 py-2.5 group">
-              <span className="h-8 w-8 rounded-lg bg-brand/10 text-brand grid place-items-center shrink-0"><BookOpen size={15}/></span>
-              <span className="min-w-0">
-                <span className="block text-label-md font-semibold text-ink group-hover:text-brand">Panduan Penggunaan (Guidebook)</span>
-                <span className="block text-label-sm text-ink-3 truncate">Alur penjualan, POS, gudang, keuangan, dan absensi</span>
+                  <div>
+                    <label className="block text-label-md font-semibold text-ink-2" htmlFor="login-password">Password</label>
+                    <input
+                      id="login-password"
+                      type="password"
+                      value={p}
+                      onChange={e=>setP(e.target.value)}
+                      autoComplete="current-password"
+                      className="mt-1.5 w-full h-11 px-3.5 bg-surface-2 border border-line rounded-xl text-body-md font-medium text-ink outline-none focus:bg-surface focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
+                      placeholder="••••••••"
+                    />
+                  </div>
+
+                  {err && (
+                    <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-body-sm text-danger bg-danger-soft border border-danger-line/60 rounded-xl px-3 py-2 font-medium" role="alert">
+                      {err}
+                    </motion.div>
+                  )}
+
+                  <motion.button
+                    whileTap={{ scale: 0.96 }}
+                    disabled={loading}
+                    className="mt-2 w-full h-11 bg-brand text-white rounded-xl text-label-lg font-bold shadow-sm hover:bg-brand-strong disabled:opacity-60 transition-all inline-flex items-center justify-center gap-2"
+                  >
+                    {loading ? <><Loader2 size={16} className="animate-spin"/> Memproses...</> : 'Masuk ke Sistem'}
+                  </motion.button>
+                </motion.form>
+              )}
+            </AnimatePresence>
+
+            {/* Guidebook link */}
+            <Link to="/panduan" className="mt-5 flex items-center gap-2.5 rounded-xl border border-line bg-surface-2/60 hover:bg-surface hover:border-brand/40 transition-all px-3 py-2.5 group shadow-xs">
+              <span className="h-8 w-8 rounded-lg bg-brand/10 text-brand grid place-items-center shrink-0 group-hover:bg-brand group-hover:text-white transition-colors">
+                <BookOpen size={15}/>
               </span>
-              <ChevronRight size={15} className="ml-auto text-ink-3 group-hover:text-brand shrink-0"/>
+              <span className="min-w-0 flex-1">
+                <span className="block text-label-md font-bold text-ink group-hover:text-brand transition-colors">Buku Panduan Penggunaan</span>
+                <span className="block text-[11px] text-ink-3 truncate">Alur penjualan, POS kasir, stok, dan absensi</span>
+              </span>
+              <ChevronRight size={15} className="text-ink-3 group-hover:text-brand group-hover:translate-x-0.5 transition-all shrink-0"/>
             </Link>
-          </div>
+          </motion.div>
 
-          <div className="text-label-sm text-center text-ink-3 mt-4">© 2026 PT Sumber Material Jaya</div>
+          <div className="text-label-sm text-center text-ink-3 mt-5 font-normal">
+            © 2026 PT Sumber Material Jaya — Single-Company Production
+          </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
