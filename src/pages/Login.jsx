@@ -1,10 +1,38 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Check, Loader2, ShieldCheck, BookOpen, ChevronRight, KeyRound, Building2, CheckCircle2, Shield, Lock, Layers } from 'lucide-react';
+import { Check, Loader2, ShieldCheck, BookOpen, ChevronRight, KeyRound, Building2, CheckCircle2, Shield, Lock, Layers, Sparkles } from 'lucide-react';
 import api from '../lib/api';
 import { useAuth } from '../store/auth';
 import { Link, useNavigate } from 'react-router-dom';
 import { homeFor } from '../config/access';
+
+const TYPEWRITER_ITEMS = [
+  {
+    text: 'Kelola material.',
+    sub: 'Sistem ERP terintegrasi untuk distribusi bahan bangunan & baja: multi-gudang, kartu stok FEFO, jembatan timbang, dan buku besar append-only.',
+    badge: 'Multi-Gudang & Material'
+  },
+  {
+    text: 'Kirim tepat waktu.',
+    sub: 'Pelacakan armada logistik real-time, klaim trip pengemudi, navigasi GPS proyek, dan tanda tangan digital 3 pihak.',
+    badge: 'Logistik & Delivery Order'
+  },
+  {
+    text: 'Catat otomatis.',
+    sub: 'Transaksi kasir POS dan DO langsung membentuk jurnal double-entry otomatis tanpa proses re-entry manual.',
+    badge: 'Automasi Kasir & Pembukuan'
+  },
+  {
+    text: 'Pantau stok presisi.',
+    sub: 'Audit kartu stok append-only, sistem reorder point cerdas, dan deteksi dini barang kedaluwarsa atau susut.',
+    badge: 'Integritas Stok & FEFO'
+  },
+  {
+    text: 'Buku besar seimbang.',
+    sub: 'Neraca saldo Rp 27,5 M seimbang sempurna, rekonsiliasi bank otomatis, dan penguncian periode tutup buku paten.',
+    badge: 'Audit Finansial & Ledger'
+  },
+];
 
 export default function Login(){
   const [u,setU]=useState('admin');
@@ -22,6 +50,38 @@ export default function Login(){
     setShake(true);
     setTimeout(()=>setShake(false), 500);
   };
+
+  const [typeIndex, setTypeIndex] = useState(0);
+  const [displayText, setDisplayText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const currentFull = TYPEWRITER_ITEMS[typeIndex].text;
+    let timer;
+
+    if (!isDeleting) {
+      if (displayText.length < currentFull.length) {
+        timer = setTimeout(() => {
+          setDisplayText(currentFull.slice(0, displayText.length + 1));
+        }, 65);
+      } else {
+        timer = setTimeout(() => {
+          setIsDeleting(true);
+        }, 2200);
+      }
+    } else {
+      if (displayText.length > 0) {
+        timer = setTimeout(() => {
+          setDisplayText(currentFull.slice(0, displayText.length - 1));
+        }, 32);
+      } else {
+        setIsDeleting(false);
+        setTypeIndex((prev) => (prev + 1) % TYPEWRITER_ITEMS.length);
+      }
+    }
+
+    return () => clearTimeout(timer);
+  }, [displayText, isDeleting, typeIndex]);
 
   const submit=async(e)=>{
     e.preventDefault();
@@ -62,10 +122,60 @@ export default function Login(){
       {/* Left panel — Industrial Architecture Showcase */}
       <div className="hidden lg:flex flex-col justify-between p-12 bg-navy text-white relative overflow-hidden select-none">
         {/* Subtle grid pattern background */}
-        <div className="absolute inset-0 opacity-[0.06] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:32px_32px]" />
-        
-        {/* Ambient colored orbs */}
-        <div className="absolute inset-0 opacity-[0.22] pointer-events-none" style={{background:'radial-gradient(640px 480px at 15% 15%, #316bf3, transparent 70%), radial-gradient(540px 420px at 85% 85%, #009668, transparent 70%)'}}/>
+        <div className="absolute inset-0 opacity-[0.07] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:32px_32px]" />
+
+        {/* Ambient Animated Aurora Mesh Orbs */}
+        <motion.div
+          className="absolute -top-32 -left-32 w-[520px] h-[520px] rounded-full bg-brand/35 blur-[100px] pointer-events-none"
+          animate={{
+            x: [0, 45, -25, 0],
+            y: [0, -35, 25, 0],
+            scale: [1, 1.18, 0.95, 1],
+          }}
+          transition={{ duration: 13, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="absolute -bottom-28 -right-28 w-[480px] h-[480px] rounded-full bg-emerald-600/30 blur-[90px] pointer-events-none"
+          animate={{
+            x: [0, -40, 30, 0],
+            y: [0, 45, -30, 0],
+            scale: [1, 1.15, 0.92, 1],
+          }}
+          transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="absolute top-1/2 left-1/4 w-[380px] h-[380px] rounded-full bg-sky-500/20 blur-[85px] pointer-events-none"
+          animate={{
+            x: [0, 30, -35, 0],
+            y: [0, -30, 35, 0],
+            opacity: [0.2, 0.45, 0.2],
+          }}
+          transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
+        />
+
+        {/* Rotating Cyber Blueprint Rings */}
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
+          className="absolute -top-28 -right-28 w-[420px] h-[420px] rounded-full border border-white/[0.04] pointer-events-none flex items-center justify-center"
+        >
+          <div className="w-[320px] h-[320px] rounded-full border border-dashed border-white/[0.05]" />
+          <div className="w-[200px] h-[200px] rounded-full border border-white/[0.03]" />
+          <div className="w-[100px] h-[100px] rounded-full border border-dashed border-white/[0.04]" />
+        </motion.div>
+
+        {/* Vertical Scanning Laser Beam */}
+        <motion.div
+          className="absolute inset-x-0 h-[140px] bg-gradient-to-b from-transparent via-brand-tint/15 to-transparent pointer-events-none"
+          animate={{ y: ['-100%', '700%'] }}
+          transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+        />
+
+        {/* Twinkling Tech Grid Nodes */}
+        <div className="absolute top-[22%] left-[28%] w-1.5 h-1.5 rounded-full bg-emerald-400/80 shadow-[0_0_8px_#34d399] animate-pulse" />
+        <div className="absolute top-[68%] left-[72%] w-1.5 h-1.5 rounded-full bg-sky-400/80 shadow-[0_0_8px_#38bdf8] animate-pulse" style={{ animationDelay: '1.2s' }} />
+        <div className="absolute top-[48%] left-[84%] w-1.5 h-1.5 rounded-full bg-indigo-400/80 shadow-[0_0_8px_#818cf8] animate-pulse" style={{ animationDelay: '2.4s' }} />
+        <div className="absolute top-[82%] left-[35%] w-1.5 h-1.5 rounded-full bg-emerald-400/80 shadow-[0_0_8px_#34d399] animate-pulse" style={{ animationDelay: '1.8s' }} />
 
         {/* Top brand header */}
         <div className="relative z-10 flex items-center gap-3">
@@ -85,25 +195,53 @@ export default function Login(){
             Single-Company Distribution Platform
           </div>
 
-          <h1 className="font-display text-[42px] leading-[1.08] font-bold tracking-tight text-white">
-            Kelola material.<br/>
-            Kirim tepat waktu.<br/>
-            <span className="bg-gradient-to-r from-emerald-300 to-sky-300 bg-clip-text text-transparent">
-              Catat otomatis.
+          <div className="mb-2">
+            <span className="text-label-sm uppercase font-mono tracking-wider text-emerald-400/90 font-semibold flex items-center gap-1.5">
+              <Sparkles size={12}/> {TYPEWRITER_ITEMS[typeIndex].badge}
             </span>
+          </div>
+
+          <h1 className="font-display text-[40px] sm:text-[46px] leading-[1.08] font-bold tracking-tight text-white min-h-[105px]">
+            <span className="bg-gradient-to-r from-emerald-300 via-sky-300 to-indigo-300 bg-clip-text text-transparent">
+              {displayText}
+            </span>
+            <span className="inline-block w-[3.5px] h-[36px] ml-1.5 bg-emerald-400 align-middle animate-pulse shadow-[0_0_12px_rgba(52,211,153,0.9)] rounded-full"/>
           </h1>
 
-          <p className="text-body-lg text-white/65 mt-5 leading-relaxed max-w-[460px]">
-            Sistem ERP terintegrasi untuk distribusi bahan bangunan & baja: multi-gudang, kartu stok FEFO, jembatan timbang, dan buku besar append-only.
+          {/* Interactive Tagline Selector Pills */}
+          <div className="flex flex-wrap gap-1.5 mt-3">
+            {TYPEWRITER_ITEMS.map((item, idx) => (
+              <button
+                key={item.text}
+                type="button"
+                onClick={() => {
+                  setTypeIndex(idx);
+                  setDisplayText('');
+                  setIsDeleting(false);
+                }}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all duration-300 ${
+                  typeIndex === idx
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 shadow-[0_0_12px_rgba(16,185,129,0.25)]'
+                    : 'bg-white/5 text-white/45 border border-white/10 hover:text-white/80 hover:bg-white/10'
+                }`}
+              >
+                <span className="font-mono text-[9px] mr-1 opacity-70">0{idx + 1}</span>
+                {item.text.replace('.', '')}
+              </button>
+            ))}
+          </div>
+
+          <p className="text-body-lg text-white/70 mt-5 leading-relaxed max-w-[480px] min-h-[58px] transition-all duration-300">
+            {TYPEWRITER_ITEMS[typeIndex].sub}
           </p>
 
           {/* Floating Metric Badges */}
-          <div className="grid grid-cols-2 gap-3 mt-10">
+          <div className="grid grid-cols-2 gap-3 mt-8">
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.5 }}
-              className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md"
+              className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 hover:border-white/20 transition-all duration-200"
             >
               <div className="text-[11px] uppercase tracking-wider text-white/45 font-semibold">Buku Besar</div>
               <div className="text-lg font-bold num mt-0.5 text-white flex items-center gap-1.5">
@@ -115,7 +253,7 @@ export default function Login(){
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.5 }}
-              className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md"
+              className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 hover:border-white/20 transition-all duration-200"
             >
               <div className="text-[11px] uppercase tracking-wider text-white/45 font-semibold">Audit Trail</div>
               <div className="text-lg font-bold num mt-0.5 text-white flex items-center gap-1.5">
