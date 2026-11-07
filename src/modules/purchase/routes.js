@@ -68,9 +68,9 @@ router.get('/orders', async (req,res)=>{
   res.json({data:data.rows, total:parseInt(cnt.rows[0].count)});
 });
 router.get('/orders/:id', async (req,res)=>{
-  const po=await pool.query('SELECT po.*, s.name as supplier_name FROM purchase_orders po JOIN suppliers s ON s.id=po.supplier_id WHERE po.id=$1',[req.params.id]);
+  const po=await pool.query('SELECT po.*, s.name as supplier_name, s.phone as supplier_phone, s.address as supplier_address FROM purchase_orders po JOIN suppliers s ON s.id=po.supplier_id WHERE po.id=$1',[req.params.id]);
   if(!po.rows[0]) return res.status(404).json({error:'Not found'});
-  const d=await pool.query('SELECT d.*, p.name as product_name, p.sku FROM po_details d JOIN products p ON p.id=d.product_id WHERE d.po_id=$1',[req.params.id]);
+  const d=await pool.query('SELECT d.*, p.name as product_name, p.sku, p.unit FROM po_details d JOIN products p ON p.id=d.product_id WHERE d.po_id=$1',[req.params.id]);
   res.json({...po.rows[0], details:d.rows});
 });
 router.post('/orders', async (req,res)=>{
@@ -97,13 +97,34 @@ router.post('/orders/:id/approve', async (req,res)=>{
 });
 router.get('/receipts', async (req,res)=>{
   await ensurePinv();
-  const r=await pool.query('SELECT gr.*, po.po_number, w.name as warehouse_name FROM goods_receipts gr LEFT JOIN purchase_orders po ON po.id=gr.po_id LEFT JOIN warehouses w ON w.id=gr.warehouse_id ORDER BY gr.id DESC LIMIT 50');
+  const r=await pool.query(`
+    SELECT gr.*, po.po_number, po.supplier_id, s.name as supplier_name, w.name as warehouse_name 
+    FROM goods_receipts gr 
+    LEFT JOIN purchase_orders po ON po.id=gr.po_id 
+    LEFT JOIN suppliers s ON s.id=po.supplier_id 
+    LEFT JOIN warehouses w ON w.id=gr.warehouse_id 
+    ORDER BY gr.id DESC LIMIT 50
+  `);
   res.json(r.rows);
 });
 router.get('/receipts/:id', async (req,res)=>{
-  const gr=await pool.query('SELECT gr.*, po.po_number, w.name as warehouse_name FROM goods_receipts gr LEFT JOIN purchase_orders po ON po.id=gr.po_id LEFT JOIN warehouses w ON w.id=gr.warehouse_id WHERE gr.id=$1',[req.params.id]);
+  const gr=await pool.query(`
+    SELECT gr.*, po.po_number, po.supplier_id, s.name as supplier_name, s.phone as supplier_phone, s.address as supplier_address, w.name as warehouse_name
+    FROM goods_receipts gr 
+    LEFT JOIN purchase_orders po ON po.id=gr.po_id 
+    LEFT JOIN suppliers s ON s.id=po.supplier_id 
+    LEFT JOIN warehouses w ON w.id=gr.warehouse_id 
+    WHERE gr.id=$1
+  `,[req.params.id]);
   if(!gr.rows[0]) return res.status(404).json({error:'GRN not found'});
-  const d=await pool.query('SELECT gd.*, p.name as product_name, p.sku FROM grn_details gd LEFT JOIN products p ON p.id=gd.product_id WHERE gd.grn_id=$1',[req.params.id]);
+  const d=await pool.query(`
+    SELECT gd.*, p.name as product_name, p.sku, p.unit, COALESCE(gd.unit_cost, pod.unit_cost, 0) as unit_cost 
+    FROM grn_details gd 
+    LEFT JOIN products p ON p.id=gd.product_id 
+    LEFT JOIN goods_receipts gr ON gr.id=gd.grn_id
+    LEFT JOIN po_details pod ON (pod.po_id=gr.po_id AND pod.product_id=gd.product_id)
+    WHERE gd.grn_id=$1
+  `,[req.params.id]);
   res.json({...gr.rows[0], items:d.rows});
 });
 router.post('/receipts', async (req,res)=>{

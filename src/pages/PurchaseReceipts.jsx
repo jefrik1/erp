@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Check, X } from 'lucide-react';
+import { FileText, Check, X, Printer } from 'lucide-react';
 import api from '../lib/api';
 import { PosPageHeader } from '../components/PosUI';
 import { useDialog } from '../components/DialogProvider';
+import PurchaseReceiptModal from '../components/PurchaseReceiptModal';
 function rupiah(n){ return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(n||0)}
 
 export default function PurchaseReceipts(){
@@ -11,6 +12,7 @@ export default function PurchaseReceipts(){
   const [data,setData]=useState([]); const [pos,setPos]=useState([]); const [show,setShow]=useState(false);
   const [form,setForm]=useState({po_id:'', warehouse_id:1, items:[]});
   const [detail,setDetail]=useState(null);
+  const [receiptModal, setReceiptModal]=useState({open:false, id:null, data:null});
   const [poInfo,setPoInfo]=useState(null);
   // 3-way
   const [three,setThree]=useState([]); const [pinv,setPinv]=useState([]);
@@ -149,12 +151,28 @@ export default function PurchaseReceipts(){
 
       {/* History GRN */}
       <div className="bg-white rounded-xl border border-line shadow-card overflow-hidden">
-        <div className="px-4 py-3 border-b bg-surface-2 flex justify-between items-center"><span className="text-xs font-bold tracking-wider text-ink-2">RIWAYAT GRN • {data.length}</span><span className="text-[11px] text-ink-3">klik baris detail</span></div>
+        <div className="px-4 py-3 border-b bg-surface-2 flex justify-between items-center"><span className="text-xs font-bold tracking-wider text-ink-2">RIWAYAT GRN • {data.length}</span><span className="text-[11px] text-ink-3">klik baris detail atau tombol cetak</span></div>
         <div className="overflow-auto"><table className="w-full text-sm">
-          <thead><tr className="bg-surface-3 border-y text-[11px] font-bold tracking-wider text-ink-2"><th className="text-left px-4 py-3">GRN</th><th className="text-left px-4 py-3">PO</th><th className="text-left px-4 py-3">GUDANG</th><th className="text-left px-4 py-3">TGL</th><th className="text-left px-4 py-3">STATUS</th></tr></thead>
+          <thead><tr className="bg-surface-3 border-y text-[11px] font-bold tracking-wider text-ink-2"><th className="text-left px-4 py-3">GRN</th><th className="text-left px-4 py-3">PO</th><th className="text-left px-4 py-3">GUDANG</th><th className="text-left px-4 py-3">TGL</th><th className="text-left px-4 py-3">STATUS</th><th className="text-right px-4 py-3">AKSI</th></tr></thead>
           <tbody>{(Array.isArray(data)?data:[]).map((g,idx)=>(
-            <tr key={g.id} onClick={()=>setDetail(g)} className={"border-b hover:bg-surface-3 cursor-pointer "+(idx%2===1?"bg-surface-2/70":"bg-white")}><td className="px-4 py-3.5 font-mono text-xs font-bold">{g.grn_number}</td><td className="px-4 py-3.5">{g.po_number}</td><td className="px-4 py-3.5">{g.warehouse_name||'Gudang Pusat Bekasi'}</td><td className="px-4 py-3.5 text-xs">{g.receipt_date?.slice(0,10)}</td><td className="px-4 py-3.5"><span className="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border font-bold">{g.status}</span></td></tr>
-          ))}{data.length===0 && <tr><td colSpan={5} className="p-8 text-center text-sm text-ink-3">Belum ada GRN</td></tr>}</tbody>
+            <tr key={g.id} onClick={()=>setDetail(g)} className={"border-b hover:bg-surface-3 cursor-pointer "+(idx%2===1?"bg-surface-2/70":"bg-white")}>
+              <td className="px-4 py-3.5 font-mono text-xs font-bold">{g.grn_number}</td>
+              <td className="px-4 py-3.5">{g.po_number}</td>
+              <td className="px-4 py-3.5">{g.warehouse_name||'Gudang Pusat Bekasi'}</td>
+              <td className="px-4 py-3.5 text-xs">{g.receipt_date?.slice(0,10)}</td>
+              <td className="px-4 py-3.5"><span className="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border font-bold">{g.status}</span></td>
+              <td className="px-4 py-3.5 text-right whitespace-nowrap" onClick={e=>e.stopPropagation()}>
+                <button
+                  type="button"
+                  onClick={()=>setReceiptModal({open:true, id:g.id, data:g})}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand/10 hover:bg-brand/20 text-brand text-xs font-bold transition shadow-xs active:scale-95"
+                  title="Cetak Struk Pembelian / Bukti Penerimaan Barang"
+                >
+                  <Printer size={13}/> Cetak Struk
+                </button>
+              </td>
+            </tr>
+          ))}{data.length===0 && <tr><td colSpan={6} className="p-8 text-center text-sm text-ink-3">Belum ada GRN</td></tr>}</tbody>
         </table></div>
       </div>
 
@@ -203,7 +221,21 @@ export default function PurchaseReceipts(){
           <div onClick={e=>e.stopPropagation()} className="bg-white rounded-xl w-full max-w-lg p-5 space-y-3 animate-pop">
             <div className="flex justify-between items-start"><h3 className="font-bold">{detail.grn_number}</h3><button onClick={()=>setDetail(null)} className="w-8 h-8 grid place-items-center rounded-full border"><X size={14}/></button></div>
             <div className="text-xs text-ink-2">{detail.po_number} • {detail.warehouse_name} • {detail.receipt_date?.slice(0,10)} • <span className="font-bold text-emerald-700">{detail.status}</span></div>
-            <div className="flex justify-end gap-2"><button onClick={()=>setDetail(null)} className="h-9 px-4 bg-white border rounded-xl text-xs font-semibold">Tutup</button><button onClick={()=>{ setDetail(null); nav('/inventory/stocks'); }} className="h-9 px-4 bg-brand text-white rounded-xl text-xs font-bold">Cek Stok</button></div>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={()=>{
+                  const g = detail;
+                  setDetail(null);
+                  setReceiptModal({open:true, id:g.id, data:g});
+                }}
+                className="h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition active:scale-95 shadow-sm"
+              >
+                <Printer size={13}/> Cetak Struk
+              </button>
+              <button onClick={()=>setDetail(null)} className="h-9 px-4 bg-white border rounded-xl text-xs font-semibold">Tutup</button>
+              <button onClick={()=>{ setDetail(null); nav('/inventory/stocks'); }} className="h-9 px-4 bg-brand text-white rounded-xl text-xs font-bold">Cek Stok</button>
+            </div>
           </div>
         </div>
       )}
@@ -289,6 +321,14 @@ export default function PurchaseReceipts(){
           <div className="p-4 border-t bg-white flex justify-end gap-2 sticky bottom-0"><button type="button" onClick={()=>setShowInv(false)} className="h-10 px-5 rounded-xl border bg-white text-sm font-semibold">Batal</button><button className="h-10 px-6 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700">Simpan Invoice (auto 3-way)</button></div>
         </form>
       </div>}
+
+      <PurchaseReceiptModal
+        isOpen={receiptModal.open}
+        onClose={() => setReceiptModal({ open: false, id: null, data: null })}
+        receiptId={receiptModal.id}
+        preloadedData={receiptModal.data}
+        type="GRN"
+      />
     </div>
   )
 }

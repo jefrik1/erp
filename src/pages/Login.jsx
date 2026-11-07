@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Check, Loader2, ShieldCheck, BookOpen, ChevronRight, KeyRound, Building2, CheckCircle2, Shield, Lock, Layers, Sparkles } from 'lucide-react';
+import { Check, Loader2, ShieldCheck, BookOpen, ChevronRight, KeyRound, Building2, CheckCircle2, Shield, Lock, Layers, Sparkles, Truck } from 'lucide-react';
 import api from '../lib/api';
 import { useAuth } from '../store/auth';
 import { Link, useNavigate } from 'react-router-dom';
 import { homeFor } from '../config/access';
+import MaterialLogisticsAnimation from '../components/MaterialLogisticsAnimation';
 
 const TYPEWRITER_ITEMS = [
   {
@@ -177,6 +178,9 @@ export default function Login(){
         <div className="absolute top-[48%] left-[84%] w-1.5 h-1.5 rounded-full bg-indigo-400/80 shadow-[0_0_8px_#818cf8] animate-pulse" style={{ animationDelay: '2.4s' }} />
         <div className="absolute top-[82%] left-[35%] w-1.5 h-1.5 rounded-full bg-emerald-400/80 shadow-[0_0_8px_#34d399] animate-pulse" style={{ animationDelay: '1.8s' }} />
 
+        {/* Interactive Material Logistics Animation (Loading materials to vehicle) */}
+        <MaterialLogisticsAnimation />
+
         {/* Top brand header */}
         <div className="relative z-10 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand to-brand-tint grid place-items-center font-display font-bold text-white text-[16px] shadow-lg shadow-brand/30">
@@ -208,32 +212,54 @@ export default function Login(){
             <span className="inline-block w-[3.5px] h-[36px] ml-1.5 bg-emerald-400 align-middle animate-pulse shadow-[0_0_12px_rgba(52,211,153,0.9)] rounded-full"/>
           </h1>
 
-          {/* Interactive Tagline Selector Pills */}
-          <div className="flex flex-wrap gap-1.5 mt-3">
-            {TYPEWRITER_ITEMS.map((item, idx) => (
-              <button
-                key={item.text}
-                type="button"
-                onClick={() => {
-                  setTypeIndex(idx);
-                  setDisplayText('');
-                  setIsDeleting(false);
-                }}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all duration-300 ${
+          {/* Minimalist Active Phrase Progress Indicator */}
+          <div className="flex items-center gap-1.5 my-3">
+            {TYPEWRITER_ITEMS.map((_, idx) => (
+              <div
+                key={idx}
+                className={`h-1 rounded-full transition-all duration-500 ${
                   typeIndex === idx
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 shadow-[0_0_12px_rgba(16,185,129,0.25)]'
-                    : 'bg-white/5 text-white/45 border border-white/10 hover:text-white/80 hover:bg-white/10'
+                    ? 'w-8 bg-gradient-to-r from-emerald-400 to-cyan-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]'
+                    : 'w-2 bg-white/20'
                 }`}
-              >
-                <span className="font-mono text-[9px] mr-1 opacity-70">0{idx + 1}</span>
-                {item.text.replace('.', '')}
-              </button>
+              />
             ))}
+            <span className="text-[10px] font-mono text-white/40 ml-2">
+              0{typeIndex + 1} / 0{TYPEWRITER_ITEMS.length}
+            </span>
           </div>
 
-          <p className="text-body-lg text-white/70 mt-5 leading-relaxed max-w-[480px] min-h-[58px] transition-all duration-300">
+          <p className="text-body-lg text-white/75 mt-3 leading-relaxed max-w-[480px] min-h-[52px] transition-all duration-300">
             {TYPEWRITER_ITEMS[typeIndex].sub}
           </p>
+
+          {/* Material Enterprise Feature Highlights (Fills the gap elegantly) */}
+          <div className="grid grid-cols-3 gap-2.5 mt-5">
+            <div className="p-3 rounded-xl bg-white/[0.04] border border-white/10 backdrop-blur-md hover:bg-white/[0.08] transition">
+              <div className="text-emerald-400 font-bold text-xs flex items-center gap-1.5">
+                <Truck size={13} /> Logistik
+              </div>
+              <p className="text-[11px] text-white/60 mt-1 leading-tight">
+                Surat Jalan digital & timbangan SNI
+              </p>
+            </div>
+            <div className="p-3 rounded-xl bg-white/[0.04] border border-white/10 backdrop-blur-md hover:bg-white/[0.08] transition">
+              <div className="text-cyan-400 font-bold text-xs flex items-center gap-1.5">
+                <Layers size={13} /> Stok FEFO
+              </div>
+              <p className="text-[11px] text-white/60 mt-1 leading-tight">
+                Batch semen & bundel baja presisi
+              </p>
+            </div>
+            <div className="p-3 rounded-xl bg-white/[0.04] border border-white/10 backdrop-blur-md hover:bg-white/[0.08] transition">
+              <div className="text-indigo-400 font-bold text-xs flex items-center gap-1.5">
+                <Shield size={13} /> Ledger GL
+              </div>
+              <p className="text-[11px] text-white/60 mt-1 leading-tight">
+                Double-entry auto-post realtime
+              </p>
+            </div>
+          </div>
 
           {/* Floating Metric Badges */}
           <div className="grid grid-cols-2 gap-3 mt-8">

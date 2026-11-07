@@ -1,11 +1,12 @@
 
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Search, Plus, Trash2 } from 'lucide-react';
+import { FileText, Search, Plus, Trash2, Printer } from 'lucide-react';
 import api from '../lib/api';
 import { Badge } from '../components/Layout';
 import { useDialog } from '../components/DialogProvider';
 import { PosPageHeader, PosSkeleton, PosError, PosEmpty, posBtnPrimary } from '../components/PosUI';
+import PurchaseReceiptModal from '../components/PurchaseReceiptModal';
 function rupiah(n){ return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(n||0); }
 export default function PurchaseOrders(){
   const nav=useNavigate();
@@ -14,6 +15,7 @@ export default function PurchaseOrders(){
   const [suppliers,setSuppliers]=useState([]); const [products,setProducts]=useState([]);
   const [form,setForm]=useState({supplier_id:'', expected_date:'', items:[]}); const [pick,setPick]=useState(null);
   const [err,setErr]=useState(''); const [loading,setLoading]=useState(true);
+  const [poReceiptModal, setPoReceiptModal]=useState({open:false, id:null, data:null});
   const load=async()=>{ setErr(''); try{ const r=await api.get('/purchase/orders'); setData(r.data?.data ?? r.data ?? []); }catch(e){ setErr(e.response?.data?.error||e.message||'Gagal memuat PO'); } finally{ setLoading(false); } };
   useEffect(()=>{ load(); api.get('/master/suppliers').then(r=>setSuppliers(r.data.data)); api.get('/master/products',{params:{limit:100}}).then(r=>setProducts(r.data.data)); },[]);
   const add=(p)=> setForm(f=>({...f, items:[...f.items, {product_id:p.id, name:p.name, qty:1, unit_cost:''}]}));
@@ -50,8 +52,8 @@ export default function PurchaseOrders(){
           {i<arr.length-1 && <span className="w-5 h-5 grid place-items-center text-ink-3"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>}
         </span>
       ))}</nav><p className="text-[11px] text-ink-3 mt-1.5 ml-1">Klik step untuk lompat - posisi sekarang <b className="text-brand">PO</b></p></div><button onClick={()=>setShow(true)} className={posBtnPrimary}><Plus size={15}/> Buat PO</button></div>
-      <div className="bg-white rounded-xl border border-line shadow-card overflow-hidden"><div className="overflow-auto"><table className="w-full text-sm"><thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2"><th className="text-left px-4 py-3 whitespace-nowrap">PO</th><th className="text-left px-4 py-3 whitespace-nowrap">SUPPLIER</th><th className="text-left px-4 py-3 whitespace-nowrap">TGL</th><th className="text-right px-4 py-3 whitespace-nowrap">TOTAL</th><th className="text-left px-4 py-3 whitespace-nowrap">STATUS</th></tr></thead><tbody>{loading && <tr><td colSpan={5} className="p-0"><PosSkeleton rows={5} cols={4}/></td></tr>}{err && !loading && <tr><td colSpan={5} className="p-0"><PosError message={err} onRetry={load}/></td></tr>}{!loading && !err && (Array.isArray(data)?data:[]).length===0 && <tr><td colSpan={5} className="p-0"><PosEmpty text="Belum ada Purchase Order"/></td></tr>}{(Array.isArray(data)?data:[]).map((po,idx)=>(
-        <tr key={po.id} className={"border-b border-line hover:bg-surface-2 transition "+(idx%2===1?"bg-surface-2/70":"bg-white")}><td className="px-4 py-3.5 font-mono text-xs font-bold">{po.po_number}</td><td className="px-4 py-3.5 font-semibold">{po.supplier_name}</td><td className="px-4 py-3.5 text-xs text-center">{po.po_date?.slice(0,10)}</td><td className="px-4 py-3.5 text-right font-bold">{rupiah(po.total)}</td><td className="px-4 py-3.5 text-center"><Badge status={po.status}/></td></tr>
+      <div className="bg-white rounded-xl border border-line shadow-card overflow-hidden"><div className="overflow-auto"><table className="w-full text-sm"><thead><tr className="bg-surface-3 border-y border-line text-[11px] font-bold tracking-wider text-ink-2"><th className="text-left px-4 py-3 whitespace-nowrap">PO</th><th className="text-left px-4 py-3 whitespace-nowrap">SUPPLIER</th><th className="text-left px-4 py-3 whitespace-nowrap">TGL</th><th className="text-right px-4 py-3 whitespace-nowrap">TOTAL</th><th className="text-left px-4 py-3 whitespace-nowrap">STATUS</th><th className="text-right px-4 py-3 whitespace-nowrap">AKSI</th></tr></thead><tbody>{loading && <tr><td colSpan={6} className="p-0"><PosSkeleton rows={5} cols={4}/></td></tr>}{err && !loading && <tr><td colSpan={6} className="p-0"><PosError message={err} onRetry={load}/></td></tr>}{!loading && !err && (Array.isArray(data)?data:[]).length===0 && <tr><td colSpan={6} className="p-0"><PosEmpty text="Belum ada Purchase Order"/></td></tr>}{(Array.isArray(data)?data:[]).map((po,idx)=>(
+        <tr key={po.id} className={"border-b border-line hover:bg-surface-2 transition "+(idx%2===1?"bg-surface-2/70":"bg-white")}><td className="px-4 py-3.5 font-mono text-xs font-bold">{po.po_number}</td><td className="px-4 py-3.5 font-semibold">{po.supplier_name}</td><td className="px-4 py-3.5 text-xs text-center">{po.po_date?.slice(0,10)}</td><td className="px-4 py-3.5 text-right font-bold">{rupiah(po.total)}</td><td className="px-4 py-3.5 text-center"><Badge status={po.status}/></td><td className="px-4 py-3.5 text-right whitespace-nowrap"><button type="button" onClick={()=>setPoReceiptModal({open:true, id:po.id, data:po})} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand/10 hover:bg-brand/20 text-brand text-xs font-bold transition active:scale-95 shadow-xs" title="Cetak Bukti Pembelian PO"><Printer size={13}/> Cetak PO</button></td></tr>
       ))}</tbody></table></div></div>
       {show && <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50"><form onSubmit={submit} className="bg-white rounded-xl p-6 w-full max-w-2xl space-y-3 max-h-[90vh] overflow-auto animate-pop">
         <h3 className="font-bold">Buat Purchase Order</h3>
@@ -67,6 +69,13 @@ export default function PurchaseOrders(){
         </div>
         <div className="flex justify-end gap-2"><button type="button" onClick={()=>setShow(false)} className="h-[42px] px-5 bg-white border border-line rounded-xl text-sm font-semibold text-ink-2 hover:bg-surface-2 active:scale-[0.98] transition">Batal</button><button className={posBtnPrimary}>Simpan PO</button></div>
       </form></div>}
+      <PurchaseReceiptModal
+        isOpen={poReceiptModal.open}
+        onClose={() => setPoReceiptModal({ open: false, id: null, data: null })}
+        receiptId={poReceiptModal.id}
+        preloadedData={poReceiptModal.data}
+        type="PO"
+      />
     </div>
   )
 }
