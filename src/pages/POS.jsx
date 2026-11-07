@@ -274,24 +274,24 @@ export default function POS(){
 
       {/* Header - POS Counter */}
       <div className="flex items-center gap-3 mb-3">
-        <button onClick={()=>history.back()} className="w-8 h-8 rounded-full border border-line bg-white grid place-items-center hover:bg-surface-2 text-ink-2 shrink-0">
+        <button onClick={()=>history.back()} className="w-8 h-8 rounded-full border border-line bg-surface grid place-items-center hover:bg-surface-2 text-ink-2 shrink-0">
           <ArrowLeft size={16} />
         </button>
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-[18px] font-bold tracking-tight text-ink leading-none">POS Counter</h1>
-            <span className="text-[11px] font-bold px-2 py-1 rounded-full bg-surface-3 text-brand border border-[#dbe1ff]">&lt; 30 detik per transaksi</span>
+            <span className="text-[11px] font-bold px-2 py-1 rounded-full bg-surface-3 text-brand border border-brand/20">&lt; 30 detik per transaksi</span>
           </div>
           <p className="text-xs text-ink-2 mt-0.5">Transaksi cepat • Mudah • Akurat</p>
         </div>
       </div>
 
       {/* Shift kasir: buka/tutup + kas berjalan */}
-      <div className="flex flex-wrap items-center gap-2 bg-white border border-line rounded-xl px-3 py-2 mb-3">
+      <div className="flex flex-wrap items-center gap-2 bg-surface border border-line rounded-xl px-3 py-2 mb-3">
         <span className={"w-2 h-2 rounded-full "+(shift? 'bg-emerald-500':'bg-amber-400')}/>
         <span className="text-xs font-bold text-ink-2">{shift? ('Shift #'+shift.id+' terbuka - kas awal '+rupiah(shift.opening_cash)) : 'Shift belum dibuka'}</span>
-        {shift && <span className="text-xs text-ink-2">Penjualan cash: <b className="text-ink">{rupiah(shiftSales?.cash||0)}</b> ({shiftSales?.n||0} transaksi)</span>}
-        <button onClick={()=>setShiftModal(shift? 'close':'open')} className={"ml-auto h-8 px-3 rounded-lg text-xs font-bold border transition "+(shift? 'bg-white border-red-200 text-red-600 hover:bg-red-50':'bg-brand border-brand text-white hover:bg-brand-strong')}>
+        {shift && <span className="text-xs text-ink-2">Penjualan cash: <b className="text-ink font-semibold">{rupiah(shiftSales?.cash||0)}</b> ({shiftSales?.n||0} transaksi)</span>}
+        <button onClick={()=>setShiftModal(shift? 'close':'open')} className={"ml-auto h-8 px-3 rounded-lg text-xs font-bold border transition "+(shift? 'bg-surface border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 hover:bg-surface-2':'bg-brand border-brand text-white hover:bg-brand-strong')}>
           {shift? 'Tutup Shift':'Buka Shift'}
         </button>
       </div>
@@ -311,20 +311,20 @@ export default function POS(){
       {shiftModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-navy/60 backdrop-blur-sm" onClick={()=>!shiftBusy&&setShiftModal(null)}/>
-          <div className="relative bg-white rounded-xl shadow-modal w-full max-w-[420px] overflow-hidden animate-pop">
+          <div className="relative bg-surface rounded-xl shadow-modal w-full max-w-[420px] overflow-hidden animate-pop">
             <div className="px-5 pt-5 pb-3">
               <div className="text-[11px] tracking-[.14em] font-bold text-ink-2">{shiftModal==='open'? 'BUKA SHIFT':'TUTUP SHIFT'}</div>
               <h3 className="text-[17px] font-bold text-ink mt-1">{shiftModal==='open'? 'Kas awal di laci' : 'Hitung kas akhir'}</h3>
-              {shiftModal==='close' && <p className="text-xs text-ink-2 mt-1">Kas seharusnya: kas awal {rupiah(shift?.opening_cash||0)} + penjualan cash {rupiah(shiftSales?.cash||0)} = <b className="text-ink">{rupiah((parseFloat(shift?.opening_cash)||0)+(shiftSales?.cash||0))}</b></p>}
+              {shiftModal==='close' && <p className="text-xs text-ink-2 mt-1">Kas seharusnya: kas awal {rupiah(shift?.opening_cash||0)} + penjualan cash {rupiah(shiftSales?.cash||0)} = <b className="text-ink font-semibold">{rupiah((parseFloat(shift?.opening_cash)||0)+(shiftSales?.cash||0))}</b></p>}
             </div>
             <div className="px-5 pb-4 space-y-3">
               <label className="block space-y-1.5"><span className="text-[11px] font-bold tracking-wide text-ink-2">{shiftModal==='open'? 'KAS AWAL (RP)':'KAS AKHIR DI LACI (RP)'}</span>
-                <input type="number" min="0" value={shiftModal==='open'? openingCash:closingCash} onChange={e=> shiftModal==='open'? setOpeningCash(e.target.value):setClosingCash(e.target.value)} className="w-full h-10 px-3 bg-surface-2 border border-line rounded-xl text-sm text-right tabular-nums outline-none focus:bg-white focus:border-brand" placeholder="0"/></label>
+                <input type="number" min="0" value={shiftModal==='open'? openingCash:closingCash} onChange={e=> shiftModal==='open'? setOpeningCash(e.target.value):setClosingCash(e.target.value)} className="w-full h-10 px-3 bg-surface-2 border border-line rounded-xl text-sm text-right tabular-nums outline-none focus:bg-surface focus:border-brand" placeholder="0"/></label>
               {shiftModal==='close' && <label className="block space-y-1.5"><span className="text-[11px] font-bold tracking-wide text-ink-2">CATATAN (OPSIONAL)</span>
-                <input value={shiftNotes} onChange={e=>setShiftNotes(e.target.value)} className="w-full h-10 px-3 bg-surface-2 border border-line rounded-xl text-sm outline-none focus:bg-white focus:border-brand" placeholder="Contoh: selisih karena kembalian"/></label>}
+                <input value={shiftNotes} onChange={e=>setShiftNotes(e.target.value)} className="w-full h-10 px-3 bg-surface-2 border border-line rounded-xl text-sm outline-none focus:bg-surface focus:border-brand" placeholder="Contoh: selisih karena kembalian"/></label>}
             </div>
             <div className="px-5 py-3 bg-surface-2 border-t border-line flex justify-end gap-2">
-              <button onClick={()=>setShiftModal(null)} disabled={shiftBusy} className="h-9 px-4 rounded-xl border border-line bg-white text-sm font-semibold text-ink-2 hover:bg-surface-2 disabled:opacity-50">Batal</button>
+              <button onClick={()=>setShiftModal(null)} disabled={shiftBusy} className="h-9 px-4 rounded-xl border border-line bg-surface text-sm font-semibold text-ink-2 hover:bg-surface-2 disabled:opacity-50">Batal</button>
               <button onClick={shiftModal==='open'? openShift:closeShift} disabled={shiftBusy} className="h-9 px-4 rounded-xl bg-brand text-white text-sm font-bold hover:bg-brand-strong disabled:opacity-50">{shiftBusy? 'Menyimpan...' : (shiftModal==='open'? 'Buka Shift':'Tutup Shift')}</button>
             </div>
           </div>
@@ -335,7 +335,7 @@ export default function POS(){
         {/* LEFT */}
         <div className="space-y-3 min-w-0">
           {/* Pelanggan card */}
-          <div className="bg-white rounded-xl border border-line shadow-card p-3 sm:p-4 space-y-3">
+          <div className="bg-surface rounded-xl border border-line shadow-card p-3 sm:p-4 space-y-3">
             {/* row 1 */}
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
               <label className="sm:col-span-3 space-y-1.5">
@@ -346,7 +346,7 @@ export default function POS(){
                     const c=customers.find(x=>x.id===parseInt(e.target.value));
                     setSelectedCustomer(c||null);
                     setCustForm(prev=>({...prev, name:c?.name||'', phone:c?.phone||''}));
-                  }} className="w-full h-9 pl-8 pr-7 bg-surface-2 border border-line rounded-xl text-sm font-medium text-ink outline-none focus:bg-white focus:border-brand appearance-none">
+                  }} className="w-full h-9 pl-8 pr-7 bg-surface-2 border border-line rounded-xl text-sm font-medium text-ink outline-none focus:bg-surface focus:border-brand appearance-none">
                     <option value="">+ Pelanggan Baru</option>
                     {customers.map(c=><option key={c.id} value={c.id}>{c.name} • {c.code}</option>)}
                   </select>
@@ -357,18 +357,18 @@ export default function POS(){
                 <span className="text-[11px] font-bold tracking-wide text-ink-2">Nama</span>
                 <div className="relative">
                   <User size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-3" />
-                  <input value={custForm.name} onChange={e=>setCustForm({...custForm, name:e.target.value})} placeholder="Nama pelanggan" className="w-full h-9 pl-8 pr-3 bg-surface-2 border border-line rounded-xl text-sm outline-none focus:bg-white focus:border-brand placeholder:text-ink-3"/>
+                  <input value={custForm.name} onChange={e=>setCustForm({...custForm, name:e.target.value})} placeholder="Nama pelanggan" className="w-full h-9 pl-8 pr-3 bg-surface-2 border border-line rounded-xl text-sm outline-none focus:bg-surface focus:border-brand placeholder:text-ink-3"/>
                 </div>
               </label>
               <label className="sm:col-span-3 space-y-1.5">
                 <span className="text-[11px] font-bold tracking-wide text-ink-2">Telepon</span>
                 <div className="relative">
                   <Phone size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-3" />
-                  <input value={custForm.phone} onChange={e=>setCustForm({...custForm, phone:e.target.value})} placeholder="08xx..." className="w-full h-9 pl-8 pr-3 bg-surface-2 border border-line rounded-xl text-sm outline-none focus:bg-white focus:border-brand placeholder:text-ink-3"/>
+                  <input value={custForm.phone} onChange={e=>setCustForm({...custForm, phone:e.target.value})} placeholder="08xx..." className="w-full h-9 pl-8 pr-3 bg-surface-2 border border-line rounded-xl text-sm outline-none focus:bg-surface focus:border-brand placeholder:text-ink-3"/>
                 </div>
               </label>
               <div className="sm:col-span-2 flex items-end">
-                <button onClick={()=>setDetailOpen(v=>!v)} className="w-full h-9 inline-flex items-center justify-center gap-1.5 bg-white border border-line rounded-xl text-xs font-bold text-brand hover:bg-surface-2">
+                <button onClick={()=>setDetailOpen(v=>!v)} className="w-full h-9 inline-flex items-center justify-center gap-1.5 bg-surface border border-line rounded-xl text-xs font-bold text-brand hover:bg-surface-2">
                   <Plus size={12}/> Detail <ChevronDown size={12} className={detailOpen?'rotate-180 transition':'transition'} />
                 </button>
               </div>
@@ -377,17 +377,17 @@ export default function POS(){
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
               <label className="sm:col-span-4 space-y-1.5">
                 <span className="text-[11px] font-bold tracking-wide text-ink-2 flex items-center gap-1"><MapPin size={12}/> Alamat <span className="font-normal text-ink-3">(opsional)</span></span>
-                <input value={custForm.address} onChange={e=>setCustForm({...custForm, address:e.target.value})} placeholder="Kosongkan untuk pickup" className="w-full h-9 px-3 bg-surface-2 border border-line rounded-xl text-sm outline-none focus:bg-white focus:border-brand placeholder:text-ink-3"/>
+                <input value={custForm.address} onChange={e=>setCustForm({...custForm, address:e.target.value})} placeholder="Kosongkan untuk pickup" className="w-full h-9 px-3 bg-surface-2 border border-line rounded-xl text-sm outline-none focus:bg-surface focus:border-brand placeholder:text-ink-3"/>
                 {custForm.address && <div className="text-[11px] text-amber-600">ℹ Minimal Rp 250.000 untuk pengiriman</div>}
               </label>
               <label className="sm:col-span-4 space-y-1.5">
                 <span className="text-[11px] font-bold tracking-wide text-ink-2 flex items-center gap-1"><StickyNote size={12}/> Catatan <span className="font-normal text-ink-3">(opsional)</span></span>
-                <input value={custForm.notes} onChange={e=>setCustForm({...custForm, notes:e.target.value})} placeholder="" className="w-full h-9 px-3 bg-surface-2 border border-line rounded-xl text-sm outline-none focus:bg-white focus:border-brand"/>
+                <input value={custForm.notes} onChange={e=>setCustForm({...custForm, notes:e.target.value})} placeholder="" className="w-full h-9 px-3 bg-surface-2 border border-line rounded-xl text-sm outline-none focus:bg-surface focus:border-brand"/>
               </label>
               <label className="sm:col-span-4 space-y-1.5">
                 <span className="text-[11px] font-bold tracking-wide text-ink-2">DP / % dari Total</span>
                 <div className="relative">
-                  <select value={String(custForm.dp_percent)} onChange={e=>setCustForm({...custForm, dp_percent: parseInt(e.target.value)||0})} className="w-full h-9 pl-3 pr-7 bg-surface-2 border border-line rounded-xl text-sm font-medium outline-none focus:bg-white focus:border-brand appearance-none">
+                  <select value={String(custForm.dp_percent)} onChange={e=>setCustForm({...custForm, dp_percent: parseInt(e.target.value)||0})} className="w-full h-9 pl-3 pr-7 bg-surface-2 border border-line rounded-xl text-sm font-medium outline-none focus:bg-surface focus:border-brand appearance-none">
                     <option value="0">Tanpa DP - Lunas</option><option value="10">10%</option><option value="20">20%</option><option value="30">30%</option><option value="50">50%</option>
                   </select>
                   <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-3 pointer-events-none" />
@@ -398,7 +398,7 @@ export default function POS(){
               <label className="sm:col-span-3 space-y-1.5">
                 <span className="text-[11px] font-bold tracking-wide text-ink-2 flex items-center gap-1"><Percent size={12}/> Diskon %</span>
                 <div className="relative">
-                  <select value={String(custForm.discount_percent)} onChange={e=>setCustForm({...custForm, discount_percent: parseInt(e.target.value)||0})} className="w-full h-9 pl-3 pr-7 bg-surface-2 border border-line rounded-xl text-sm font-medium outline-none focus:bg-white focus:border-brand appearance-none">
+                  <select value={String(custForm.discount_percent)} onChange={e=>setCustForm({...custForm, discount_percent: parseInt(e.target.value)||0})} className="w-full h-9 pl-3 pr-7 bg-surface-2 border border-line rounded-xl text-sm font-medium outline-none focus:bg-surface focus:border-brand appearance-none">
                     <option value="0">0% - Tanpa diskon</option><option value="5">5%</option><option value="10">10%</option><option value="15">15%</option><option value="20">20%</option>
                   </select>
                   <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-3 pointer-events-none"/>
@@ -406,40 +406,40 @@ export default function POS(){
               </label>
               <label className="sm:col-span-5 space-y-1.5">
                 <span className="text-[11px] font-bold tracking-wide text-ink-2 flex items-center gap-1"><Ticket size={12}/> Voucher</span>
-                <input value={custForm.voucher_code} onChange={e=>setCustForm({...custForm, voucher_code: e.target.value.toUpperCase()})} placeholder="VOUCHER10 / VOUCHER50 / DISKON10K" list="voucher-list" className="w-full h-9 px-3 bg-surface-2 border border-line rounded-xl text-sm outline-none focus:bg-white focus:border-brand placeholder:text-ink-3 uppercase"/>
+                <input value={custForm.voucher_code} onChange={e=>setCustForm({...custForm, voucher_code: e.target.value.toUpperCase()})} placeholder="VOUCHER10 / VOUCHER50 / DISKON10K" list="voucher-list" className="w-full h-9 px-3 bg-surface-2 border border-line rounded-xl text-sm outline-none focus:bg-surface focus:border-brand placeholder:text-ink-3 uppercase"/>
                 <datalist id="voucher-list"><option value="VOUCHER10"/><option value="VOUCHER50"/><option value="HEMAT20"/><option value="DISKON10K"/><option value="DISKON50K"/></datalist>
               </label>
               <div className="sm:col-span-4 flex items-end">
-                <button type="button" onClick={()=>setShowMap(v=>!v)} className={"w-full h-9 inline-flex items-center justify-center gap-1.5 rounded-xl border text-xs font-bold "+(showMap?"bg-brand text-white border-brand":"bg-white text-brand border-line hover:bg-surface-2")}><MapPin size={14}/>{showMap?'Tutup Peta':'Peta (OSM)'}</button>
+                <button type="button" onClick={()=>setShowMap(v=>!v)} className={"w-full h-9 inline-flex items-center justify-center gap-1.5 rounded-xl border text-xs font-bold "+(showMap?"bg-brand text-white border-brand":"bg-surface text-brand border-line hover:bg-surface-2")}><MapPin size={14}/>{showMap?'Tutup Peta':'Peta (OSM)'}</button>
               </div>
             </div>
             {showMap && <div className="rounded-xl overflow-hidden border border-line"><AddressMapPicker valueLat={custForm.delivery_lat||undefined} valueLng={custForm.delivery_lng||undefined} valueAddress={custForm.address} onPick={({lat,lng,address})=>{ setCustForm(c=>({...c, delivery_lat:String(lat), delivery_lng:String(lng), address})); setShowMap(false); }} compact /></div>}
             {(custForm.delivery_lat||vAmt>0||discPct>0) && <div className="text-[11px] text-ink-2 flex flex-wrap gap-2"><span>Diskon: {discPct}% ({rupiah(discPctAmt)}) {vAmt>0 && <>+ Voucher {rupiah(vAmt)}</>} = <b>{rupiah(discTotal)}</b></span>{custForm.delivery_lat && <span>• Pin {custForm.delivery_lat.slice(0,7)},{custForm.delivery_lng.slice(0,7)}</span>}</div>}
             {detailOpen && (
               <div className="rounded-xl bg-surface-2 border border-line p-3 text-xs text-ink-2 space-y-1">
-                <div>Pelanggan terpilih: <b className="text-ink">{selectedCustomer? selectedCustomer.name+' • '+selectedCustomer.code : (custForm.name||'-')}</b> {selectedCustomer?.phone||custForm.phone? '• '+(selectedCustomer?.phone||custForm.phone):''}</div>
+                <div>Pelanggan terpilih: <b className="text-ink font-semibold">{selectedCustomer? selectedCustomer.name+' • '+selectedCustomer.code : (custForm.name||'-')}</b> {selectedCustomer?.phone||custForm.phone? '• '+(selectedCustomer?.phone||custForm.phone):''}</div>
                 <div>Alamat: {custForm.address||'- (pickup)'} • Catatan: {custForm.notes||'-'} • Diskon {discPct}% • Voucher {custForm.voucher_code||'-'}</div>
               </div>
             )}
           </div>
 
           {/* Search + kategori */}
-          <div className="bg-white rounded-xl border border-line shadow-card p-2.5 flex flex-col lg:flex-row gap-2.5 items-stretch">
+          <div className="bg-surface rounded-xl border border-line shadow-card p-2.5 flex flex-col lg:flex-row gap-2.5 items-stretch">
             <div className="flex-1 relative min-w-0">
               <ScanLine size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand" />
-              <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Scan barcode / cari produk..." className="w-full h-10 pl-9 pr-20 bg-surface-2 border border-line rounded-xl text-sm outline-none focus:bg-white focus:border-brand placeholder:text-ink-3" />
-              <span className="absolute right-10 top-1/2 -translate-y-1/2 text-[11px] font-bold px-1.5 py-1 rounded bg-white border border-line text-ink-2 hidden sm:inline">F2</span>
-              <button onClick={()=>{}} className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 grid place-items-center rounded-lg bg-white border border-line text-ink-2 hover:bg-surface-2">
+              <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Scan barcode / cari produk..." className="w-full h-10 pl-9 pr-20 bg-surface-2 border border-line rounded-xl text-sm outline-none focus:bg-surface focus:border-brand placeholder:text-ink-3" />
+              <span className="absolute right-10 top-1/2 -translate-y-1/2 text-[11px] font-bold px-1.5 py-1 rounded bg-surface border border-line text-ink-2 hidden sm:inline">F2</span>
+              <button onClick={()=>{}} className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 grid place-items-center rounded-lg bg-surface border border-line text-ink-2 hover:bg-surface-2">
                 <Search size={14} />
               </button>
             </div>
             <ScanStatusPill code={lastScan} className="self-center" />
             <div className="flex items-center gap-1.5 overflow-auto scrollbar-thin shrink-0">
               {cats.map(c=>(
-                <button key={c} onClick={()=>setActiveCat(c)} className={"h-8 px-3.5 rounded-full text-xs font-bold border whitespace-nowrap transition "+(activeCat===c?"bg-brand text-white border-brand shadow-card":"bg-white text-ink-2 border-line hover:bg-surface-2")}>{c}</button>
+                <button key={c} onClick={()=>setActiveCat(c)} className={"h-8 px-3.5 rounded-full text-xs font-bold border whitespace-nowrap transition "+(activeCat===c?"bg-brand text-white border-brand shadow-card":"bg-surface text-ink-2 border-line hover:bg-surface-2")}>{c}</button>
               ))}
               <div className="relative">
-                <select value={sortAZ} onChange={e=>setSortAZ(e.target.value)} className="h-8 pl-3 pr-6 bg-white border border-line rounded-full text-xs font-bold text-ink-2 appearance-none">
+                <select value={sortAZ} onChange={e=>setSortAZ(e.target.value)} className="h-8 pl-3 pr-6 bg-surface border border-line rounded-full text-xs font-bold text-ink-2 appearance-none">
                   <option>Kategori</option><option>A-Z</option><option>Z-A</option>
                 </select>
                 <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-3 pointer-events-none" />
@@ -454,12 +454,12 @@ export default function POS(){
               <span className="text-xs text-ink-3">{filtered.length} produk</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="hidden sm:flex items-center gap-1 bg-white border border-line rounded-lg p-1">
+              <div className="hidden sm:flex items-center gap-1 bg-surface border border-line rounded-lg p-1">
                 <button onClick={()=>setViewMode('grid')} className={"w-7 h-7 grid place-items-center rounded-md "+(viewMode==='grid'?"bg-brand text-white":"text-ink-2 hover:bg-surface-2")}><LayoutGrid size={14}/></button>
                 <button onClick={()=>setViewMode('list')} className={"w-7 h-7 grid place-items-center rounded-md "+(viewMode==='list'?"bg-brand text-white":"text-ink-2 hover:bg-surface-2")}><List size={14}/></button>
               </div>
               <div className="relative">
-                <select value={sortAZ} onChange={e=>setSortAZ(e.target.value)} className="h-7 pl-2 pr-6 bg-white border border-line rounded-lg text-xs font-semibold text-ink-2 appearance-none">
+                <select value={sortAZ} onChange={e=>setSortAZ(e.target.value)} className="h-7 pl-2 pr-6 bg-surface border border-line rounded-lg text-xs font-semibold text-ink-2 appearance-none">
                   <option value="A-Z">Urutkan: A-Z</option><option value="Z-A">Z-A</option>
                 </select>
                 <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-ink-3 pointer-events-none" />
@@ -487,7 +487,7 @@ export default function POS(){
                         {p.image_url
                           ? <img src={p.image_url} alt={p.name} loading="lazy" className="w-full h-full object-cover"/>
                           : <div className="w-full h-full grid place-items-center text-ink-3">
-                              <div className="w-16 h-16 rounded-xl bg-white border border-line grid place-items-center text-[11px] font-bold text-ink-2 text-center leading-tight p-1">
+                              <div className="w-16 h-16 rounded-xl bg-surface border border-line grid place-items-center text-[11px] font-bold text-ink-2 text-center leading-tight p-1">
                                 {p.name.slice(0,22)}
                               </div>
                             </div>}
@@ -523,17 +523,17 @@ export default function POS(){
               )
             })}
           </div>
-          {filtered.length===0 && <div className="bg-white rounded-xl border border-dashed border-line p-10 text-center text-sm text-ink-3">Tidak ada produk untuk "{q || activeCat}"</div>}
+          {filtered.length===0 && <div className="bg-surface rounded-xl border border-dashed border-line p-10 text-center text-sm text-ink-3">Tidak ada produk untuk "{q || activeCat}"</div>}
         </div>
 
         {/* RIGHT - Keranjang */}
-        <div className="bg-white rounded-xl border border-line shadow-card p-4 sticky top-[72px]">
+        <div className="bg-surface rounded-xl border border-line shadow-card p-4 sticky top-[72px]">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-ink flex items-center gap-2">Keranjang <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-surface-3 text-brand border border-[#dbe1ff]">{cart.length} item</span></h3>
+            <h3 className="font-bold text-ink flex items-center gap-2">Keranjang <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-surface-3 text-brand border border-brand/20">{cart.length} item</span></h3>
             <button onClick={()=>setCart([])} className="text-xs font-semibold text-ink-2 hover:text-red-600 inline-flex items-center gap-1"><Trash2 size={12}/> Hapus semua</button>
           </div>
 
-          <div className="divide-y divide-[#e5eeff] mt-3 max-h-[42vh] overflow-auto -mx-1 px-1">
+          <div className="divide-y divide-line mt-3 max-h-[42vh] overflow-auto -mx-1 px-1">
             {cart.map((c,i)=>(
               <div key={i} className="flex gap-3 py-3">
                 <div className="w-12 h-12 rounded-xl bg-surface-2 border border-line shrink-0 grid place-items-center text-[9px] font-bold text-ink-2 text-center p-1">
@@ -569,12 +569,12 @@ export default function POS(){
             <div className="text-xs font-bold text-ink-2 mb-1.5">Metode Pembayaran</div>
             <div className="grid grid-cols-4 gap-1.5">
               {['CASH','TRANSFER','CARD','QRIS'].map(m=>(
-                <button key={m} onClick={()=>setPay(m)} className={"h-9 rounded-xl border text-[11px] font-bold tracking-wide "+(pay===m?"bg-brand text-white border-brand shadow-card":"bg-white text-ink-2 border-line hover:bg-surface-2")}>{m}</button>
+                <button key={m} onClick={()=>setPay(m)} className={"h-9 rounded-xl border text-[11px] font-bold tracking-wide "+(pay===m?"bg-brand text-white border-brand shadow-card":"bg-surface text-ink-2 border-line hover:bg-surface-2")}>{m}</button>
               ))}
             </div>
           </div>
 
-          <button onClick={checkout} disabled={!canCheckout} className={"w-full h-11 rounded-xl font-bold mt-3 inline-flex items-center justify-center gap-2 transition "+(canCheckout?"bg-brand text-white hover:bg-brand shadow-raised active:scale-[0.99]":"bg-[#e7ecf7] text-ink-3 cursor-not-allowed")}>
+          <button onClick={checkout} disabled={!canCheckout} className={"w-full h-11 rounded-xl font-bold mt-3 inline-flex items-center justify-center gap-2 transition "+(canCheckout?"bg-brand text-white hover:bg-brand shadow-raised active:scale-[0.99]":"bg-surface-3 text-ink-3 cursor-not-allowed")}>
             <CreditCard size={16}/> BAYAR • {rupiah(grand)}
           </button>
           {checkoutError && <div className="text-xs text-center text-red-600 bg-red-50 border border-red-200 rounded-xl p-2 mt-2 font-semibold">{checkoutError}</div>}

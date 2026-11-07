@@ -69,6 +69,67 @@ router.get('/invoices', async (req,res)=>{
   }catch(e){ res.status(500).json({error:e.message}); }
 });
 
+// POST /tax/invoices/auto-generate  { period }
+router.post('/invoices/auto-generate', async (req,res)=>{
+  const period = cleanPeriod(req.body?.period);
+  const client = await pool.connect();
+  try{
+    await client.query('BEGIN');
+    const yearSuffix = period.slice(2,4);
+    const prefix = `010000${yearSuffix}`;
+
+    const lastRes = await client.query(`
+      SELECT tax_number FROM tax_invoices
+       WHERE tax_number LIKE $1
+       ORDER BY tax_number DESC LIMIT 1
+    `, [`${prefix}%`]);
+
+    let nextSeq = 1;
+    if(lastRes.rows[0]?.tax_number){
+      const numPart = parseInt(lastRes.rows[0].tax_number.slice(8), 10);
+      if(!isNaN(numPart)) nextSeq = numPart + 1;
+    }
+
+    const invRes = await client.query(`
+      SELECT inv.id, inv.invoice_date, inv.total, COALESCE(inv.tax,0) AS tax
+        FROM invoices inv
+        LEFT JOIN tax_invoices ti ON ti.invoice_id = inv.id
+       WHERE to_char(inv.invoice_date, 'YYYY-MM') = $1
+         AND UPPER(COALESCE(inv.status, '')) NOT IN ('CANCELLED', 'VOID')
+         AND ti.id IS NULL
+       ORDER BY inv.invoice_date ASC, inv.id ASC
+    `, [period]);
+
+    let generated = 0;
+    for(const inv of invRes.rows){
+      const seqStr = String(nextSeq).padStart(8, '0');
+      const rawNumber = `${prefix}${seqStr}`;
+      const total = Number(inv.total) || 0;
+      const ppn = Number(inv.tax) || 0;
+      const dpp = total - ppn;
+      const invPeriod = String(inv.invoice_date || '').slice(0,7) || period;
+
+      await client.query(`
+        INSERT INTO tax_invoices (invoice_id, tax_number, dpp, ppn, period, status, created_by)
+        VALUES ($1, $2, $3, $4, $5, 'ISSUED', $6)
+        ON CONFLICT (invoice_id) DO UPDATE SET tax_number = $2, dpp = $3, ppn = $4, period = $5
+      `, [inv.id, rawNumber, dpp, ppn, invPeriod, req.user?.id || 1]);
+
+      nextSeq++;
+      generated++;
+    }
+
+    await client.query('COMMIT');
+    res.json({ ok: true, period, generated, next_sequence: nextSeq });
+  }catch(e){
+    await client.query('ROLLBACK');
+    console.error('[tax auto-generate]', e);
+    res.status(500).json({ error: e.message });
+  }finally{
+    client.release();
+  }
+});
+
 // POST /tax/invoices/:id/number  { tax_number, dpp?, ppn? }
 router.post('/invoices/:id/number', async (req,res)=>{
     const raw = String(req.body?.tax_number||'').replace(/[^0-9]/g,'');

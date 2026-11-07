@@ -37,23 +37,65 @@
 }
 
 
-.dark {
+html.dark, .dark {
   --bg: 11 15 25;
-  --surface: 17 23 38;
-  --surface-2: 22 29 46;
-  --surface-3: 29 37 56;
-  --surface-4: 38 48 71;
-  --line: 35 43 61;
-  --line-strong: 51 65 92;
-  --ink: 231 234 240;
-  --ink-2: 163 173 194;
-  --ink-3: 130 141 166;
+  --surface: 17 24 39;
+  --surface-2: 30 41 59;
+  --surface-3: 51 65 85;
+  --surface-4: 71 85 105;
+  --line: 51 65 85;
+  --line-strong: 71 85 105;
+  --ink: 248 250 252;
+  --ink-2: 203 213 225;
+  --ink-3: 148 163 184;
   --navy: 11 15 25;
-  --navy-2: 17 23 38;
+  --navy-2: 17 24 39;
   --brand: 49 107 243;
   --brand-strong: 30 64 175;
   --brand-tint: 59 130 246;
-  --brand-soft: 23 37 84;
+  --brand-soft: 30 58 138;
+}
+
+/* Dark mode safety overrides */
+html.dark .bg-white {
+  background-color: rgb(var(--surface)) !important;
+  color: rgb(var(--ink));
+}
+html.dark .focus\:bg-white:focus {
+  background-color: rgb(var(--surface-2)) !important;
+}
+html.dark .bg-\[\#f7f9fd\],
+html.dark .bg-\[\#e7ecf7\] {
+  background-color: rgb(var(--bg)) !important;
+}
+
+/* Translucent pastel badge mappings in dark mode */
+html.dark .bg-emerald-50 {
+  background-color: rgba(6, 78, 59, 0.45) !important;
+  color: #6ee7b7 !important;
+  border-color: rgba(6, 95, 70, 0.6) !important;
+}
+html.dark .bg-amber-50 {
+  background-color: rgba(120, 53, 15, 0.45) !important;
+  color: #fcd34d !important;
+  border-color: rgba(146, 64, 14, 0.6) !important;
+}
+html.dark .bg-red-50 {
+  background-color: rgba(127, 29, 29, 0.45) !important;
+  color: #fca5a5 !important;
+  border-color: rgba(153, 27, 27, 0.6) !important;
+}
+html.dark .bg-sky-50,
+html.dark .bg-blue-50 {
+  background-color: rgba(30, 58, 138, 0.45) !important;
+  color: #93c5fd !important;
+  border-color: rgba(30, 64, 175, 0.6) !important;
+}
+html.dark .bg-violet-50,
+html.dark .bg-purple-50 {
+  background-color: rgba(76, 29, 149, 0.45) !important;
+  color: #d8b4fe !important;
+  border-color: rgba(91, 33, 182, 0.6) !important;
 }
 
 @layer base {

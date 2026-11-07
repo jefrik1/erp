@@ -216,6 +216,10 @@ export default function Layout({children}){
     return sections;
   }, [shownNav]);
 
+  const allNavTos = useMemo(() => {
+    return navSections.flatMap(s => s.items).map(i => i.to);
+  }, [navSections]);
+
   useEffect(()=>{ const interval=setInterval(()=>setTime(new Date()),1000); return ()=>clearInterval(interval); },[]);
   useEffect(()=>{
     const handleKeyDown=(e)=>{
@@ -305,11 +309,15 @@ export default function Layout({children}){
               className="space-y-0.5 overflow-hidden"
             >
               {sec.items.map(n => {
-                const isActive = pathname === n.to || (n.to !== '/' && pathname.startsWith(n.to));
+                const isExact = pathname === n.to;
+                const isPrefixMatch = n.to !== '/' && pathname.startsWith(n.to + '/');
+                const hasMoreSpecific = isPrefixMatch && allNavTos.some(otherTo => otherTo !== n.to && (pathname === otherTo || pathname.startsWith(otherTo + '/')) && otherTo.length > n.to.length);
+                const isActive = isExact || (isPrefixMatch && !hasMoreSpecific);
                 return (
                   <NavLink
                     key={n.to}
                     to={n.to}
+                    end
                     onClick={onNavigate}
                     title={collapsed ? n.label : undefined}
                     className={"relative flex items-center rounded-xl transition-all duration-150 "+

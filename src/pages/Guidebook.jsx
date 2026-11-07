@@ -9,6 +9,47 @@ import {
   ClipboardCheck, Receipt, Send, Link2, TrendingDown, BookMarked, Layers, Info,
   BookOpenCheck, Landmark, Boxes,
 } from 'lucide-react';
+import { GUIDEBOOK_ROUTES } from '../lib/guidebookData';
+
+function getIconForRoute(path, cat) {
+  if (path === '/') return BarChart3;
+  if (path.includes('pos') || path.includes('receipt')) return Kanban;
+  if (path.includes('order')) return ShoppingCart;
+  if (path.includes('invoice')) return Wallet;
+  if (path.includes('calculator')) return Calculator;
+  if (path.includes('crm')) return Users;
+  if (path.includes('credit')) return CreditCard;
+  if (path.includes('project')) return Building2;
+  if (path.includes('consignment')) return Handshake;
+  if (path.includes('pricing')) return BadgeDollarSign;
+  if (path.includes('return')) return FileWarning;
+  if (path.includes('purchase')) return Truck;
+  if (path.includes('landed')) return BadgeDollarSign;
+  if (path.includes('opname')) return ClipboardCheck;
+  if (path.includes('waste')) return Flame;
+  if (path.includes('transfer')) return ArrowRightLeft;
+  if (path.includes('stock')) return Warehouse;
+  if (path.includes('logistics') || path.includes('surat-jalan')) return Truck;
+  if (path.includes('driver')) return MapPin;
+  if (path.includes('fleet')) return Wrench;
+  if (path.includes('coa')) return Wallet;
+  if (path.includes('journal')) return ReceiptText;
+  if (path.includes('tax')) return Receipt;
+  if (path.includes('period')) return BookOpenCheck;
+  if (path.includes('recon')) return Landmark;
+  if (path.includes('reports')) return Boxes;
+  if (path.includes('budget')) return PiggyBank;
+  if (path.includes('asset')) return Building2;
+  if (path.includes('hr')) return Users;
+  if (path.includes('absen')) return Clock;
+  if (path.includes('cuti')) return CalendarDays;
+  if (path.includes('izin')) return CalendarClock;
+  if (path.includes('notify')) return Send;
+  if (path.includes('approval')) return Workflow;
+  if (path.includes('audit')) return ShieldCheck;
+  if (path.includes('settings')) return Settings2;
+  return BookOpen;
+}
 
 /* ─────────────────────────────────────────────────────────────────────────────
    GUIDEBOOK ERP — halaman publik (bisa dibuka tanpa login).
@@ -217,76 +258,18 @@ const NEW_MODULES = [
   },
 ];
 
-const MODULES = [
-  { g:'Penjualan', n:'Sales Order', p:'/sales/orders', r:'sales, sales_trading, finance, kasir, admin', d:'Buat & pantau pesanan penjualan dari quotation sampai selesai.', icon:ShoppingCart,
-    steps:['Buat SO: pelanggan, barang, harga, termin/DP, alamat kirim','Approval bila diskon/kredit melewati batas','Gudang membuat DO, driver klaim','Konfirmasi kantor → invoice → lunas → SO COMPLETED'] },
-  { g:'Penjualan', n:'Riwayat Order', p:'/sales/order-history', r:'kasir (order sendiri), sales, finance, gudang, admin', d:'Semua order POS & SO: metode bayar, DP, sisa tagihan, detail item.', icon:ReceiptText,
-    steps:['Filter sumber/metode/status/tanggal','Klik baris untuk detail item & pembayaran','Kasir hanya melihat order POS miliknya'] },
-  { g:'Keuangan', n:'Tutup Buku (Periode)', p:'/finance/periods', r:'finance, auditor, direktur, admin', d:'Kunci periode akuntansi setelah laporan selesai; jurnal baru ditolak sampai dibuka.', icon:BookOpenCheck,
-    steps:['Pastikan Trial Balance seimbang & laporan diarsipkan','Klik Tutup buku pada periode','Posting (jual/beli/opname/payroll/penyusutan) ke periode tertutup akan ditolak','Buka kembali hanya Direktur/Super Admin + alasan (tercatat audit)'] },
-  { g:'Keuangan', n:'Rekonsiliasi Bank', p:'/finance/recon', r:'finance, direktur, admin', d:'Cocokkan mutasi rekening koran dengan pembayaran yang tercatat di ERP.', icon:Landmark,
-    steps:['Pilih rekening & periode','Impor Mutasi (tanggal,deskripsi,nominal,ref) — nominal minus = uang keluar','Auto-match mencocokkan nominal sama ±5 hari','Sisa dicocokkan manual atau diabaikan (biaya admin)'] },
-  { g:'Keuangan', n:'Laporan Persediaan & Margin', p:'/reports/inventory', r:'finance, gudang, auditor, direktur, admin', d:'Nilai persediaan (qty × HPP rata-rata) dan margin kotor per produk.', icon:Boxes,
-    steps:['Tab Valuasi Stok: nilai per produk/gudang, perhatikan stok negatif','Tab Margin: pendapatan − estimasi HPP per produk','Export CSV untuk arsip'] },
-  { g:'Master', n:'Approval Matrix', p:'/approval-rules', r:'direktur, finance, purchasing, admin', d:'Atur ambang batas yang memicu approval otomatis (diskon SO %, nilai PO).', icon:Workflow,
-    steps:['Ubah ambang diskon SO (default 10%) atau nilai PO (default Rp 50 juta)','Approver = role yang menerima antrian approval','Nonaktifkan rule bila tidak ingin approval otomatis'] },
-  { g:'Penjualan', n:'Struk Thermal', p:'/pos/receipt/:id', r:'kasir, sales, finance, gudang, admin', d:'Struk 80mm siap cetak untuk printer thermal (ESC/POS).', icon:ReceiptText,
-    steps:['Buka dari Riwayat Order → Cetak Struk','Tab baru terbuka dengan struk 80mm','Klik Cetak Struk (atau Ctrl+P), pilih printer thermal'] },
-  { g:'Penjualan', n:'Invoice (AR)', p:'/sales/invoices', r:'sales, finance, kasir, admin', d:'Terbitkan invoice, catat pembayaran, cek piutang.', icon:Wallet,
-    steps:['Pilih invoice → bayar (penuh/bertahap)','Pembayaran memotong bank + jurnal','Invoice PAID mengubah SO menjadi COMPLETED'] },
-  { g:'Penjualan', n:'POS Kasir', p:'/sales/pos', r:'kasir, supervisor, manager POS, admin', d:'Transaksi cepat di counter; stok berkurang otomatis.', icon:Kanban,
-    steps:['Buka shift (kas awal)','Pilih pelanggan, scan barang, checkout','Tutup shift → kas masuk Kas Tunai'] },
-  { g:'Penjualan', n:'Kalkulator Material', p:'/calculator', r:'sales, kasir, admin', d:'Hitung kebutuhan material (bata, semen, besi) per luasan.', icon:Calculator },
-  { g:'Penjualan', n:'CRM & Leads', p:'/crm', r:'sales, admin', d:'Data prospek, follow-up, dan konversi jadi pelanggan.', icon:Users },
-  { g:'Proyek', n:'Proyek & Tender', p:'/projects', r:'project_manager, sales, admin', d:'Proyek/tender, RAB, termin, dan penagihan termin.', icon:Building2,
-    steps:['Buat proyek + nilai kontrak','Generate/atur termin','Klik Tagih pada termin → invoice AR','Pantau RAB vs realisasi & dokumen'] },
-  { g:'Pembelian', n:'Purchase Request', p:'/purchase/requests', r:'purchasing, gudang, admin', d:'Permintaan pembelian dari departemen sebelum RFQ.', icon:ClipboardList },
-  { g:'Pembelian', n:'RFQ', p:'/purchase/rfqs', r:'purchasing, admin', d:'Minta & bandingkan penawaran supplier sebelum PO.', icon:FileCheck2 },
-  { g:'Pembelian', n:'Purchase Order', p:'/purchase/orders', r:'purchasing, admin', d:'PO ke supplier + approval; dasar penerimaan barang.', icon:Truck },
-  { g:'Pembelian', n:'Goods Receipt', p:'/purchase/receipts', r:'gudang, purchasing, finance', d:'Penerimaan barang & 3-way matching (PO ↔ terima ↔ invoice).', icon:Warehouse },
-  { g:'Pembelian', n:'Landed Cost', p:'/landed-costs', r:'purchasing, finance', d:'Alokasi biaya angkut/bea masuk ke harga pokok barang.', icon:BadgeDollarSign },
-  { g:'Persediaan', n:'Katalog Produk', p:'/master/products', r:'gudang, purchasing, sales, admin', d:'Master barang: SKU, satuan, harga jual, batas stok.', icon:Package },
-  { g:'Persediaan', n:'Stok per Gudang', p:'/inventory/stocks', r:'gudang, purchasing, admin', d:'Saldo stok real-time per gudang/outlet.', icon:Warehouse },
-  { g:'Persediaan', n:'Penambahan Stok', p:'/inventory/stock-in', r:'gudang, admin', d:'Input stok masuk/manual (IN/OUT/SET opname fisik).', icon:PackagePlus },
-  { g:'Persediaan', n:'Kartu Stok', p:'/inventory/movements', r:'gudang, finance, admin', d:'Riwayat keluar-masuk barang + referensi dokumen.', icon:BarChart3 },
-  { g:'Persediaan', n:'Stock Opname', p:'/inventory/opname', r:'gudang (isi), direktur/finance (approve+posting)', d:'Sesi hitung fisik → koreksi stok + jurnal selisih.', icon:ClipboardCheck,
-    steps:['Buat sesi per gudang (snapshot stok)','Isi Hitung Fisik & Simpan','Ajukan → Approve → Posting Stok','Stok disetel + kartu ADJ + jurnal selisih'] },
-  { g:'Persediaan', n:'Transfer Gudang', p:'/inventory/transfers', r:'gudang, admin', d:'Pindah stok antar gudang dengan bukti transfer.', icon:ArrowRightLeft },
-  { g:'Persediaan', n:'Konsinyasi', p:'/consignments', r:'gudang, sales, finance', d:'Barang titipan di partner/lokasi dengan status kepemilikan.', icon:Handshake },
-  { g:'Persediaan', n:'Susut & Pecah', p:'/waste', r:'gudang, admin', d:'Catat barang rusak/hilang agar stok & HPP akurat.', icon:Flame },
-  { g:'Operasional', n:'Logistik (DO)', p:'/logistics', r:'gudang, sales, finance, admin', d:'Buat DO, cetak surat jalan, konfirmasi gudang.', icon:Truck },
-  { g:'Operasional', n:'Armada & Trip', p:'/fleet', r:'gudang, admin', d:'Data kendaraan, KIR/pajak, jadwal servis, trip.', icon:Wrench },
-  { g:'Operasional', n:'Trip Saya', p:'/driver', r:'driver', d:'Klaim DO, TTD pengemudi, selesaikan trip + bukti terima.', icon:MapPin },
-  { g:'Operasional', n:'Surat Jalan', p:'/surat-jalan', r:'gudang, sales, driver, admin', d:'Cetak surat jalan dengan 3 kolom tanda tangan.', icon:FileWarning },
-  { g:'Keuangan', n:'COA & Jurnal', p:'/finance/coa', r:'finance, admin', d:'Bagan akun & jurnal otomatis dari transaksi.', icon:Wallet },
-  { g:'Keuangan', n:'Jurnal Umum', p:'/finance/journals', r:'finance, admin', d:'Daftar jurnal, koreksi, dan posting manual.', icon:ReceiptText },
-  { g:'Keuangan', n:'AR / AP', p:'/finance/arap', r:'finance, admin', d:'Piutang, hutang, Kas Tunai, setor bank, laba-rugi, trial balance.', icon:CircleDollarSign,
-    steps:['Tagih AR / bayar AP','Setor Kas Tunai ke bank','Cek Trial Balance seimbang'] },
-  { g:'Keuangan', n:'Kolektibilitas', p:'/credit', r:'finance, direktur, super_admin', d:'Blokir pelanggan menunggak, janji bayar, surat penagihan.', icon:CreditCard,
-    steps:['Lihat prioritas penagihan per pelanggan','Blokir (HOLD) bila menunggak','Catat janji bayar → FULFILLED melunasi invoice','Catat surat penagihan level 1–3'] },
-  { g:'Keuangan', n:'Pajak & e-Faktur', p:'/finance/tax', r:'finance, auditor, admin', d:'Nomor faktur pajak, rekap PPN masa, PPh 21/23/4(2).', icon:Receipt,
-    steps:['Pilih periode','Isi nomor faktur 16 digit per invoice','Catat PPh dipotong','Export CSV rekap pajak'] },
-  { g:'Keuangan', n:'Laporan BI', p:'/reports', r:'finance, direktur, admin', d:'Laporan penjualan, stok, keuangan siap ekspor.', icon:BarChart3 },
-  { g:'Keuangan', n:'Budget & Cashflow', p:'/budgets', r:'finance, admin', d:'Rencana anggaran vs realisasi dan proyeksi kas.', icon:PiggyBank },
-  { g:'Keuangan', n:'Aset Tetap', p:'/assets', r:'finance, admin', d:'Register aset, penyusutan otomatis, pelepasan aset.', icon:Building2,
-    steps:['Tambah/ubah aset & umur ekonomis','Klik Penyusutan Bulan Ini','Jurnal Dr Beban / Cr Akumulasi dibuat otomatis'] },
-  { g:'Loyalty', n:'Loyalty & Tier', p:'/loyalty', r:'sales, finance, admin', d:'Poin, tier, dan reward pelanggan.', icon:Gift },
-  { g:'Loyalty', n:'Pricing Engine', p:'/pricing', r:'sales, finance, admin', d:'Harga bertingkat per pelanggan/qty + batas harga bawah.', icon:BadgeDollarSign },
-  { g:'Loyalty', n:'Retur & Klaim', p:'/returns', r:'sales, gudang, finance', d:'Retur barang, klaim rusak, dan pengembalian dana.', icon:FileWarning },
-  { g:'SDM', n:'Karyawan & HR', p:'/hr', r:'hrd, direktur, super_admin', d:'Karyawan, absensi, keterlambatan, payroll, cuti.', icon:Users,
-    steps:['Karyawan: data & akun login','Absensi: rekap + absen manual','Keterlambatan: laporan bulanan','Payroll: generate → Posting Jurnal'] },
-  { g:'Master', n:'Pelanggan', p:'/master/customers', r:'sales, kasir, finance, admin', d:'Data pelanggan, limit kredit, status HOLD, alamat.', icon:Users },
-  { g:'Master', n:'Supplier', p:'/master/suppliers', r:'purchasing, finance, admin', d:'Data supplier, termin, dan kontak.', icon:Truck },
-  { g:'Master', n:'Approval', p:'/approvals', r:'semua role terkait', d:'Antrian persetujuan (diskon, PO, cuti, dll).', icon:Workflow },
-  { g:'Master', n:'Pusat Notifikasi', p:'/notify', r:'finance, hrd, gudang, admin', d:'Antrian pesan WA/Email/SMS + template.', icon:Send,
-    steps:['Pesan Baru / pakai template','Masukkan antrian','Kirim per baris atau Kirim Antrian','Cek status SENT/FAILED + provider'] },
-  { g:'Master', n:'Audit & GRC', p:'/audit', r:'auditor, direktur, admin', d:'Jejak audit perubahan data & akses.', icon:ShieldCheck },
-  { g:'Master', n:'Pengaturan Sistem', p:'/settings', r:'super_admin, direktur', d:'Profil perusahaan, outlet, register, parameter.', icon:Settings2 },
-  { g:'Saya', n:'Absensi Saya', p:'/absen', r:'semua karyawan', d:'Check-in/out dengan GPS (maks 200 m dari Gudang Pusat).', icon:Clock },
-  { g:'Saya', n:'Cuti Tahunan', p:'/cuti', r:'semua karyawan', d:'Ajukan cuti, lihat sisa kuota & status persetujuan.', icon:CalendarDays },
-  { g:'Saya', n:'Izin & Sakit', p:'/izin', r:'semua karyawan', d:'Ajukan izin/sakit + lampiran surat.', icon:CalendarClock },
-  { g:'Saya', n:'Pengumuman', p:'/pengumuman', r:'semua karyawan', d:'Informasi internal dari HRD/direktur.', icon:Megaphone },
-];
+const MODULES = GUIDEBOOK_ROUTES.map(r => ({
+  g: r.category,
+  n: r.title,
+  p: r.path,
+  r: r.roles.join(', '),
+  d: r.goal,
+  prerequisites: r.prerequisites,
+  steps: r.steps,
+  impact: r.impact,
+  troubleshooting: r.troubleshooting,
+  icon: getIconForRoute(r.path, r.category)
+}));
 
 const RULES = [
   { t:'Absensi: radius 200 m & batas 08:00', d:'Titik pusat = Gudang Pusat (-6.8392646, 111.9838451). Di luar 200 m ditolak. Lewat 08:00 tetap bisa absen tetapi tercatat terlambat dan masuk notifikasi HR.', i:MapPin },
@@ -362,7 +345,13 @@ export default function Guidebook() {
   const query = q.trim().toLowerCase();
   const match = (...fields) => !query || fields.join(' ').toLowerCase().includes(query);
 
-  const modules = useMemo(() => MODULES.filter(m => match(m.n, m.g, m.d, m.r, (m.steps||[]).join(' '))), [query]);
+  const modules = useMemo(() => MODULES.filter(m => match(
+    m.n, m.g, m.d, m.r, m.p,
+    (m.steps||[]).join(' '),
+    m.prerequisites||'',
+    m.impact||'',
+    (m.troubleshooting||[]).join(' ')
+  )), [query]);
   const roles = useMemo(() => ROLES.filter(r => match(r.role, r.steps.join(' '))), [query]);
   const faqs = useMemo(() => FAQ.filter(f => match(f.q, f.a)), [query]);
   const rules = useMemo(() => RULES.filter(r => match(r.t, r.d)), [query]);
@@ -379,14 +368,14 @@ export default function Guidebook() {
   }, [modules]);
 
   return (
-    <div className="min-h-screen bg-[#f7f9fd] text-ink">
-      <header className="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-line print:hidden">
+    <div className="min-h-screen bg-bg text-ink">
+      <header className="sticky top-0 z-30 bg-surface/90 backdrop-blur border-b border-line print:hidden">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center gap-3">
           <div className="h-8 w-8 rounded-lg bg-navy text-white grid place-items-center font-bold text-sm">SM</div>
           <div className="font-bold text-sm">Guidebook ERP</div>
           <span className="text-[11px] px-2 py-0.5 rounded-full bg-surface-3 text-brand font-bold">v2.0</span>
           <div className="ml-auto flex items-center gap-2">
-            <button onClick={() => window.print()} className="h-9 px-3 rounded-lg border border-line bg-white text-xs font-bold text-ink-2 hover:bg-surface-2 inline-flex items-center gap-1.5">
+            <button onClick={() => window.print()} className="h-9 px-3 rounded-lg border border-line bg-surface text-xs font-bold text-ink-2 hover:bg-surface-2 inline-flex items-center gap-1.5">
               <Printer size={14} /> Cetak / PDF
             </button>
             <Link to="/login" className="h-9 px-3 rounded-lg bg-brand text-white text-xs font-bold hover:bg-brand-strong inline-flex items-center gap-1.5">
@@ -420,7 +409,7 @@ export default function Guidebook() {
             <SectionTitle icon={Layers}>Modul Baru — Penjelasan Rinci</SectionTitle>
             <div className="grid lg:grid-cols-2 gap-4">
               {newModules.map(m => (
-                <div key={m.n} className={`bg-white rounded-2xl border ${m.tone} overflow-hidden`}>
+                <div key={m.n} className={`bg-surface rounded-2xl border ${m.tone} overflow-hidden`}>
                   <div className="px-4 py-3 border-b border-line flex items-center gap-2">
                     <span className="h-8 w-8 rounded-lg bg-surface-2 border border-line text-brand grid place-items-center shrink-0"><m.icon size={15}/></span>
                     <div className="min-w-0">
@@ -454,7 +443,7 @@ export default function Guidebook() {
             <SectionTitle icon={Workflow}>Alur Besar Sistem</SectionTitle>
             <div className="grid lg:grid-cols-3 gap-4">
               {FLOWS.map(f => (
-                <div key={f.title} className="bg-white rounded-2xl border border-line overflow-hidden">
+                <div key={f.title} className="bg-surface rounded-2xl border border-line overflow-hidden">
                   <div className={`px-4 py-3 bg-gradient-to-r ${f.color} text-white flex items-center gap-2`}>
                     <f.icon size={16} />
                     <div className="font-bold text-sm">{f.title}</div>
@@ -470,7 +459,7 @@ export default function Guidebook() {
                       </li>
                     ))}
                   </ol>
-                  <div className="px-4 pb-4 text-[11px] text-ink-2 bg-[#f7f9fd] border-t border-line pt-3">{f.note}</div>
+                  <div className="px-4 pb-4 text-[11px] text-ink-2 bg-bg border-t border-line pt-3">{f.note}</div>
                 </div>
               ))}
             </div>
@@ -511,27 +500,77 @@ export default function Guidebook() {
                   <div className="text-[11px] font-bold uppercase tracking-wider text-ink-3 mb-2">{g.g}</div>
                   <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
                     {g.items.map(m => (
-                      <details key={m.p} className="bg-white rounded-xl border border-line overflow-hidden group">
-                        <summary className="cursor-pointer p-3 flex items-start gap-2 list-none [&::-webkit-details-marker]:hidden">
-                          <span className="h-7 w-7 rounded-lg bg-surface-2 text-brand grid place-items-center shrink-0"><m.icon size={14} /></span>
+                      <details key={m.p} className="bg-surface rounded-xl border border-line overflow-hidden group shadow-sm transition-all hover:border-brand/30">
+                        <summary className="cursor-pointer p-3.5 flex items-start gap-2.5 list-none [&::-webkit-details-marker]:hidden bg-surface hover:bg-surface-2 transition-colors">
+                          <span className="h-8 w-8 rounded-lg bg-surface-2 border border-line text-brand grid place-items-center shrink-0">
+                            <m.icon size={16} />
+                          </span>
                           <div className="min-w-0 flex-1">
-                            <div className="font-bold text-[13px] leading-tight">{m.n}</div>
-                            <div className="text-[10px] font-mono text-ink-3 mt-0.5">{m.p}</div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-bold text-[13px] text-ink leading-tight">{m.n}</span>
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface-3 text-ink-3 font-semibold">{m.g}</span>
+                            </div>
+                            <div className="text-[11px] font-mono text-ink-3 mt-0.5">{m.p}</div>
                           </div>
-                          <ChevronRight size={13} className="text-ink-3 group-open:rotate-90 transition-transform mt-1 shrink-0"/>
+                          <ChevronRight size={14} className="text-ink-3 group-open:rotate-90 transition-transform mt-1.5 shrink-0"/>
                         </summary>
-                        <div className="px-3 pb-3 space-y-2">
-                          <p className="text-[11px] text-ink-2 leading-relaxed">{m.d}</p>
-                          <div className="text-[10px] text-ink-3 flex items-start gap-1"><Users size={10} className="mt-0.5 shrink-0"/><span>{m.r}</span></div>
-                          {m.steps && (
-                            <ol className="space-y-1.5 pt-1 border-t border-line">
-                              {m.steps.map((s,i)=>(
-                                <li key={i} className="flex gap-1.5 text-[11px] leading-relaxed text-ink/90">
-                                  <span className="font-bold text-brand tabular-nums">{i+1}.</span><span>{s}</span>
-                                </li>
-                              ))}
-                            </ol>
+                        <div className="px-4 pb-4 pt-1 space-y-3 border-t border-line/60 bg-surface">
+                          <div className="space-y-1">
+                            <div className="text-[10px] font-bold uppercase tracking-wider text-ink-3">Tujuan Halaman</div>
+                            <p className="text-xs text-ink-2 leading-relaxed">{m.d}</p>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 text-[11px] text-ink-3">
+                            <Users size={12} className="shrink-0 text-brand"/>
+                            <span><b className="text-ink">Role:</b> {m.r}</span>
+                          </div>
+
+                          {m.prerequisites && (
+                            <div className="rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 p-2.5 text-[11px] text-amber-900 dark:text-amber-300 leading-relaxed flex items-start gap-1.5">
+                              <AlertTriangle size={13} className="shrink-0 mt-0.5"/>
+                              <div><b className="font-bold">Prasyarat:</b> {m.prerequisites}</div>
+                            </div>
                           )}
+
+                          {m.steps && m.steps.length > 0 && (
+                            <div className="space-y-1.5">
+                              <div className="text-[10px] font-bold uppercase tracking-wider text-ink-3">Langkah Kerja (SOP)</div>
+                              <ol className="space-y-1.5">
+                                {m.steps.map((s, i) => (
+                                  <li key={i} className="flex gap-2 text-xs leading-relaxed text-ink-2">
+                                    <span className="h-4 w-4 shrink-0 rounded-full bg-surface-3 text-brand text-[10px] font-bold grid place-items-center mt-0.5">{i+1}</span>
+                                    <span className="flex-1"><RichText text={s}/></span>
+                                  </li>
+                                ))}
+                              </ol>
+                            </div>
+                          )}
+
+                          {m.impact && (
+                            <div className="rounded-lg bg-brand-soft/40 border border-brand/20 p-2.5 text-[11px] text-ink-2 leading-relaxed">
+                              <div className="font-bold text-brand uppercase text-[10px] tracking-wider mb-0.5">Dampak Stok & Akuntansi GL</div>
+                              <RichText text={m.impact}/>
+                            </div>
+                          )}
+
+                          {m.troubleshooting && m.troubleshooting.length > 0 && (
+                            <div className="space-y-1 pt-1 border-t border-line/60">
+                              <div className="text-[10px] font-bold uppercase tracking-wider text-ink-3">Troubleshooting</div>
+                              <ul className="space-y-1">
+                                {m.troubleshooting.map((t, i) => (
+                                  <li key={i} className="text-[11px] text-ink-3 leading-relaxed">
+                                    💡 {t}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+
+                          <div className="pt-2 flex justify-end">
+                            <Link to={m.p.includes(':') ? '/' : m.p} className="text-xs font-semibold text-brand hover:underline inline-flex items-center gap-1">
+                              Buka Halaman Ini <ChevronRight size={12}/>
+                            </Link>
+                          </div>
                         </div>
                       </details>
                     ))}
@@ -547,7 +586,7 @@ export default function Guidebook() {
             <SectionTitle icon={ShieldCheck}>Aturan Penting (jangan dilanggar)</SectionTitle>
             <div className="grid sm:grid-cols-2 gap-3">
               {rules.map(r => (
-                <div key={r.t} className="bg-white rounded-xl border border-line p-3.5 flex gap-2.5">
+                <div key={r.t} className="bg-surface rounded-xl border border-line p-3.5 flex gap-2.5">
                   <span className="h-7 w-7 rounded-lg bg-amber-50 text-amber-700 grid place-items-center shrink-0"><r.i size={14} /></span>
                   <div>
                     <div className="font-bold text-xs">{r.t}</div>
@@ -562,12 +601,12 @@ export default function Guidebook() {
         {faqs.length > 0 && (
           <section className="space-y-4">
             <SectionTitle icon={AlertTriangle}>Troubleshooting &amp; FAQ</SectionTitle>
-            <div className="bg-white rounded-2xl border border-line divide-y divide-[#e7ecf7] overflow-hidden">
+            <div className="bg-surface rounded-2xl border border-line divide-y divide-line overflow-hidden">
               {faqs.map((f, i) => {
                 const open = openFaq === i;
                 return (
                   <div key={f.q}>
-                    <button onClick={() => setOpenFaq(open ? -1 : i)} className="w-full text-left px-4 py-3 flex items-center gap-2 hover:bg-[#f7f9fd]">
+                    <button onClick={() => setOpenFaq(open ? -1 : i)} className="w-full text-left px-4 py-3 flex items-center gap-2 hover:bg-bg">
                       <ChevronRight size={14} className={'text-brand transition-transform ' + (open ? 'rotate-90' : '')} />
                       <span className="text-xs font-bold text-ink flex-1">{f.q}</span>
                     </button>
@@ -582,7 +621,7 @@ export default function Guidebook() {
         {glossary.length > 0 && (
           <section className="space-y-4">
             <SectionTitle icon={BookMarked}>Istilah &amp; Singkatan</SectionTitle>
-            <div className="bg-white rounded-2xl border border-line divide-y divide-[#e7ecf7] overflow-hidden">
+            <div className="bg-surface rounded-2xl border border-line divide-y divide-line overflow-hidden">
               {glossary.map(([k,v]) => (
                 <div key={k} className="px-4 py-2.5 flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3">
                   <div className="text-xs font-bold text-ink sm:w-[190px] shrink-0">{k}</div>
@@ -594,7 +633,7 @@ export default function Guidebook() {
         )}
 
         {!modules.length && !roles.length && !faqs.length && !newModules.length && (
-          <div className="bg-white rounded-2xl border border-dashed border-[#cbdbf5] p-10 text-center">
+          <div className="bg-surface rounded-2xl border border-dashed border-brand/20 p-10 text-center">
             <div className="font-bold text-sm">Tidak ada hasil untuk "{q}"</div>
             <div className="text-xs text-ink-3 mt-1">Coba kata kunci lain: stok, opname, invoice, absen, kas, pajak, payroll, lacak.</div>
           </div>

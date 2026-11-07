@@ -17,7 +17,7 @@ export default function SignaturePad({ onChange, height=170, label='Tanda tangan
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0,0,c.width,c.height);
     // garis dasar tipis supaya jelas area tanda tangan
-    ctx.strokeStyle = '#e7ecf7';
+    ctx.strokeStyle = document.documentElement.classList.contains('dark') ? '#334155' : '#e7ecf7';
     ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(24, c.height-28); ctx.lineTo(c.width-24, c.height-28); ctx.stroke();
   },[]);
@@ -67,11 +67,11 @@ export default function SignaturePad({ onChange, height=170, label='Tanda tangan
         <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-ink-2 uppercase">
           {hasInk ? <CheckCircle2 size={13} className="text-emerald-600"/> : <PenLine size={13}/>} {label}
         </div>
-        <button type="button" onClick={clear} className="h-7 px-2.5 rounded-lg bg-white border border-line text-[11px] font-semibold text-ink-2 hover:bg-surface-2 inline-flex items-center gap-1">
+        <button type="button" onClick={clear} className="h-7 px-2.5 rounded-lg bg-surface border border-line text-[11px] font-semibold text-ink-2 hover:bg-surface-2 inline-flex items-center gap-1">
           <Eraser size={12}/> Hapus
         </button>
       </div>
-      <div className="rounded-xl border border-line bg-white overflow-hidden">
+      <div className="rounded-xl border border-line bg-surface overflow-hidden">
         <canvas
           ref={canvasRef} width={640} height={Math.round(height*640/560)}
           onPointerDown={start} onPointerMove={move} onPointerUp={end} onPointerLeave={end} onPointerCancel={end}

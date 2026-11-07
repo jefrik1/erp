@@ -1,6 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
-import { motion } from 'motion/react';
-import { ArrowLeft, Search, ChevronDown, Minus, Plus, Inbox, RefreshCw, FileSpreadsheet, FileText, FileCode2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import {
+  ArrowLeft, Search, ChevronDown, Minus, Plus, Inbox, RefreshCw, FileSpreadsheet, FileText, FileCode2,
+  HelpCircle, X, ExternalLink, ShieldCheck, CheckCircle2, AlertTriangle, BookOpen
+} from 'lucide-react';
+import { getGuideForRoute } from '../lib/guidebookData';
 
 // Primitif UI bersama — Linear / Stripe / Stitch Enterprise Design:
 // Kartu berdaya haptik, spring entrance, micro-interactions, Plus Jakarta Sans display,
@@ -54,40 +58,192 @@ function AnimatedNumber({ value }){
 }
 
 // ------------------------------------------------------------- page header
-export function PosPageHeader({ title, subtitle, badge, onBack, icon:Icon, actions }){
+export function PosPageHeader({ title, subtitle, badge, onBack, icon:Icon, actions, guide, showHelp=true }){
+  const [helpOpen, setHelpOpen] = useState(false);
+  const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+  const activeGuide = guide || getGuideForRoute(currentPath);
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 320, damping: 28 }}
-      className="flex flex-wrap items-center gap-3"
-    >
-      {onBack ? (
-        <motion.button
-          whileTap={{ scale: 0.94 }}
-          onClick={onBack} aria-label="Kembali"
-          className="w-10 h-10 rounded-xl bg-surface border border-line shadow-card grid place-items-center hover:bg-surface-2 text-ink shrink-0 transition-colors"
-        >
-          <ArrowLeft size={18}/>
-        </motion.button>
-      ) : Icon ? (
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand to-brand-tint text-white grid place-items-center shrink-0 shadow-md shadow-brand/10">
-          <Icon size={24} strokeWidth={2}/>
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+        className="flex flex-wrap items-center gap-3"
+      >
+        {onBack ? (
+          <motion.button
+            whileTap={{ scale: 0.94 }}
+            onClick={onBack} aria-label="Kembali"
+            className="w-10 h-10 rounded-xl bg-surface border border-line shadow-card grid place-items-center hover:bg-surface-2 text-ink shrink-0 transition-colors"
+          >
+            <ArrowLeft size={18}/>
+          </motion.button>
+        ) : Icon ? (
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand to-brand-tint text-white grid place-items-center shrink-0 shadow-md shadow-brand/10">
+            <Icon size={24} strokeWidth={2}/>
+          </div>
+        ) : null}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h1 className="font-display text-headline-lg font-bold tracking-tight text-ink leading-tight">{title}</h1>
+            {badge && (
+              <span className="text-label-sm px-2.5 py-1 rounded-full bg-brand-soft text-brand-strong border border-brand/20 font-semibold leading-none shadow-sm">
+                {badge}
+              </span>
+            )}
+          </div>
+          {subtitle && <p className="text-body-sm text-ink-2 mt-1 max-w-[90ch]">{subtitle}</p>}
         </div>
-      ) : null}
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <h1 className="font-display text-headline-lg font-bold tracking-tight text-ink leading-tight">{title}</h1>
-          {badge && (
-            <span className="text-label-sm px-2.5 py-1 rounded-full bg-brand-soft text-brand-strong border border-brand/20 font-semibold leading-none shadow-sm">
-              {badge}
-            </span>
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto sm:ml-auto">
+          {actions}
+          {showHelp && activeGuide && (
+            <motion.button
+              whileTap={{ scale: 0.94 }}
+              onClick={()=>setHelpOpen(true)}
+              title="Panduan dan SOP halaman ini"
+              className="h-9 px-3 rounded-xl border border-line bg-surface hover:bg-surface-2 text-xs font-semibold text-ink-2 hover:text-ink inline-flex items-center gap-1.5 shadow-sm transition-colors"
+            >
+              <HelpCircle size={14} className="text-brand"/>
+              <span>Panduan</span>
+            </motion.button>
           )}
         </div>
-        {subtitle && <p className="text-body-sm text-ink-2 mt-1 max-w-[90ch]">{subtitle}</p>}
-      </div>
-      {actions && <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto sm:ml-auto">{actions}</div>}
-    </motion.div>
+      </motion.div>
+
+      {/* Contextual Help Drawer */}
+      <AnimatePresence>
+        {helpOpen && activeGuide && (
+          <div className="fixed inset-0 z-50 overflow-hidden">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-navy/60 backdrop-blur-sm"
+              onClick={()=>setHelpOpen(false)}
+            />
+            <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+              <motion.div
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                className="w-screen max-w-md bg-surface border-l border-line shadow-2xl flex flex-col"
+              >
+                <div className="p-4 border-b border-line flex items-center justify-between bg-surface-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-brand/10 text-brand grid place-items-center">
+                      <BookOpen size={16}/>
+                    </div>
+                    <div>
+                      <div className="text-[11px] font-bold text-brand uppercase tracking-wider">{activeGuide.category}</div>
+                      <h2 className="text-sm font-bold text-ink">{activeGuide.title}</h2>
+                    </div>
+                  </div>
+                  <button
+                    onClick={()=>setHelpOpen(false)}
+                    aria-label="Tutup panduan"
+                    className="p-1.5 rounded-lg text-ink-3 hover:text-ink hover:bg-surface-3 transition-colors"
+                  >
+                    <X size={18}/>
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+                  {/* Goal */}
+                  <div className="space-y-1">
+                    <div className="text-[11px] font-bold text-ink-2 uppercase tracking-wide">Tujuan Halaman</div>
+                    <p className="text-ink-2 leading-relaxed bg-surface-2 p-2.5 rounded-xl border border-line">
+                      {activeGuide.goal}
+                    </p>
+                  </div>
+
+                  {/* Roles */}
+                  <div className="space-y-1.5">
+                    <div className="text-[11px] font-bold text-ink-2 uppercase tracking-wide">Hak Akses Role</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {activeGuide.roles.map(r => (
+                        <span key={r} className="px-2 py-0.5 rounded-md bg-surface-3 border border-line text-[11px] font-semibold text-ink-2">
+                          {r}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Prerequisites */}
+                  {activeGuide.prerequisites && (
+                    <div className="space-y-1">
+                      <div className="text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wide flex items-center gap-1">
+                        <AlertTriangle size={12}/> Prasyarat
+                      </div>
+                      <p className="text-ink-2 leading-relaxed bg-amber-50 dark:bg-amber-950/40 p-2.5 rounded-xl border border-amber-200 dark:border-amber-900/60">
+                        {activeGuide.prerequisites}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Steps */}
+                  <div className="space-y-2">
+                    <div className="text-[11px] font-bold text-ink-2 uppercase tracking-wide">Langkah-Langkah (SOP)</div>
+                    <div className="space-y-2">
+                      {activeGuide.steps.map((step, idx) => (
+                        <div key={idx} className="flex items-start gap-2.5 bg-surface-2 p-2.5 rounded-xl border border-line">
+                          <span className="w-5 h-5 rounded-full bg-brand text-white text-[10px] font-bold grid place-items-center shrink-0 mt-0.5">
+                            {idx + 1}
+                          </span>
+                          <span className="text-ink-2 leading-relaxed flex-1">{step}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Impact */}
+                  {activeGuide.impact && (
+                    <div className="space-y-1">
+                      <div className="text-[11px] font-bold text-ink-2 uppercase tracking-wide">Dampak Stok & Akuntansi GL</div>
+                      <div className="text-ink-2 leading-relaxed bg-brand-soft/40 p-2.5 rounded-xl border border-brand/20">
+                        {activeGuide.impact}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Troubleshooting */}
+                  {activeGuide.troubleshooting && activeGuide.troubleshooting.length > 0 && (
+                    <div className="space-y-1.5">
+                      <div className="text-[11px] font-bold text-ink-2 uppercase tracking-wide">Troubleshooting & Solusi</div>
+                      <div className="space-y-1.5">
+                        {activeGuide.troubleshooting.map((t, idx) => (
+                          <div key={idx} className="text-ink-2 leading-relaxed bg-surface-2 p-2.5 rounded-xl border border-line">
+                            <span className="font-semibold text-ink">💡 {t}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-3 border-t border-line bg-surface-2 flex items-center justify-between">
+                  <a
+                    href="/panduan"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs font-semibold text-brand hover:underline inline-flex items-center gap-1"
+                  >
+                    Buka Panduan Lengkap <ExternalLink size={12}/>
+                  </a>
+                  <button
+                    onClick={()=>setHelpOpen(false)}
+                    className="h-8 px-3 rounded-lg bg-surface border border-line text-xs font-semibold text-ink hover:bg-surface-3 transition-colors"
+                  >
+                    Tutup
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
@@ -187,7 +343,7 @@ export function PosSelect({ value, onChange, children, size='sm' }){
 }
 
 export const posTh = "px-4 py-3 whitespace-nowrap text-label-sm uppercase tracking-wider text-ink-2 font-semibold";
-export const posTr = "border-b border-line/80 hover:bg-brand-soft/40 relative before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[3px] hover:before:bg-brand transition-colors duration-150";
+export const posTr = "border-b border-line/80 hover:bg-brand-soft/40 transition-colors duration-150";
 export const posTd = "px-4 py-3 text-body-md text-ink";
 
 export function PosTh({ children, align='left', className='' }){

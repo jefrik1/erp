@@ -7,8 +7,8 @@ export default defineConfig(({ mode }) => {
   const proxy = { '/api': { target, changeOrigin: true } }
   return {
     plugins: [react()],
-    server: { port: 5173, proxy },
+    server: { host: '0.0.0.0', port: 5173, allowedHosts: true, proxy },
     // preview dipakai untuk verifikasi build produksi (npm run preview)
-    preview: { port: 4173, proxy },
+    preview: { host: '0.0.0.0', port: 4173, allowedHosts: true, proxy },
   }
 })

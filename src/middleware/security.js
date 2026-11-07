@@ -135,7 +135,27 @@ export function originAllowed(origin, list){
     const u = new URL(origin);
     if(list.includes(origin)) return true;
     // izinkan host yang sama walau port berbeda hanya bila didaftarkan eksplisit
-    return list.some(o => { try{ const x=new URL(o); return x.hostname===u.hostname && x.port===u.port; }catch{ return false; } });
+    if(list.some(o => { try{ const x=new URL(o); return x.hostname===u.hostname && x.port===u.port; }catch{ return false; } })) return true;
+
+    // Kecuali disetel STRICT_CORS_ONLY=1, izinkan akses LAN lokal, Tailscale (*.ts.net, 100.64.0.0/10), dan ZeroTier
+    if(process.env.STRICT_CORS_ONLY === '1') return false;
+
+    const h = u.hostname;
+    if(h === 'localhost' || h === '127.0.0.1' || h === '::1') return true;
+    if(h.endsWith('.ts.net')) return true;
+
+    // Private LAN (RFC 1918)
+    if(/^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(h)) return true;
+    if(/^172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}$/.test(h)) return true;
+    if(/^192\.168\.\d{1,3}\.\d{1,3}$/.test(h)) return true;
+
+    // Tailscale CGNAT (RFC 6598: 100.64.0.0/10)
+    if(/^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.\d{1,3}\.\d{1,3}$/.test(h)) return true;
+
+    // ZeroTier
+    if(/^10\.(144|147)\.\d{1,3}\.\d{1,3}$/.test(h)) return true;
+
+    return false;
   }catch{ return false; }
 }
 
