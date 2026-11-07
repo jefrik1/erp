@@ -42,32 +42,7 @@ function lateInfo(clock){
   return minutes>0 ? { is_late:true, late_minutes:minutes } : { is_late:false, late_minutes:0 };
 }
 
-// Kolom geofence + catatan keterlambatan (idempotent, aman dijalankan berulang).
-let attColsEnsured=false;
-async function ensureAttendanceCols(){
-  if(attColsEnsured) return;
-  try{
-    await pool.query(`ALTER TABLE attendances ADD COLUMN IF NOT EXISTS check_in_lat DECIMAL(10,7)`).catch(()=>{});
-    await pool.query(`ALTER TABLE attendances ADD COLUMN IF NOT EXISTS check_in_lng DECIMAL(10,7)`).catch(()=>{});
-    await pool.query(`ALTER TABLE attendances ADD COLUMN IF NOT EXISTS check_in_distance_m INT`).catch(()=>{});
-    await pool.query(`ALTER TABLE attendances ADD COLUMN IF NOT EXISTS check_in_accuracy_m INT`).catch(()=>{});
-    await pool.query(`ALTER TABLE attendances ADD COLUMN IF NOT EXISTS check_out_lat DECIMAL(10,7)`).catch(()=>{});
-    await pool.query(`ALTER TABLE attendances ADD COLUMN IF NOT EXISTS check_out_lng DECIMAL(10,7)`).catch(()=>{});
-    await pool.query(`ALTER TABLE attendances ADD COLUMN IF NOT EXISTS check_out_distance_m INT`).catch(()=>{});
-    await pool.query(`ALTER TABLE attendances ADD COLUMN IF NOT EXISTS is_late BOOLEAN DEFAULT false`).catch(()=>{});
-    await pool.query(`ALTER TABLE attendances ADD COLUMN IF NOT EXISTS late_minutes INT DEFAULT 0`).catch(()=>{});
-    await pool.query(`ALTER TABLE attendances ADD COLUMN IF NOT EXISTS note TEXT`).catch(()=>{});
-    // Backfill data lama: tandai terlambat dari jam check-in yang sudah tersimpan.
-    // (Kolom baru punya DEFAULT false, jadi baris lama tidak NULL - cek juga yang
-    //  is_late=false tapi jam masuknya lewat 08:00.)
-    await pool.query(`UPDATE attendances
-        SET is_late = (check_in::time > TIME '08:00'),
-            late_minutes = GREATEST(0, (EXTRACT(EPOCH FROM (check_in::time - TIME '08:00'))/60)::int)
-      WHERE check_in IS NOT NULL
-        AND (is_late IS NULL OR (is_late = false AND check_in::time > TIME '08:00'))`).catch(()=>{});
-    attColsEnsured=true;
-  }catch(e){ console.error('[ensure attendance cols]', e.message); }
-}
+const ensureAttendanceCols = async () => {};
 
 
 // ------------------------------------------------------------------- KARYAWAN
@@ -275,8 +250,7 @@ router.get('/attendance/summary', rbac('hrd','direktur','super_admin'), async (r
 // Laporan keterlambatan (HR & admin): rekap per karyawan + detail harian.
 // Sumber sama dengan absensi: batas masuk ATT_POLICY.cutoff (08:00 WIB).
 router.get('/attendance/late-report', rbac('hrd','direktur','super_admin'), async (req,res)=>{
-  await ensureAttendanceCols();
-  const month = /^\d{4}-\d{2}$/.test(String(req.query.month||'')) ? req.query.month : new Date(Date.now()+7*3600*1000).toISOString().slice(0,7);
+    const month = /^\d{4}-\d{2}$/.test(String(req.query.month||'')) ? req.query.month : new Date(Date.now()+7*3600*1000).toISOString().slice(0,7);
   const search = String(req.query.search||'').trim();
   const like = '%'+search+'%';
   try{
@@ -315,8 +289,7 @@ router.get('/attendance/policy', async (req,res)=>{
 // role lain otomatis untuk dirinya sendiri. Waktu disimpan sebagai jam dinding WIB.
 // Geofence 200 m dari Gudang Pusat; lewat 08:00 tetap boleh, dicatat terlambat.
 router.post('/attendance/checkin', async (req,res)=>{
-  await ensureAttendanceCols();
-  const body=req.body||{};
+    const body=req.body||{};
   try{
     const roles=(req.user?.roles||[]).map(r=>String(r).toLowerCase());
     const privileged = roles.includes('direktur')||roles.includes('super_admin')||roles.includes('hrd');
@@ -383,8 +356,7 @@ router.post('/attendance/checkin', async (req,res)=>{
 });
 
 router.post('/attendance/checkout', async (req,res)=>{
-  await ensureAttendanceCols();
-  const body=req.body||{};
+    const body=req.body||{};
   try{
     const roles=(req.user?.roles||[]).map(r=>String(r).toLowerCase());
     const privileged = roles.includes('direktur')||roles.includes('super_admin')||roles.includes('hrd');
@@ -608,8 +580,7 @@ router.post('/leaves/:id/decision', rbac('hrd','direktur','super_admin'), async 
 // Absensi saya bulan ini + status hari ini + kebijakan (cutoff 08:00, radius 200 m)
 router.get('/attendance/mine', async (req,res)=>{
   try{
-    await ensureAttendanceCols();
-    const empId = await myEmployeeId(req.user);
+        const empId = await myEmployeeId(req.user);
     if(!empId) return res.status(400).json({error:'Akun Anda belum tertaut ke data karyawan. Hubungi HR.'});
     const month = /^\d{4}-\d{2}$/.test(String(req.query.month||'')) ? req.query.month : new Date(Date.now()+7*3600*1000).toISOString().slice(0,7);
     const rows = await pool.query(

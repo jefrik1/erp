@@ -94,9 +94,9 @@ app.use(morgan(process.env.NODE_ENV==='production' ? 'combined' : 'dev'));
 // itu hanya bisa dibaca lewat endpoint ber-auth /api/hr/leaves/:id/attachment.
 app.use('/api/media/products', express.static(path.resolve('uploads','products'), { maxAge:'7d', immutable:true, fallthrough:true }));
 
-// Dokumentasi OpenAPI & Swagger UI interaktif
-app.get('/api/docs/spec.json', (req, res) => res.json(openApiSpec));
-app.get('/api/docs', (req, res) => {
+// Dokumentasi OpenAPI & Swagger UI interaktif (terlindungi auth & RBAC direktur/super_admin/auditor)
+app.get('/api/docs/spec.json', auth, rbac('direktur', 'super_admin', 'auditor'), (req, res) => res.json(openApiSpec));
+app.get('/api/docs', auth, rbac('direktur', 'super_admin', 'auditor'), (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.send(swaggerHtml());
 });
@@ -142,7 +142,14 @@ app.use((req,res,next)=>{
   });
   next();
 });
-app.get('/api/metrics/prometheus', (req, res) => {
+function prometheusAuth(req, res, next) {
+  const scrapeToken = process.env.PROMETHEUS_BEARER_TOKEN;
+  if (scrapeToken && req.headers.authorization === 'Bearer ' + scrapeToken) {
+    return next();
+  }
+  return auth(req, res, () => rbac('direktur', 'super_admin', 'auditor')(req, res, next));
+}
+app.get('/api/metrics/prometheus', prometheusAuth, (req, res) => {
   const l = [...METRICS.latency].sort((a,b)=>a-b);
   const pct = (p)=> l.length? Math.round(l[Math.min(l.length-1, Math.floor(l.length*p/100))]*10)/10 : 0;
   const mem = process.memoryUsage();
@@ -221,6 +228,7 @@ app.get('/api/health', async (req,res)=>{
 
   const payload = {
     status: allOk ? 'ok' : 'degraded',
+    db_ms: dbMs,
     time: new Date().toISOString(),
     uptime_s: Math.round(process.uptime()),
     checks: {
@@ -326,7 +334,7 @@ async function runMigrations(){
 
     const files = fs.readdirSync(dir).sort();
     // ponytail: 009_aging_rebuild must re-run to fix 404 seed; force rerun list
-    const forceRerun = new Set(['009_aging_rebuild.sql']);
+    const forceRerun = new Set();
     for(const f of files){
       if(!f.endsWith('.sql')) continue;
       if(!forceRerun.has(f)){

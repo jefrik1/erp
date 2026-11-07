@@ -3,5 +3,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm cache clean --force && npm install --legacy-peer-deps
 COPY . .
+RUN chown -R node:node /app
+USER node
 EXPOSE 4000
 CMD ["node", "src/index.js"]

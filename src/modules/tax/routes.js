@@ -9,37 +9,7 @@ const router = express.Router();
    Sumber PPN keluaran = invoices.tax; PPN masukan = purchase_invoices.tax.
    ───────────────────────────────────────────────────────────────────────────── */
 
-let ensured = false;
-async function ensureTaxTables(){
-  if(ensured) return;
-  await pool.query(`CREATE TABLE IF NOT EXISTS tax_invoices (
-    id SERIAL PRIMARY KEY,
-    invoice_id INT UNIQUE REFERENCES invoices(id) ON DELETE CASCADE,
-    tax_number VARCHAR(25) NOT NULL,
-    dpp NUMERIC(18,2) DEFAULT 0,
-    ppn NUMERIC(18,2) DEFAULT 0,
-    period VARCHAR(7),
-    status VARCHAR(20) DEFAULT 'ISSUED',
-    created_by INT REFERENCES users(id),
-    created_at TIMESTAMP DEFAULT NOW()
-  )`).catch(()=>{});
-  await pool.query(`CREATE TABLE IF NOT EXISTS pph_withholdings (
-    id SERIAL PRIMARY KEY,
-    ref_type VARCHAR(20) DEFAULT 'SALES',
-    ref_id INT,
-    invoice_number VARCHAR(40),
-    partner_name VARCHAR(200),
-    pph_type VARCHAR(10) NOT NULL,
-    rate NUMERIC(6,2) DEFAULT 0,
-    base NUMERIC(18,2) DEFAULT 0,
-    amount NUMERIC(18,2) DEFAULT 0,
-    period VARCHAR(7),
-    notes TEXT,
-    created_by INT REFERENCES users(id),
-    created_at TIMESTAMP DEFAULT NOW()
-  )`).catch(()=>{});
-  ensured = true;
-}
+const ensureTaxTables = async () => {};
 
 const currentPeriod = ()=> new Date(Date.now()+7*3600*1000).toISOString().slice(0,7);
 const cleanPeriod = (v)=> /^\d{4}-\d{2}$/.test(String(v||'')) ? String(v) : currentPeriod();
@@ -47,8 +17,7 @@ const rp = (n)=> new Intl.NumberFormat('id-ID').format(Math.round(Number(n)||0))
 
 // GET /tax/summary?period=YYYY-MM
 router.get('/summary', async (req,res)=>{
-  await ensureTaxTables();
-  const period = cleanPeriod(req.query.period);
+    const period = cleanPeriod(req.query.period);
   try{
     const out = await pool.query(`
       SELECT COALESCE(SUM(inv.tax),0)::numeric AS ppn, COALESCE(SUM(inv.total - COALESCE(inv.tax,0)),0)::numeric AS dpp,
@@ -82,8 +51,7 @@ router.get('/summary', async (req,res)=>{
 
 // GET /tax/invoices?period=&search=
 router.get('/invoices', async (req,res)=>{
-  await ensureTaxTables();
-  const period = cleanPeriod(req.query.period);
+    const period = cleanPeriod(req.query.period);
   const search = String(req.query.search||'').trim();
   try{
     const p = [period]; let extra='';
@@ -103,8 +71,7 @@ router.get('/invoices', async (req,res)=>{
 
 // POST /tax/invoices/:id/number  { tax_number, dpp?, ppn? }
 router.post('/invoices/:id/number', async (req,res)=>{
-  await ensureTaxTables();
-  const raw = String(req.body?.tax_number||'').replace(/[^0-9]/g,'');
+    const raw = String(req.body?.tax_number||'').replace(/[^0-9]/g,'');
   if(raw.length !== 16) return res.status(400).json({error:'Nomor faktur pajak harus 16 digit angka (format e-Faktur: 010.000-26.00000001)'});
   try{
     const inv = await pool.query('SELECT * FROM invoices WHERE id=$1',[req.params.id]);
@@ -123,15 +90,13 @@ router.post('/invoices/:id/number', async (req,res)=>{
 
 // DELETE /tax/invoices/:id/number
 router.delete('/invoices/:id/number', async (req,res)=>{
-  await ensureTaxTables();
-  try{ await pool.query('DELETE FROM tax_invoices WHERE invoice_id=$1',[req.params.id]); res.json({ ok:true }); }
+    try{ await pool.query('DELETE FROM tax_invoices WHERE invoice_id=$1',[req.params.id]); res.json({ ok:true }); }
   catch(e){ res.status(500).json({error:e.message}); }
 });
 
 // GET /tax/pph?period=
 router.get('/pph', async (req,res)=>{
-  await ensureTaxTables();
-  const period = cleanPeriod(req.query.period);
+    const period = cleanPeriod(req.query.period);
   try{
     const r = await pool.query(`SELECT * FROM pph_withholdings WHERE period=$1 ORDER BY id DESC LIMIT 300`,[period]);
     res.json({ period, data:r.rows, total: r.rows.reduce((s,x)=>s+Number(x.amount||0),0) });
@@ -140,8 +105,7 @@ router.get('/pph', async (req,res)=>{
 
 // POST /tax/pph  { pph_type, base, rate?, amount?, ref_type?, ref_id?, invoice_number?, partner_name?, notes?, period? }
 router.post('/pph', async (req,res)=>{
-  await ensureTaxTables();
-  const type = String(req.body?.pph_type||'').toUpperCase();
+    const type = String(req.body?.pph_type||'').toUpperCase();
   const allowed = { PPH21:[5,15,25,30], PPH23:[2], PPH4_2:[10] };
   if(!allowed[type]) return res.status(400).json({error:'Jenis PPh harus PPH21, PPH23, atau PPH4_2'});
   const base = Number(req.body?.base)||0;
@@ -159,15 +123,13 @@ router.post('/pph', async (req,res)=>{
 });
 
 router.delete('/pph/:id', async (req,res)=>{
-  await ensureTaxTables();
-  try{ await pool.query('DELETE FROM pph_withholdings WHERE id=$1',[req.params.id]); res.json({ ok:true }); }
+    try{ await pool.query('DELETE FROM pph_withholdings WHERE id=$1',[req.params.id]); res.json({ ok:true }); }
   catch(e){ res.status(500).json({error:e.message}); }
 });
 
 // GET /tax/export?period=  → rekap siap impor e-Faktur (CSV text)
 router.get('/export', async (req,res)=>{
-  await ensureTaxTables();
-  const period = cleanPeriod(req.query.period);
+    const period = cleanPeriod(req.query.period);
   try{
     const r = await pool.query(`
       SELECT inv.invoice_number, to_char(inv.invoice_date,'YYYY-MM-DD') AS tanggal, c.name AS pembeli, c.npwp,

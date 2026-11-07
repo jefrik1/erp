@@ -8,6 +8,12 @@ DECLARE
   v_new jsonb := NULL;
   v_user_id int := NULL;
 BEGIN
+  BEGIN
+    v_user_id := NULLIF(current_setting('app.current_user_id', true), '')::int;
+  EXCEPTION WHEN OTHERS THEN
+    v_user_id := NULL;
+  END;
+
   IF (TG_OP = 'UPDATE') THEN
     v_old := to_jsonb(OLD);
     v_new := to_jsonb(NEW);
@@ -19,8 +25,8 @@ BEGIN
     IF v_old ? 'mfa_backup_codes' THEN v_old := v_old - 'mfa_backup_codes'; END IF;
     IF v_new ? 'mfa_backup_codes' THEN v_new := v_new - 'mfa_backup_codes'; END IF;
 
-    INSERT INTO audit_logs (action, entity_type, entity_id, old_value, new_value, created_at)
-    VALUES ('UPDATE', TG_TABLE_NAME, OLD.id, v_old, v_new, NOW());
+    INSERT INTO audit_logs (user_id, action, entity_type, entity_id, old_value, new_value, created_at)
+    VALUES (v_user_id, 'UPDATE', TG_TABLE_NAME, OLD.id, v_old, v_new, NOW());
     RETURN NEW;
   ELSIF (TG_OP = 'DELETE') THEN
     v_old := to_jsonb(OLD);
@@ -28,8 +34,8 @@ BEGIN
     IF v_old ? 'mfa_secret' THEN v_old := v_old - 'mfa_secret'; END IF;
     IF v_old ? 'mfa_backup_codes' THEN v_old := v_old - 'mfa_backup_codes'; END IF;
 
-    INSERT INTO audit_logs (action, entity_type, entity_id, old_value, new_value, created_at)
-    VALUES ('DELETE', TG_TABLE_NAME, OLD.id, v_old, NULL, NOW());
+    INSERT INTO audit_logs (user_id, action, entity_type, entity_id, old_value, new_value, created_at)
+    VALUES (v_user_id, 'DELETE', TG_TABLE_NAME, OLD.id, v_old, NULL, NOW());
     RETURN OLD;
   END IF;
   RETURN NULL;
@@ -60,13 +66,6 @@ BEGIN
     FOR EACH ROW EXECUTE FUNCTION fn_audit_trigger_capture();
   END IF;
 
-  -- Accounts (Bagan Akun COA)
-  IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_audit_accounts') THEN
-    CREATE TRIGGER trg_audit_accounts
-    AFTER UPDATE OR DELETE ON accounts
-    FOR EACH ROW EXECUTE FUNCTION fn_audit_trigger_capture();
-  END IF;
-
   -- Sales Orders
   IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_audit_sales_orders') THEN
     CREATE TRIGGER trg_audit_sales_orders
@@ -88,10 +87,11 @@ BEGIN
     FOR EACH ROW EXECUTE FUNCTION fn_audit_trigger_capture();
   END IF;
 
-  -- Users
-  IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_audit_users') THEN
-    CREATE TRIGGER trg_audit_users
-    AFTER UPDATE OR DELETE ON users
+  -- Bank Accounts
+  IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_audit_bank_accounts') THEN
+    CREATE TRIGGER trg_audit_bank_accounts
+    AFTER UPDATE OR DELETE ON bank_accounts
     FOR EACH ROW EXECUTE FUNCTION fn_audit_trigger_capture();
   END IF;
-END $$;
+END;
+$$;

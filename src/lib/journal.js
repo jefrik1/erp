@@ -33,23 +33,35 @@ export async function assertPeriodOpen(date, db){
 
 /**
  * Posting jurnal double-entry.
- * lines: [{ code:'1-1200', debit:0, credit:1000, description:'...' }]
+ * lines: [{ code:'1-1200', account_id: 5, debit:0, credit:1000, description:'...' }]
  * Mengembalikan id journal_entries.
  */
 export async function postJournal({ date, refType, refId, description, lines, createdBy, client, reversalOf = null, reversalReason = null }){
   const db = client || pool;
   await assertPeriodOpen(date, db);
-  const clean = (lines||[]).map(l=>({ code:String(l.code), debit:Number(l.debit)||0, credit:Number(l.credit)||0, description:l.description||description }))
-    .filter(l=> l.debit>0.0001 || l.credit>0.0001);
+  const clean = (lines||[]).map(l=>({
+    code: l.code ? String(l.code) : null,
+    account_id: l.account_id ? parseInt(l.account_id, 10) : null,
+    debit: Number(l.debit)||0,
+    credit: Number(l.credit)||0,
+    description: l.description||description
+  })).filter(l=> l.debit>0.0001 || l.credit>0.0001);
+
   if(!clean.length) throw new Error('Jurnal kosong');
   const totalD = clean.reduce((s,l)=>s+l.debit,0);
   const totalC = clean.reduce((s,l)=>s+l.credit,0);
   if(Math.abs(totalD-totalC) > 0.5) throw new Error(`Jurnal tidak balance (D ${totalD} vs K ${totalC})`);
-  const codes = [...new Set(clean.map(l=>l.code))];
-  const acc = await db.query('SELECT id, code FROM accounts WHERE code = ANY($1)', [codes]);
-  const map = new Map(acc.rows.map(r=>[r.code, r.id]));
-  const missing = codes.filter(c=>!map.has(c));
-  if(missing.length) throw new Error('Akun COA belum ada: '+missing.join(', '));
+
+  // Resolve account_ids from codes if needed
+  const codes = [...new Set(clean.filter(l => l.code && !l.account_id).map(l => l.code))];
+  const accMap = new Map();
+  if(codes.length > 0){
+    const acc = await db.query('SELECT id, code FROM accounts WHERE code = ANY($1)', [codes]);
+    for(const r of acc.rows) accMap.set(r.code, r.id);
+    const missing = codes.filter(c=>!accMap.has(c));
+    if(missing.length) throw new Error('Akun COA belum ada: '+missing.join(', '));
+  }
+
   const entryNo = 'JE-'+Date.now()+'-'+String(Math.floor(Math.random()*900+100));
   const je = await db.query(
     `INSERT INTO journal_entries (entry_number, entry_date, reference_type, reference_id, description, total_debit, total_credit, posted, created_by, reversal_of, reversal_reason)
@@ -57,25 +69,36 @@ export async function postJournal({ date, refType, refId, description, lines, cr
     [entryNo, date||null, refType||'MANUAL', refId||null, description||'Jurnal', totalD, createdBy||null, reversalOf, reversalReason]);
   const id = je.rows[0].id;
   for(const l of clean){
+    const targetAccountId = l.account_id || accMap.get(l.code);
+    if(!targetAccountId) throw new Error(`Akun COA tidak ditemukan untuk baris: ${l.code || l.account_id}`);
     await db.query('INSERT INTO journal_details (journal_id, account_id, debit, credit, description) VALUES ($1,$2,$3,$4,$5)',
-      [id, map.get(l.code), l.debit, l.credit, l.description]);
+      [id, targetAccountId, l.debit, l.credit, l.description]);
   }
   return id;
 }
 
-/** Helper transaksi: BEGIN/COMMIT/ROLLBACK + release, dengan retry untuk deadlock. */
-export async function withTx(fn){
+/** Helper transaksi: BEGIN/COMMIT/ROLLBACK + release, dengan retry untuk deadlock.
+ * Mendukung user context untuk SET LOCAL app.current_user_id & current_branch_id.
+ */
+export async function withTx(fn, user = null){
   const MAX = 3;
   for(let attempt = 1; ; attempt++){
     const client = await pool.connect();
     try{
       await client.query('BEGIN');
+      if(user){
+        if(user.id != null){
+          await client.query(`SET LOCAL app.current_user_id = '${String(user.id).replace(/'/g, "''")}'`);
+        }
+        if(user.branch_id != null){
+          await client.query(`SET LOCAL app.current_branch_id = '${String(user.branch_id).replace(/'/g, "''")}'`);
+        }
+      }
       const out = await fn(client);
       await client.query('COMMIT');
       return out;
     }catch(e){
       try{ await client.query('ROLLBACK'); }catch{ /* koneksi sudah putus */ }
-      // 40P01 deadlock_detected / 40001 serialization_failure → ulangi dengan jitter.
       const transient = ['40P01','40001'].includes(e.code);
       if(transient && attempt < MAX){
         const wait = 50 + Math.floor(Math.random() * 150);

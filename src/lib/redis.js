@@ -7,6 +7,7 @@ import Redis from 'ioredis';
 
 let client = null;
 let disabled = false;
+const memRevoked = new Map();
 
 export function getRedis(){
   if(disabled) return null;
@@ -43,6 +44,28 @@ export async function cacheSet(key, val, ttlSeconds=30){
 export async function cacheDel(key){
   const r = getRedis(); if(!r) return;
   try{ await r.del(key); }catch{}
+}
+
+export async function revokeToken(jti, ttlSeconds = 8 * 3600){
+  if(!jti) return;
+  memRevoked.set(jti, Date.now() + ttlSeconds * 1000);
+  const r = getRedis();
+  if(!r) return;
+  try{ await r.set(`revoked_jwt:${jti}`, '1', 'EX', Math.max(60, ttlSeconds)); }catch{}
+}
+
+export async function isTokenRevoked(jti){
+  if(!jti) return false;
+  if(memRevoked.has(jti)){
+    if(Date.now() > memRevoked.get(jti)){
+      memRevoked.delete(jti);
+    } else {
+      return true;
+    }
+  }
+  const r = getRedis();
+  if(!r) return false;
+  try{ const v = await r.get(`revoked_jwt:${jti}`); return v === '1'; }catch{ return false; }
 }
 
 export function redisStatus(){

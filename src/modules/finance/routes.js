@@ -3,54 +3,52 @@ import { pool } from '../../config/db.js';
 import { paginate } from '../../utils/helpers.js';
 import { sendReport } from '../../lib/exporters.js';
 import { rbac } from '../../middleware/auth.js';
+import { postJournal, withTx, assertPeriodOpen } from '../../lib/journal.js';
 const router = express.Router();
 
-router.get('/ping', (req,res)=>res.json({ok:true, routes:['/ar','/ar/debug','/ap','/cash'], note:'AR POS/DO/SO only'}));
-router.get('/ar/debug', async (req,res)=>{
-  try{
-    const all=await pool.query(`SELECT id, invoice_number, status, total, paid_amount, COALESCE(total,0)-COALESCE(paid_amount,0) as outstanding_calc, due_date, so_id, do_id, customer_id, invoice_date FROM invoices ORDER BY id DESC LIMIT 30`);
-    const byStatus=await pool.query(`SELECT status, COUNT(*) as c FROM invoices GROUP BY status ORDER BY c DESC`);
-    res.json({all: all.rows, byStatus: byStatus.rows});
-  }catch(e){ res.status(500).json({error:e.message}); }
-});
-// atur due date - hanya SENT/PARTIAL/OVERDUE
-router.patch('/ar/:id/due-date', async (req,res)=>{
-  try{
-    const id=parseInt(req.params.id,10);
-    const {due_date}=req.body;
-    if(!due_date || !/^\d{4}-\d{2}-\d{2}/.test(String(due_date))) return res.status(400).json({error:'due_date YYYY-MM-DD wajib'});
-    const inv=await pool.query('SELECT id,status,invoice_date,due_date FROM invoices WHERE id=$1',[id]);
-    if(!inv.rows[0]) return res.status(404).json({error:'Invoice tidak ditemukan'});
-    const st=String(inv.rows[0].status||'').trim().toUpperCase();
-    if(['PAID','CANCELLED','VOID','LUNAS'].includes(st)) return res.status(400).json({error:'Invoice '+st+' tidak bisa ubah jatuh tempo'});
-    // allow SENT/PARTIAL/OVERDUE/DRAFT/APPROVED dll selama belum lunas
-    const d=new Date(due_date); if(isNaN(d.getTime())) return res.status(400).json({error:'Tanggal tidak valid'});
-    const upd=await pool.query('UPDATE invoices SET due_date=$1 WHERE id=$2 RETURNING id,invoice_number,due_date,invoice_date,status',[due_date,id]);
-    res.json({ok:true, invoice: upd.rows[0]});
-  }catch(e){ console.error('patch due_date',e.message); res.status(500).json({error:e.message}); }
-});
-router.get('/coa', async (req,res)=>{ try{ const r=await pool.query('SELECT * FROM accounts ORDER BY code'); res.json(r.rows);}catch(e){ console.error('coa',e.message); res.json([]);} });
-router.post('/coa', async (req,res)=>{ const {code,name,type,parent_id}=req.body; const r=await pool.query('INSERT INTO accounts (code,name,type,parent_id) VALUES ($1,$2,$3,$4) RETURNING id',[code,name,type,parent_id]); res.json(r.rows[0]); });
-
-router.get('/journals', async (req,res)=>{
-  const {limit,offset}=paginate(req);
-  const cnt=await pool.query('SELECT COUNT(*) FROM journal_entries');
-  const data=await pool.query('SELECT je.*, u.username FROM journal_entries je LEFT JOIN users u ON u.id=je.created_by ORDER BY je.id DESC LIMIT $1 OFFSET $2',[limit, offset]);
-  for(const je of data.rows){
-    const d=await pool.query('SELECT jd.*, a.code, a.name FROM journal_details jd JOIN accounts a ON a.id=jd.account_id WHERE jd.journal_id=$1',[je.id]);
-    je.details=d.rows;
+router.get('/ping', (req,res)=>res.json({ok:true, routes:['/ar','/ap','/cash'], note:'AR POS/DO/SO only'}));
+router.post('/journals', rbac('finance', 'direktur', 'super_admin'), async (req, res) => {
+  const { entry_date, description, details } = req.body || {};
+  if (!Array.isArray(details) || !details.length) {
+    return res.status(400).json({ error: 'Detail baris jurnal wajib diisi' });
   }
-  res.json({data:data.rows, total:parseInt(cnt.rows[0].count)});
-});
-router.post('/journals', async (req,res)=>{
-  const {entry_date, description, details} = req.body;
-  const entry_number='JE-'+Date.now();
-  let debit=0, credit=0; for(const d of details){ debit+=parseFloat(d.debit||0); credit+=parseFloat(d.credit||0); }
-  if(debit!==credit) return res.status(400).json({error:'Debit != Credit'});
-  const ins=await pool.query('INSERT INTO journal_entries (entry_number, entry_date, description, total_debit, total_credit, posted, created_by) VALUES ($1,$2,$3,$4,$5,true,$6) RETURNING id',[entry_number, entry_date||new Date().toISOString().slice(0,10), description, debit, credit, req.user.id]);
-  const jid=ins.rows[0].id;
-  for(const d of details) await pool.query('INSERT INTO journal_details (journal_id, account_id, debit, credit, description) VALUES ($1,$2,$3,$4,$5)',[jid, d.account_id, d.debit||0, d.credit||0, d.description]);
-  res.json({id:jid, entry_number});
+
+  try {
+    const result = await withTx(async (client) => {
+      const lines = [];
+      for (const d of details) {
+        let code = d.code;
+        let accountId = d.account_id ? parseInt(d.account_id, 10) : null;
+        if (!code && !accountId) {
+          throw new Error('Setiap baris jurnal harus memiliki account_id atau code');
+        }
+        lines.push({
+          code,
+          account_id: accountId,
+          debit: parseFloat(d.debit || 0) || 0,
+          credit: parseFloat(d.credit || 0) || 0,
+          description: d.description || description || 'Jurnal Umum'
+        });
+      }
+
+      const id = await postJournal({
+        date: entry_date || new Date().toISOString().slice(0, 10),
+        refType: 'MANUAL',
+        refId: null,
+        description: description || 'Jurnal Umum Manual',
+        lines,
+        createdBy: req.user.id,
+        client
+      });
+
+      const je = await client.query('SELECT entry_number FROM journal_entries WHERE id=$1', [id]);
+      return { id, entry_number: je.rows[0]?.entry_number };
+    }, req.user);
+
+    res.json(result);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
 });
 
 // POST /finance/journals/:id/reverse — pembalik jurnal resmi (append-only, bukan hapus/ubah).
@@ -92,15 +90,7 @@ router.post('/journals/:id/reverse', async (req,res)=>{
 // AR POS/DO/SO only - ponytail: jangan buat dummy di finance, baca invoices langsung
 router.get('/ar', async (req,res)=>{
   try{
-    for(const sql of [
-      `ALTER TABLE invoices ADD COLUMN IF NOT EXISTS discount DECIMAL(15,2) DEFAULT 0`,
-      `ALTER TABLE invoices ADD COLUMN IF NOT EXISTS discount_pct INT DEFAULT 0`,
-      `ALTER TABLE invoices ADD COLUMN IF NOT EXISTS voucher_code VARCHAR(30)`,
-      `ALTER TABLE invoices ADD COLUMN IF NOT EXISTS dp_percent INT DEFAULT 0`,
-      `ALTER TABLE invoices ADD COLUMN IF NOT EXISTS paid_amount DECIMAL(15,2) DEFAULT 0`,
-      `ALTER TABLE invoices ADD COLUMN IF NOT EXISTS total DECIMAL(15,2) DEFAULT 0`,
-      `ALTER TABLE invoices ADD COLUMN IF NOT EXISTS due_date DATE`,
-    ]){ try{ await pool.query(sql); }catch{} }
+    // Schema ensured via migrations
     const r=await pool.query(`
       SELECT inv.id, inv.invoice_number, inv.status, inv.total, inv.paid_amount, inv.discount, inv.discount_pct, inv.voucher_code, inv.due_date, inv.invoice_date, inv.customer_id, inv.so_id, inv.do_id,
              c.name as customer_name, c.code as customer_code, so.so_number,
@@ -138,7 +128,7 @@ router.get('/ar', async (req,res)=>{
 });
 router.get('/ap', async (req,res)=>{
   try{
-  try{ await pool.query(`CREATE TABLE IF NOT EXISTS purchase_invoices (id SERIAL PRIMARY KEY, inv_number VARCHAR(30) UNIQUE NOT NULL, po_id INT REFERENCES purchase_orders(id), supplier_id INT REFERENCES suppliers(id), invoice_date DATE NOT NULL DEFAULT CURRENT_DATE, due_date DATE, subtotal DECIMAL(15,2) DEFAULT 0, tax DECIMAL(15,2) DEFAULT 0, total DECIMAL(15,2) DEFAULT 0, status VARCHAR(20) DEFAULT 'HOLD', notes TEXT, created_by INT REFERENCES users(id), created_at TIMESTAMP DEFAULT NOW())`); }catch{}
+  // purchase_invoices ensured via migrations
   const r=await pool.query(`SELECT 'PURCHASE' as source, pi.id, pi.inv_number as doc_number, pi.po_id, po.po_number, s.name as supplier_name, pi.total, pi.status, pi.invoice_date as doc_date, pi.due_date FROM purchase_invoices pi JOIN purchase_orders po ON po.id=pi.po_id JOIN suppliers s ON s.id=pi.supplier_id WHERE pi.status IN ('MATCHED','HOLD','APPROVED') UNION ALL SELECT 'PO' as source, po.id, po.po_number as doc_number, po.id as po_id, po.po_number, s.name as supplier_name, po.total, po.status, po.po_date as doc_date, po.expected_date as due_date FROM purchase_orders po JOIN suppliers s ON s.id=po.supplier_id WHERE po.status IN ('RECEIVED','PARTIAL') AND NOT EXISTS (SELECT 1 FROM purchase_invoices pi WHERE pi.po_id=po.id) ORDER BY doc_date DESC`);
   res.json(r.rows);
   }catch(e){ console.error('ap',e.message); res.json([]); }
@@ -192,19 +182,7 @@ let cashEnsured=false;
 async function ensureCashAccount(){
   if(cashEnsured) return;
   try{
-    await pool.query(`ALTER TABLE bank_accounts ADD COLUMN IF NOT EXISTS kind VARCHAR(10) DEFAULT 'BANK'`).catch(()=>{});
-    await pool.query(`CREATE TABLE IF NOT EXISTS cash_movements (
-      id SERIAL PRIMARY KEY,
-      account_id INT REFERENCES bank_accounts(id),
-      direction VARCHAR(4) NOT NULL,
-      amount NUMERIC(15,2) NOT NULL DEFAULT 0,
-      source VARCHAR(20) NOT NULL,
-      reference_type VARCHAR(30),
-      reference_id INT,
-      notes TEXT,
-      created_by INT REFERENCES users(id),
-      created_at TIMESTAMP DEFAULT NOW())`).catch(()=>{});
-    // Sub-akun COA untuk kas tunai & bank (dipakai jurnal setor kas).
+            // Sub-akun COA untuk kas tunai & bank (dipakai jurnal setor kas).
     await pool.query(`INSERT INTO accounts (code,name,type) VALUES ('1-1010','Kas Tunai','ASSET') ON CONFLICT (code) DO NOTHING`).catch(()=>{});
     await pool.query(`INSERT INTO accounts (code,name,type) VALUES ('1-1020','Bank','ASSET') ON CONFLICT (code) DO NOTHING`).catch(()=>{});
     const has=await pool.query(`SELECT id FROM bank_accounts WHERE COALESCE(kind,'BANK')='CASH' LIMIT 1`);
@@ -320,6 +298,331 @@ router.get('/profit-loss', async (req,res)=>{
 });
 
 // ------------------------------------------------------------- EXPORT
+
+// ------------------------------------------------------------- PSAK FINANCIAL STATEMENTS
+
+// GET /api/finance/balance-sheet (Neraca Keuangan PSAK 1)
+router.get('/balance-sheet', async (req, res) => {
+  const asOf = req.query.as_of_date || new Date().toISOString().slice(0, 10);
+  try {
+    // 1. Ambil semua akun dan saldo kumulatif per tanggal asOf
+    const q = await pool.query(`
+      SELECT a.id, a.code, a.name, a.type,
+             COALESCE(SUM(jd.debit), 0) as debit,
+             COALESCE(SUM(jd.credit), 0) as credit
+        FROM accounts a
+        LEFT JOIN journal_details jd ON jd.account_id = a.id
+        LEFT JOIN journal_entries je ON je.id = jd.journal_id AND je.entry_date <= $1 AND je.posted = true
+       GROUP BY a.id, a.code, a.name, a.type
+       ORDER BY a.code
+    `, [asOf]);
+
+    const accounts = q.rows.map(r => {
+      const d = parseFloat(r.debit || 0);
+      const c = parseFloat(r.credit || 0);
+      let balance = 0;
+      if (r.type === 'ASSET' || r.type === 'EXPENSE') balance = d - c;
+      else balance = c - d;
+      return { ...r, debit: d, credit: c, balance };
+    });
+
+    // 2. Klasifikasi Aset Lancar & Tidak Lancar
+    const currentAssets = accounts.filter(a => a.type === 'ASSET' && a.code < '1-2000' && a.code !== '1-3000');
+    const nonCurrentAssets = accounts.filter(a => a.type === 'ASSET' && (a.code >= '1-2000' || a.code === '1-3000'));
+    const totalCurrentAssets = currentAssets.reduce((s, a) => s + a.balance, 0);
+    const totalNonCurrentAssets = nonCurrentAssets.reduce((s, a) => s + a.balance, 0);
+    const totalAssets = totalCurrentAssets + totalNonCurrentAssets;
+
+    // 3. Klasifikasi Liabilitas Jangka Pendek & Panjang
+    const currentLiabilities = accounts.filter(a => a.type === 'LIABILITY' && a.code < '2-2000');
+    const longTermLiabilities = accounts.filter(a => a.type === 'LIABILITY' && a.code >= '2-2000');
+    const totalCurrentLiabilities = currentLiabilities.reduce((s, a) => s + a.balance, 0);
+    const totalLongTermLiabilities = longTermLiabilities.reduce((s, a) => s + a.balance, 0);
+    const totalLiabilities = totalCurrentLiabilities + totalLongTermLiabilities;
+
+    // 4. Ekuitas & Laba Tahun Berjalan
+    const equityAccounts = accounts.filter(a => a.type === 'EQUITY');
+    const totalBookEquity = equityAccounts.reduce((s, a) => s + a.balance, 0);
+
+    // Hitung Laba/Rugi Berjalan = Total Revenue - Total Expense
+    const totalRevenue = accounts.filter(a => a.type === 'REVENUE').reduce((s, a) => s + a.balance, 0);
+    const totalExpense = accounts.filter(a => a.type === 'EXPENSE').reduce((s, a) => s + a.balance, 0);
+    const netIncomeCurrentPeriod = totalRevenue - totalExpense;
+
+    const totalEquity = totalBookEquity + netIncomeCurrentPeriod;
+    const totalLiabilitiesAndEquity = totalLiabilities + totalEquity;
+    const diff = Math.round((totalAssets - totalLiabilitiesAndEquity) * 100) / 100;
+
+    res.json({
+      as_of_date: asOf,
+      assets: {
+        current: currentAssets,
+        total_current: totalCurrentAssets,
+        non_current: nonCurrentAssets,
+        total_non_current: totalNonCurrentAssets,
+        total: totalAssets
+      },
+      liabilities: {
+        current: currentLiabilities,
+        total_current: totalCurrentLiabilities,
+        long_term: longTermLiabilities,
+        total_long_term: totalLongTermLiabilities,
+        total: totalLiabilities
+      },
+      equity: {
+        accounts: equityAccounts,
+        total_equity_accounts: totalBookEquity,
+        current_period_net_income: netIncomeCurrentPeriod,
+        total: totalEquity
+      },
+      total_liabilities_and_equity: totalLiabilitiesAndEquity,
+      balanced: Math.abs(diff) < 1,
+      difference: diff
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// GET /api/finance/cash-flow (Laporan Arus Kas PSAK 2)
+router.get('/cash-flow', async (req, res) => {
+  const from = req.query.from_date || new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10);
+  const to = req.query.to_date || new Date().toISOString().slice(0, 10);
+  try {
+    // Kas masuk dari pelanggan (AR payments)
+    const arIn = await pool.query(`
+      SELECT COALESCE(SUM(amount), 0)::numeric as val
+        FROM payments
+       WHERE type='AR' AND payment_date BETWEEN $1 AND $2
+    `, [from, to]);
+
+    // Kas keluar ke pemasok (AP payments)
+    const apOut = await pool.query(`
+      SELECT COALESCE(SUM(amount), 0)::numeric as val
+        FROM payments
+       WHERE type='AP' AND payment_date BETWEEN $1 AND $2
+    `, [from, to]);
+
+    // Beban operasional kas (cash movements direct)
+    const opexOut = await pool.query(`
+      SELECT COALESCE(SUM(amount), 0)::numeric as val
+        FROM cash_movements
+       WHERE direction='OUT' AND source NOT IN ('DEPOSIT_TO_BANK', 'BANK_TRANSFER')
+         AND created_at::date BETWEEN $1 AND $2
+    `, [from, to]);
+
+    const cashFromCustomers = parseFloat(arIn.rows[0].val);
+    const cashToSuppliers = parseFloat(apOut.rows[0].val);
+    const cashForOpex = parseFloat(opexOut.rows[0].val);
+    const netOperating = cashFromCustomers - cashToSuppliers - cashForOpex;
+
+    // Investasi (pembelian aset tetap)
+    const investOut = await pool.query(`
+      SELECT COALESCE(SUM(jd.debit), 0)::numeric as val
+        FROM journal_details jd
+        JOIN journal_entries je ON je.id = jd.journal_id
+        JOIN accounts a ON a.id = jd.account_id
+       WHERE a.code >= '1-2000' AND a.code < '1-3000' AND a.type = 'ASSET'
+         AND je.entry_date BETWEEN $1 AND $2 AND je.posted = true
+    `, [from, to]);
+    const netInvesting = -parseFloat(investOut.rows[0].val);
+
+    // Pendanaan
+    const equityIn = await pool.query(`
+      SELECT COALESCE(SUM(jd.credit - jd.debit), 0)::numeric as val
+        FROM journal_details jd
+        JOIN journal_entries je ON je.id = jd.journal_id
+        JOIN accounts a ON a.id = jd.account_id
+       WHERE a.type = 'EQUITY' AND je.entry_date BETWEEN $1 AND $2 AND je.posted = true
+         AND je.reference_type NOT IN ('YEAR_END_CLOSE')
+    `, [from, to]);
+    const netFinancing = parseFloat(equityIn.rows[0].val);
+
+    const netChangeInCash = netOperating + netInvesting + netFinancing;
+
+    // Saldo kas awal dan akhir
+    const beginningQ = await pool.query(`
+      SELECT COALESCE(SUM(jd.debit - jd.credit), 0)::numeric as val
+        FROM journal_details jd
+        JOIN journal_entries je ON je.id = jd.journal_id
+        JOIN accounts a ON a.id = jd.account_id
+       WHERE a.code IN ('1-1000', '1-1010', '1-1020') AND je.entry_date < $1 AND je.posted = true
+    `, [from]);
+    const beginningCash = parseFloat(beginningQ.rows[0].val);
+    const endingCash = beginningCash + netChangeInCash;
+
+    res.json({
+      period: { from, to },
+      operating_activities: {
+        receipts_from_customers: cashFromCustomers,
+        payments_to_suppliers: cashToSuppliers,
+        operating_expenses_paid: cashForOpex,
+        net_cash_operating: netOperating
+      },
+      investing_activities: {
+        fixed_asset_acquisitions: parseFloat(investOut.rows[0].val),
+        net_cash_investing: netInvesting
+      },
+      financing_activities: {
+        capital_and_equity_contributions: netFinancing,
+        net_cash_financing: netFinancing
+      },
+      net_change_in_cash: netChangeInCash,
+      beginning_cash_balance: beginningCash,
+      ending_cash_balance: endingCash
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// GET /api/finance/equity-changes (Laporan Perubahan Ekuitas)
+router.get('/equity-changes', async (req, res) => {
+  const from = req.query.from_date || new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10);
+  const to = req.query.to_date || new Date().toISOString().slice(0, 10);
+  try {
+    // Saldo awal modal & laba ditahan
+    const begQ = await pool.query(`
+      SELECT a.code, a.name, COALESCE(SUM(jd.credit - jd.debit), 0)::numeric as val
+        FROM accounts a
+        LEFT JOIN journal_details jd ON jd.account_id = a.id
+        LEFT JOIN journal_entries je ON je.id = jd.journal_id AND je.entry_date < $1 AND je.posted = true
+       WHERE a.type = 'EQUITY'
+       GROUP BY a.code, a.name ORDER BY a.code
+    `, [from]);
+    const beginningEquity = begQ.rows.reduce((s, r) => s + parseFloat(r.val), 0);
+
+    // Laba bersih periode berjalan
+    const revQ = await pool.query(`
+      SELECT COALESCE(SUM(jd.credit - jd.debit), 0)::numeric as val
+        FROM journal_details jd
+        JOIN journal_entries je ON je.id = jd.journal_id
+        JOIN accounts a ON a.id = jd.account_id
+       WHERE a.type = 'REVENUE' AND je.entry_date BETWEEN $1 AND $2 AND je.posted = true
+    `, [from, to]);
+    const expQ = await pool.query(`
+      SELECT COALESCE(SUM(jd.debit - jd.credit), 0)::numeric as val
+        FROM journal_details jd
+        JOIN journal_entries je ON je.id = jd.journal_id
+        JOIN accounts a ON a.id = jd.account_id
+       WHERE a.type = 'EXPENSE' AND je.entry_date BETWEEN $1 AND $2 AND je.posted = true
+    `, [from, to]);
+    const netProfit = parseFloat(revQ.rows[0].val) - parseFloat(expQ.rows[0].val);
+
+    // Perubahan modal langsung selama periode (setoran modal / prive)
+    const capQ = await pool.query(`
+      SELECT COALESCE(SUM(jd.credit - jd.debit), 0)::numeric as val
+        FROM journal_details jd
+        JOIN journal_entries je ON je.id = jd.journal_id
+        JOIN accounts a ON a.id = jd.account_id
+       WHERE a.type = 'EQUITY' AND je.entry_date BETWEEN $1 AND $2 AND je.posted = true
+         AND je.reference_type NOT IN ('YEAR_END_CLOSE')
+    `, [from, to]);
+    const capitalContributions = parseFloat(capQ.rows[0].val);
+    const endingEquity = beginningEquity + netProfit + capitalContributions;
+
+    res.json({
+      period: { from, to },
+      beginning_equity: beginningEquity,
+      details_beginning: begQ.rows,
+      net_profit_period: netProfit,
+      capital_contributions: capitalContributions,
+      ending_equity: endingEquity
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/finance/close-year (Tutup Buku Tahunan ke Laba Ditahan)
+router.post('/close-year', rbac('direktur', 'super_admin'), async (req, res) => {
+  const year = parseInt(req.body.year || new Date().getFullYear(), 10);
+  const closingDate = req.body.closing_date || `${year}-12-31`;
+  const notes = req.body.notes || `Tutup Buku Akhir Tahun ${year}`;
+
+  try {
+    const result = await withTx(async (client) => {
+      // Pastikan akun 3-2000 (Laba Ditahan) ada
+      await client.query("INSERT INTO accounts (code, name, type) VALUES ('3-2000', 'Laba Ditahan', 'EQUITY') ON CONFLICT (code) DO NOTHING");
+      const retainedAcc = (await client.query("SELECT id FROM accounts WHERE code = '3-2000'")).rows[0]?.id;
+
+      // Cek apakah sudah pernah tutup buku untuk tahun ini
+      const already = await client.query(
+        "SELECT id, entry_number FROM journal_entries WHERE reference_type = 'YEAR_END_CLOSE' AND reference_id = $1",
+        [year]
+      );
+      if (already.rows.length) {
+        throw new Error(`Tutup buku tahun ${year} sudah pernah diposting (#${already.rows[0].entry_number})`);
+      }
+
+      // Ambil saldo akun pendapatan (REVENUE) dan beban (EXPENSE)
+      const revs = await client.query(`
+        SELECT a.id, a.code, a.name, COALESCE(SUM(jd.credit - jd.debit), 0)::numeric as balance
+          FROM accounts a
+          JOIN journal_details jd ON jd.account_id = a.id
+          JOIN journal_entries je ON je.id = jd.journal_id
+         WHERE a.type = 'REVENUE' AND EXTRACT(YEAR FROM je.entry_date) = $1 AND je.posted = true
+         GROUP BY a.id, a.code, a.name
+        HAVING ABS(SUM(jd.credit - jd.debit)) > 0.01
+      `, [year]);
+
+      const exps = await client.query(`
+        SELECT a.id, a.code, a.name, COALESCE(SUM(jd.debit - jd.credit), 0)::numeric as balance
+          FROM accounts a
+          JOIN journal_details jd ON jd.account_id = a.id
+          JOIN journal_entries je ON je.id = jd.journal_id
+         WHERE a.type = 'EXPENSE' AND EXTRACT(YEAR FROM je.entry_date) = $1 AND je.posted = true
+         GROUP BY a.id, a.code, a.name
+        HAVING ABS(SUM(jd.debit - jd.credit)) > 0.01
+      `, [year]);
+
+      let totalRev = revs.rows.reduce((s, r) => s + parseFloat(r.balance), 0);
+      let totalExp = exps.rows.reduce((s, r) => s + parseFloat(r.balance), 0);
+      let netIncome = totalRev - totalExp;
+
+      const lines = [];
+      // Tutup Pendapatan: Dr Pendapatan
+      for (const r of revs.rows) {
+        const bal = parseFloat(r.balance);
+        if (bal > 0) lines.push({ code: r.code, debit: bal, credit: 0, description: `Penutupan pendapatan ${r.code}` });
+        else if (bal < 0) lines.push({ code: r.code, debit: 0, credit: Math.abs(bal), description: `Penutupan pendapatan ${r.code}` });
+      }
+
+      // Tutup Beban: Cr Beban
+      for (const e of exps.rows) {
+        const bal = parseFloat(e.balance);
+        if (bal > 0) lines.push({ code: e.code, debit: 0, credit: bal, description: `Penutupan beban ${e.code}` });
+        else if (bal < 0) lines.push({ code: e.code, debit: Math.abs(bal), credit: 0, description: `Penutupan beban ${e.code}` });
+      }
+
+      // Selisih laba/rugi masuk ke 3-2000 (Laba Ditahan)
+      if (netIncome > 0) {
+        lines.push({ code: '3-2000', debit: 0, credit: netIncome, description: `Laba bersih ditahan tahun ${year}` });
+      } else if (netIncome < 0) {
+        lines.push({ code: '3-2000', debit: Math.abs(netIncome), credit: 0, description: `Rugi bersih dipindahkan ke laba ditahan tahun ${year}` });
+      }
+
+      if (!lines.length) throw new Error(`Tidak ada saldo pendapatan atau beban yang perlu ditutup untuk tahun ${year}`);
+
+      const id = await postJournal({
+        date: closingDate,
+        refType: 'YEAR_END_CLOSE',
+        refId: year,
+        description: notes,
+        lines,
+        createdBy: req.user.id,
+        client
+      });
+
+      return { id, year, net_income: netIncome, total_revenue: totalRev, total_expense: totalExp };
+    }, req.user);
+
+    res.json({ ok: true, message: `Tutup buku tahun ${year} berhasil dibukukan ke Laba Ditahan`, ...result });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
 router.get('/export', async (req,res)=>{
   const format=String(req.query.format||'xlsx').toLowerCase();
   if(!['csv','xlsx','pdf'].includes(format)) return res.status(400).json({error:'Format tidak didukung: '+format});

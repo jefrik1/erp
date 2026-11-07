@@ -9,22 +9,13 @@ const router = express.Router();
    catatan internal, TTD, data pelanggan lain).
    ───────────────────────────────────────────────────────────────────────────── */
 
-let ensured = false;
-export async function ensureTrackCols(){
-  if(ensured) return;
-  await pool.query(`ALTER TABLE sales_orders ADD COLUMN IF NOT EXISTS track_token VARCHAR(48)`).catch(()=>{});
-  await pool.query(`ALTER TABLE sales_orders ADD COLUMN IF NOT EXISTS track_enabled BOOLEAN DEFAULT true`).catch(()=>{});
-  await pool.query(`ALTER TABLE sales_orders ADD COLUMN IF NOT EXISTS track_views INT DEFAULT 0`).catch(()=>{});
-  await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS ux_so_track_token ON sales_orders(track_token) WHERE track_token IS NOT NULL`).catch(()=>{});
-  ensured = true;
-}
+export const ensureTrackCols = async () => {};
 
 const rupiah = (n)=> 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(Number(n)||0));
 const d = (v)=> v ? String(v).slice(0,10) : null;
 
 router.get('/track/:token', async (req,res)=>{
-  await ensureTrackCols();
-  const token = String(req.params.token||'').trim();
+    const token = String(req.params.token||'').trim();
   if(!/^[a-f0-9]{16,48}$/i.test(token)) return res.status(404).json({error:'Link tidak valid'});
   try{
     const so = await pool.query(`SELECT so.id, so.so_number, so.so_date, so.status, so.total, so.created_at, so.track_enabled,

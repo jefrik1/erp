@@ -17,16 +17,16 @@ const DEMO = ['admin', 'kasir', 'driver', 'hrd', 'purchasing', 'auditor', 'gudan
 
 const q = async (sql, p) => (await pool.query(sql, p)).rows;
 try {
-  const targets = await q(`SELECT u.id, u.username, u.name, u.is_active
+  const targets = await q(`SELECT u.id, u.username, u.email, u.is_active
       FROM users u WHERE lower(u.username) = ANY($1) AND u.is_active ORDER BY u.username`, [DEMO]);
   const guardians = await q(`SELECT COUNT(DISTINCT u.id)::int n FROM users u
       JOIN user_roles ur ON ur.user_id = u.id JOIN roles r ON r.id = ur.role_id
      WHERE u.is_active AND r.name IN ('super_admin','direktur')
        AND lower(u.username) <> ALL($1)
-       AND (u.mfa_enabled IS TRUE OR COALESCE(u.totp_enabled,false) IS TRUE)`, [DEMO]).catch(() => [{ n: 0 }]);
+       AND u.mfa_enabled IS TRUE`, [DEMO]);
 
   console.log(`Akun demo aktif: ${targets.length}`);
-  for (const t of targets) console.log(`  - ${t.username} (${t.name})`);
+  for (const t of targets) console.log(`  - ${t.username} (${t.email})`);
   console.log(`Pengaman (direktur/super_admin aktif + MFA, bukan demo): ${guardians[0].n}`);
   if (!targets.length) { console.log('Tidak ada yang perlu dilakukan.'); await pool.end(); process.exit(0); }
   if (guardians[0].n < 1) {
@@ -36,7 +36,7 @@ try {
   if (!APPLY) { console.log('\nDRY-RUN. Tambahkan --apply --approved-by="<nama>" untuk menonaktifkan.'); await pool.end(); process.exit(0); }
   if (!APPROVED || APPROVED.length < 3) { console.error('DITOLAK: --approved-by wajib (nama penyetuju).'); await pool.end(); process.exit(2); }
   const r = await pool.query(`UPDATE users SET is_active=false WHERE id = ANY($1) RETURNING id`, [targets.map((t) => t.id)]);
-  await pool.query(`INSERT INTO audit_logs (user_id, action, entity, entity_id, details, created_at)
+  await pool.query(`INSERT INTO audit_logs (user_id, action, entity_type, entity_id, new_value, created_at)
      VALUES (NULL,'DISABLE_DEMO_ACCOUNTS','users',NULL,$1, now())`,
     [JSON.stringify({ disabled: targets.map((t) => t.username), approved_by: APPROVED })])
     .catch(() => {});

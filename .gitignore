@@ -50,3 +50,5 @@ employee-credentials*.csv
 
 # backup database (pg_dump harian) — jangan masuk repo
 backups/
+
+docker/certs/*.pem
